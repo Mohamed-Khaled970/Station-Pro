@@ -1,0 +1,123 @@
+﻿/* ============================================ */
+/* DASHBOARD SPECIFIC STYLES */
+/* ============================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+/* Session Cards */
+.session-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+    border-left: 4px solid #ef4444;
+    transition: all 0.3s ease;
+}
+
+    .session-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+    }
+
+/* Device Grid */
+.device-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Pulse Animation for Active Status */
+.pulse-dot {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}
+
+/* Revenue Trend */
+.revenue-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+    .revenue-trend.up {
+        color: #10b981;
+    }
+
+    .revenue-trend.down {
+        color: #ef4444;
+    }
+
+/* Quick Action Buttons */
+.quick-action {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+    .quick-action:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        transform: translateY(-2px);
+    }
+
+.quick-action-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: white;
+    font-size: 1.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .device-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .session-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

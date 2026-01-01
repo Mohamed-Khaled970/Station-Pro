@@ -1,0 +1,71 @@
+﻿@model DashboardStatsDto
+
+<!-- Revenue Card -->
+<div class="stat-card slide-in-right" style="animation-delay: 0.1s; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+    <div class="flex justify-between items-start mb-3">
+        <div>
+            <p class="text-green-100 text-sm font-medium mb-1">Today's Revenue</p>
+            <h3 class="text-3xl font-bold">@Model.TodayRevenue.ToString("C")</h3>
+        </div>
+        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <i class="fas fa-coins text-2xl"></i>
+        </div>
+    </div>
+    <div class="flex items-center text-sm text-green-100">
+        <i class="fas fa-arrow-up mr-1"></i>
+        <span>@Model.TotalSessions sessions</span>
+    </div>
+</div>
+
+<!-- Active Devices Card -->
+<div class="stat-card slide-in-right" style="animation-delay: 0.2s; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+    <div class="flex justify-between items-start mb-3">
+        <div>
+            <p class="text-blue-100 text-sm font-medium mb-1">Active Devices</p>
+            <h3 class="text-3xl font-bold">@Model.ActiveDevices / @Model.TotalDevices</h3>
+        </div>
+        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <i class="fas fa-gamepad text-2xl"></i>
+        </div>
+    </div>
+    <div class="flex items-center text-sm text-blue-100">
+        <div class="flex-1 bg-white bg-opacity-20 rounded-full h-2">
+            <div class="bg-white h-2 rounded-full"
+                 style="width: @((Model.TotalDevices > 0 ? (Model.ActiveDevices * 100.0 / Model.TotalDevices) : 0))%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Sessions Card -->
+<div class="stat-card slide-in-right" style="animation-delay: 0.3s; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+    <div class="flex justify-between items-start mb-3">
+        <div>
+            <p class="text-yellow-100 text-sm font-medium mb-1">Active Sessions</p>
+            <h3 class="text-3xl font-bold">@Model.ActiveSessions</h3>
+        </div>
+        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <i class="fas fa-clock text-2xl"></i>
+        </div>
+    </div>
+    <div class="flex items-center text-sm text-yellow-100">
+        <i class="fas fa-play mr-1"></i>
+        <span>Running now</span>
+    </div>
+</div>
+
+<!-- Average Session Card -->
+<div class="stat-card slide-in-right" style="animation-delay: 0.4s; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+    <div class="flex justify-between items-start mb-3">
+        <div>
+            <p class="text-purple-100 text-sm font-medium mb-1">Avg. Session</p>
+            <h3 class="text-3xl font-bold">@Model.AverageSessionCost.ToString("C")</h3>
+        </div>
+        <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <i class="fas fa-chart-line text-2xl"></i>
+        </div>
+    </div>
+    <div class="flex items-center text-sm text-purple-100">
+        <i class="fas fa-calculator mr-1"></i>
+        <span>Per session</span>
+    </div>
+</div>

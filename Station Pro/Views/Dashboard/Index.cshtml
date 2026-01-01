@@ -1,0 +1,208 @@
+﻿@model DashboardStatsDto
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css">
+}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Welcome Header with Refresh Button -->
+        <div class="mb-8 fade-in flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                    Welcome back! 👋
+                </h1>
+                <p class="text-gray-600">Here's what's happening with your store today</p>
+            </div>
+            <button onclick="refreshDashboard()"
+                    id="refresh-btn"
+                    class="btn btn-primary flex items-center gap-2">
+                <i class="fas fa-sync-alt" id="refresh-icon"></i>
+                Refresh
+            </button>
+        </div>
+
+        <!-- Stats Cards - NO AUTO-REFRESH -->
+        <div id="stats-container"
+             hx-get="@Html.TenantUrl("Dashboard", "LiveStats")"
+             hx-swap="innerHTML"
+             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            @await Html.PartialAsync("_DashboardStats", Model)
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Active Sessions (2 columns) - ONLY THIS AUTO-REFRESHES -->
+            <div class="lg:col-span-2">
+                <div class="card p-6 fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clock text-blue-600 mr-2"></i>
+                            Active Sessions
+                        </h2>
+                        <span class="text-sm text-gray-500">
+                            <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
+                            Updates every 15s
+                        </span>
+                    </div>
+
+                    <div id="active-sessions-container"
+                         hx-get="@Html.TenantUrl("Dashboard", "ActiveSessions")"
+                         hx-trigger="load, every 15s"
+                         hx-swap="innerHTML">
+                        <!-- Sessions loaded here -->
+                        <div class="text-center py-12">
+                            <div class="loading mx-auto mb-4"></div>
+                            <p class="text-gray-500">Loading sessions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions (1 column) -->
+            <div class="space-y-6">
+
+                <!-- Quick Actions Card -->
+                <div class="card p-6 fade-in">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">
+                        <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                        Quick Actions
+                    </h3>
+                    <div class="space-y-3">
+                        <button onclick="openModal('start-session-modal')"
+                                class="btn btn-primary w-full">
+                            <i class="fas fa-play mr-2"></i>
+                            Start New Session
+                        </button>
+                        <a href="@Html.TenantUrl("Device", "Create")"
+                           class="btn btn-outline w-full">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Device
+                        </a>
+                        <a href="@Html.TenantUrl("Report", "Today")"
+                           class="btn btn-secondary w-full">
+                            <i class="fas fa-file-invoice mr-2"></i>
+                            View Reports
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Today's Summary -->
+                <div class="card p-6 fade-in">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">
+                        <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
+                        Today's Summary
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Revenue</span>
+                            <span class="font-bold text-green-600">@Model.TodayRevenue.ToString("C")</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Sessions</span>
+                            <span class="font-bold text-gray-900">@Model.TotalSessions</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Avg. Session</span>
+                            <span class="font-bold text-gray-900">@Model.AverageSessionCost.ToString("C")</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Device Usage</span>
+                            <span class="font-bold text-blue-600">@Model.ActiveDevices/@Model.TotalDevices</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Need Help? -->
+                <div class="card p-6 bg-gradient-to-br from-blue-500 to-purple-600 text-white fade-in">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-question-circle text-2xl mt-1"></i>
+                        <div>
+                            <h4 class="font-bold mb-2">Need Help?</h4>
+                            <p class="text-sm text-blue-100 mb-3">
+                                Check our guide or contact support
+                            </p>
+                            <button class="text-sm font-semibold hover:underline">
+                                View Guide →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Devices Section - NO AUTO-REFRESH -->
+        <div class="mt-8">
+            <div class="card p-6 fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-gamepad text-blue-600 mr-2"></i>
+                        All Devices
+                    </h2>
+                    <a href="@Html.TenantUrl("Device", "Index")"
+                       class="text-blue-600 hover:text-blue-700 font-semibold text-sm">
+                        View All →
+                    </a>
+                </div>
+
+                <div id="devices-container"
+                     hx-get="@Html.TenantUrl("Dashboard", "DeviceCards")"
+                     hx-trigger="load"
+                     hx-swap="innerHTML"
+                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Devices loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Session Modal -->
+<div id="start-session-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="text-xl font-bold text-gray-900">Start New Session</h3>
+        </div>
+        <form hx-post="@Html.TenantUrl("Session", "Start")"
+              hx-target="#active-sessions-container"
+              hx-on::after-request="closeModal('start-session-modal')">
+            <div class="modal-body space-y-4">
+                <div>
+                    <label class="form-label">Select Device</label>
+                    <select name="DeviceId" class="form-input" required>
+                        <option value="">Choose a device...</option>
+                        <!-- Populate with available devices -->
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Customer Name (Optional)</label>
+                    <input type="text" name="CustomerName" class="form-input" placeholder="Enter customer name">
+                </div>
+                <div>
+                    <label class="form-label">Customer Phone (Optional)</label>
+                    <input type="tel" name="CustomerPhone" class="form-input" placeholder="01234567890">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeModal('start-session-modal')"
+                        class="btn btn-secondary">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-play mr-2"></i>
+                    Start Session
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/dashboard.js"></script>
+}

@@ -1,0 +1,83 @@
+﻿@model IEnumerable<SessionDto>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-12">
+        <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+        <p class="text-gray-500 font-medium">No active sessions</p>
+        <p class="text-gray-400 text-sm mt-2">Start a new session to see it here</p>
+        <button onclick="openModal('start-session-modal')"
+                class="btn btn-primary mt-4">
+            <i class="fas fa-play mr-2"></i>
+            Start Session
+        </button>
+    </div>
+}
+else
+{
+    <div class="space-y-3">
+        @foreach (var session in Model)
+        {
+            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-all fade-in">
+                <div class="flex items-center space-x-4 flex-1">
+                    <!-- Device Icon -->
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-gamepad text-red-600 text-xl"></i>
+                    </div>
+
+                    <!-- Session Info -->
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-900">@session.DeviceName</h4>
+                        <div class="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                            @if (!string.IsNullOrEmpty(session.CustomerName))
+                            {
+                                <span>
+                                    <i class="fas fa-user mr-1"></i>
+                                    @session.CustomerName
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    <i class="fas fa-user-secret mr-1"></i>
+                                    Guest
+                                </span>
+                            }
+                            <span>
+                                <i class="fas fa-clock mr-1"></i>
+                                Started @session.StartTime.ToString("h:mm tt")
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Timer & Cost -->
+                    <div class="text-right">
+                        <!-- Client-side Timer (updates every second via JavaScript) -->
+                        <div class="timer-display mb-2 font-mono text-2xl font-bold text-blue-600"
+                             id="timer-@session.Id"
+                             data-start-time="@session.StartTime.ToString("o")"
+                             data-hourly-rate="@session.HourlyRate">
+                            @session.DurationFormatted
+                        </div>
+
+                        <!-- Dynamic Cost (updated by JavaScript timer) -->
+                        <p class="text-lg font-bold text-green-600" id="cost-@session.Id">
+                            @session.TotalCost.ToString("C")
+                        </p>
+
+                        <p class="text-xs text-gray-500">@session.HourlyRate.ToString("C")/hr</p>
+                    </div>
+
+                    <!-- End Button -->
+                    <button hx-post="@Html.TenantUrl("Session", "End")?sessionId=@session.Id&paymentMethod=1"
+                            hx-confirm="End this session?"
+                            hx-target="#active-sessions-container"
+                            class="btn btn-danger">
+                        <i class="fas fa-stop mr-2"></i>
+                        End
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
