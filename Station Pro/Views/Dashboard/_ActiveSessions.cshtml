@@ -1,5 +1,4 @@
 ﻿@model IEnumerable<SessionDto>
-
 @if (!Model.Any())
 {
     <div class="text-center py-12">
@@ -24,7 +23,6 @@ else
                     <div class="bg-red-100 p-3 rounded-lg">
                         <i class="fas fa-gamepad text-red-600 text-xl"></i>
                     </div>
-
                     <!-- Session Info -->
                     <div class="flex-1">
                         <h4 class="font-bold text-gray-900">@session.DeviceName</h4>
@@ -49,7 +47,6 @@ else
                             </span>
                         </div>
                     </div>
-
                     <!-- Timer & Cost -->
                     <div class="text-right">
                         <!-- Client-side Timer (updates every second via JavaScript) -->
@@ -59,19 +56,14 @@ else
                              data-hourly-rate="@session.HourlyRate">
                             @session.DurationFormatted
                         </div>
-
                         <!-- Dynamic Cost (updated by JavaScript timer) -->
                         <p class="text-lg font-bold text-green-600" id="cost-@session.Id">
                             @session.TotalCost.ToString("C")
                         </p>
-
                         <p class="text-xs text-gray-500">@session.HourlyRate.ToString("C")/hr</p>
                     </div>
-
                     <!-- End Button -->
-                    <button hx-post="@Html.TenantUrl("Session", "End")?sessionId=@session.Id&paymentMethod=1"
-                            hx-confirm="End this session?"
-                            hx-target="#active-sessions-container"
+                    <button onclick="endSessionWithReceipt(@session.Id)"
                             class="btn btn-danger">
                         <i class="fas fa-stop mr-2"></i>
                         End

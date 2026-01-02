@@ -1,0 +1,102 @@
+﻿@* Views/Dashboard/_SessionReceipt.cshtml *@
+@model SessionReceiptDto
+
+<div class="bg-white rounded-xl shadow-2xl max-w-lg mx-auto overflow-hidden">
+    <!-- Compact Header -->
+    <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-white bg-opacity-20 rounded-full mb-2">
+            <i class="fas fa-check text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-bold">Session Completed!</h2>
+        <p class="text-green-100 text-xs mt-1">Thank you for using our services</p>
+    </div>
+
+    <!-- Wider Body Layout -->
+    <div class="p-5">
+        <!-- Session Info -->
+        <div class="text-center mb-3 pb-3 border-b border-dashed border-gray-200">
+            <h3 class="text-xl font-bold text-gray-800">@Model.DeviceName</h3>
+            <p class="text-sm text-gray-600 mt-1">
+                <i class="fas fa-user mr-1"></i>@Model.CustomerName
+            </p>
+        </div>
+
+        <!-- Main Content - Two Column Layout -->
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <!-- Left Column - Time Info -->
+            <div class="space-y-3">
+                <div class="bg-blue-50 p-3 rounded-lg text-center">
+                    <p class="text-xs text-blue-600 mb-1">Total Duration</p>
+                    <p class="text-2xl font-bold text-blue-700">@Model.DurationFormatted</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div class="bg-gray-50 p-2 rounded">
+                        <p class="text-gray-500 mb-1">Start</p>
+                        <p class="font-semibold text-gray-800">@Model.StartTime.ToString("HH:mm")</p>
+                    </div>
+                    <div class="bg-gray-50 p-2 rounded">
+                        <p class="text-gray-500 mb-1">End</p>
+                        <p class="font-semibold text-gray-800">@Model.EndTime.ToString("HH:mm")</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Cost Info -->
+            <div class="space-y-3">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-600 mb-1">Total Amount</p>
+                    <p class="text-3xl font-bold text-green-600">@Model.TotalCost.ToString("C")</p>
+                    <p class="text-xs text-green-700 mt-1">EGP</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Rate</span>
+                        <span class="font-semibold text-gray-800">@Model.HourlyRate.ToString("C")/hr</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Payment</span>
+                        <span class="font-semibold text-gray-800">
+                            <i class="fas fa-@(Model.PaymentMethod == "Cash" ? "money-bill-wave" : "credit-card") mr-1"></i>
+                            @Model.PaymentMethod
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session ID -->
+        <div class="text-center text-xs text-gray-400 mb-3">
+            Session #@Model.SessionId • @Model.CompletedAt.ToString("MM/dd HH:mm")
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="printReceipt(@Model.SessionId)"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center">
+                <i class="fas fa-print mr-2"></i>Print
+            </button>
+            <button onclick="closeReceiptModal()"
+                    class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center">
+                <i class="fas fa-check mr-2"></i>Done
+            </button>
+        </div>
+    </div>
+
+    <!-- Minimal Footer -->
+    <div class="bg-gray-50 py-2 text-center border-t border-gray-100">
+        <p class="text-xs text-gray-400">
+            <i class="fas fa-heart text-red-400 text-xs"></i> Station Pro
+        </p>
+    </div>
+</div>
+
+<script>
+    setTimeout(() => {
+        const modal = document.getElementById('receipt-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closeReceiptModal();
+        }
+    }, 30000);
+</script>

@@ -1,0 +1,313 @@
+﻿/* wwwroot/css/device.css */
+
+/* ============================================ */
+/* DEVICE PAGE STYLES */
+/* ============================================ */
+
+/* Filter Buttons */
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+    .filter-btn:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .filter-btn.active {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+/* Device Card Base */
+.device-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+    .device-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+
+    .device-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Device Card States */
+    .device-card.available {
+        border-color: #d1fae5;
+        background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    }
+
+        .device-card.available::before {
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+        }
+
+        .device-card.available:hover {
+            border-color: #10b981;
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.2);
+        }
+
+    .device-card.in-use {
+        border-color: #fecaca;
+        background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+    }
+
+        .device-card.in-use::before {
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .device-card.in-use:hover {
+            border-color: #ef4444;
+            box-shadow: 0 12px 32px rgba(239, 68, 68, 0.2);
+        }
+
+    .device-card.maintenance {
+        border-color: #fde68a;
+        background: linear-gradient(135deg, #ffffff 0%, #fefce8 100%);
+    }
+
+        .device-card.maintenance::before {
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .device-card.maintenance:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 12px 32px rgba(245, 158, 11, 0.2);
+        }
+
+    .device-card.offline {
+        border-color: #e5e7eb;
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        opacity: 0.7;
+    }
+
+        .device-card.offline::before {
+            background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+        }
+
+    /* Hide filtered devices */
+    .device-card.hidden {
+        display: none;
+    }
+
+    /* Device Icon Container */
+    .device-card .rounded-xl {
+        transition: all 0.3s ease;
+    }
+
+    .device-card:hover .rounded-xl {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-available {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+}
+
+.status-in-use {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+}
+
+.status-maintenance {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+}
+
+.status-offline {
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    color: #1f2937;
+}
+
+/* Active Session Info Box */
+.device-card .bg-red-50 {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+    .device-card .bg-red-50:hover {
+        background: #fee2e2;
+        transform: scale(1.02);
+    }
+
+/* Action Buttons Container */
+.device-card .flex.space-x-2 {
+    margin-top: 1rem;
+}
+
+/* Device Stats Cards */
+.card {
+    transition: all 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+/* Search Input Enhancement */
+#search-input {
+    transition: all 0.2s ease;
+}
+
+    #search-input:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+/* Empty State */
+.card.p-12 {
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    border: 2px dashed #d1d5db;
+}
+
+    .card.p-12:hover {
+        border-color: #3b82f6;
+        background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+    }
+
+/* Pulse Animation for In-Use Devices */
+.device-card.in-use .fa-spinner {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}
+
+/* Grid Responsive Adjustments */
+@media (max-width: 768px) {
+    .device-card {
+        padding: 1rem;
+    }
+
+    .filter-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .status-badge {
+        font-size: 0.625rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Loading State */
+.device-card.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+    .device-card.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 24px;
+        height: 24px;
+        margin: -12px 0 0 -12px;
+        border: 3px solid #e5e7eb;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Modal Enhancements for Device Forms */
+#add-device-modal .modal-content,
+#edit-device-modal .modal-content {
+    max-width: 500px;
+}
+
+#add-device-modal select option,
+#edit-device-modal select option {
+    padding: 0.5rem;
+}
+
+/* Hover effect for device type icons */
+.device-card .fab,
+.device-card .fas {
+    transition: all 0.3s ease;
+}
+
+.device-card:hover .fab,
+.device-card:hover .fas {
+    transform: scale(1.1);
+}
+
+/* Stats Cards Gradient Backgrounds */
+.card .bg-blue-100 {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.card .bg-green-100 {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+}
+
+.card .bg-red-100 {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+}
+
+.card .bg-purple-100 {
+    background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+}
+
+/* Print Styles */
+@media print {
+    .filter-btn,
+    .btn,
+    nav {
+        display: none !important;
+    }
+
+    .device-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}

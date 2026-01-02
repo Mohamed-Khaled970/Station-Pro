@@ -27,7 +27,7 @@
             </button>
         </div>
 
-        <!-- Stats Cards - NO AUTO-REFRESH -->
+        <!-- Stats Cards -->
         <div id="stats-container"
              hx-get="@Html.TenantUrl("Dashboard", "LiveStats")"
              hx-swap="innerHTML"
@@ -38,7 +38,7 @@
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <!-- Active Sessions (2 columns) - ONLY THIS AUTO-REFRESHES -->
+            <!-- Active Sessions (2 columns) -->
             <div class="lg:col-span-2">
                 <div class="card p-6 fade-in">
                     <div class="flex justify-between items-center mb-6">
@@ -56,7 +56,6 @@
                          hx-get="@Html.TenantUrl("Dashboard", "ActiveSessions")"
                          hx-trigger="load, every 15s"
                          hx-swap="innerHTML">
-                        <!-- Sessions loaded here -->
                         <div class="text-center py-12">
                             <div class="loading mx-auto mb-4"></div>
                             <p class="text-gray-500">Loading sessions...</p>
@@ -67,7 +66,6 @@
 
             <!-- Quick Actions (1 column) -->
             <div class="space-y-6">
-
                 <!-- Quick Actions Card -->
                 <div class="card p-6 fade-in">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">
@@ -137,7 +135,7 @@
             </div>
         </div>
 
-        <!-- Available Devices Section - NO AUTO-REFRESH -->
+        <!-- Available Devices Section -->
         <div class="mt-8">
             <div class="card p-6 fade-in">
                 <div class="flex justify-between items-center mb-6">
@@ -177,7 +175,6 @@
                     <label class="form-label">Select Device</label>
                     <select name="DeviceId" class="form-input" required>
                         <option value="">Choose a device...</option>
-                        <!-- Populate with available devices -->
                     </select>
                 </div>
                 <div>
@@ -203,6 +200,40 @@
     </div>
 </div>
 
+<!-- 🎉 RECEIPT MODAL - STAYS IN DASHBOARD VIEW (WON'T BE REFRESHED) -->
+<div id="receipt-modal" class="modal-overlay hidden" style="z-index: 9999;">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div id="receipt-content" class="animate-scale-in">
+            <!-- Receipt will be loaded here via JavaScript -->
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-    <script src="~/js/dashboard.js"></script>
+    <script src="@Url.Content("~/js/dashboard.js")"></script>
 }
+
+<style>
+    /* Receipt modal animation */
+    @@keyframes scale-in {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .animate-scale-in {
+        animation: scale-in 0.3s ease-out;
+    }
+
+    /* Ensure modal appears above everything */
+    #receipt-modal {
+        backdrop-filter: blur(4px);
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+</style>

@@ -110,35 +110,10 @@ function formatDuration(seconds) {
 }
 
 // ============================================
-// TIMER UTILITY
+// NOTE: SessionTimer class has been moved to dashboard.js
+// to avoid conflicts. If you need it on other pages,
+// create page-specific timer implementations.
 // ============================================
-
-class SessionTimer {
-    constructor(elementId, startTime) {
-        this.element = document.getElementById(elementId);
-        this.startTime = new Date(startTime);
-        this.interval = null;
-    }
-
-    start() {
-        this.update();
-        this.interval = setInterval(() => this.update(), 1000);
-    }
-
-    stop() {
-        if (this.interval) {
-            clearInterval(this.interval);
-        }
-    }
-
-    update() {
-        const now = new Date();
-        const diff = Math.floor((now - this.startTime) / 1000);
-        if (this.element) {
-            this.element.textContent = formatDuration(diff);
-        }
-    }
-}
 
 // ============================================
 // FORM VALIDATION
