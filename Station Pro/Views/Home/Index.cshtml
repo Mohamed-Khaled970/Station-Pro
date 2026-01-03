@@ -31,6 +31,46 @@
         .float-animation {
             animation: float 3s ease-in-out infinite;
         }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-outline {
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            background: white;
+        }
+        
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -40,13 +80,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-2">
-                    <i class="fas fa-gamepad text-blue-600 text-2xl"></i>
-                    <span class="text-2xl font-bold text-gray-900">Station Pro</span>
+                    <i class="fas fa-gamepad text-blue-600 text-xl sm:text-2xl"></i>
+                    <span class="text-lg sm:text-2xl font-bold text-gray-900">Station Pro</span>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/auth/login" class="text-gray-700 hover:text-blue-600 font-medium">Login</a>
-                    <a href="/dashboard/index" class="btn btn-primary">
-                        Start Free Trial
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <a href="/auth/login" class="text-gray-700 hover:text-blue-600 font-medium text-sm sm:text-base">Login</a>
+                    <a href="/dashboard/index" class="btn btn-primary text-xs sm:text-base !px-3 !py-2 sm:!px-6 sm:!py-3">
+                        <span class="hidden sm:inline">Start Free Trial</span>
+                        <span class="sm:hidden">Try Free</span>
                     </a>
                 </div>
             </div>
@@ -54,85 +95,85 @@
     </nav>
     
     <!-- Hero Section -->
-    <section class="gradient-bg pt-32 pb-20 px-4">
+    <section class="gradient-bg pt-24 sm:pt-32 pb-12 sm:pb-20 px-4">
         <div class="max-w-7xl mx-auto">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 <!-- Left Content -->
                 <div class="text-white">
-                    <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
                         Manage Your Gaming Store Like a Pro
                     </h1>
-                    <p class="text-xl text-purple-100 mb-8">
+                    <p class="text-base sm:text-lg md:text-xl text-purple-100 mb-6 sm:mb-8">
                         Track devices, manage sessions, and grow your revenue with Station Pro - 
                         The complete management system for PlayStation stores in Egypt.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="/dashboard/index" class="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                        <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
                             <i class="fas fa-rocket mr-2"></i>
                             Start Free Trial
                         </a>
-                        <a href="#features" class="bg-purple-700 bg-opacity-50 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-70 transition-all inline-flex items-center justify-center">
+                        <a href="#features" class="bg-purple-700 bg-opacity-50 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-opacity-70 transition-all inline-flex items-center justify-center">
                             <i class="fas fa-play mr-2"></i>
                             See How It Works
                         </a>
                     </div>
-                    <div class="flex items-center space-x-8 mt-8">
+                    <div class="grid grid-cols-3 gap-4 sm:gap-8 mt-6 sm:mt-8">
                         <div>
-                            <p class="text-3xl font-bold">500+</p>
-                            <p class="text-purple-200">Active Stores</p>
+                            <p class="text-2xl sm:text-3xl font-bold">500+</p>
+                            <p class="text-xs sm:text-sm text-purple-200">Active Stores</p>
                         </div>
                         <div>
-                            <p class="text-3xl font-bold">50K+</p>
-                            <p class="text-purple-200">Sessions Tracked</p>
+                            <p class="text-2xl sm:text-3xl font-bold">50K+</p>
+                            <p class="text-xs sm:text-sm text-purple-200">Sessions Tracked</p>
                         </div>
                         <div>
-                            <p class="text-3xl font-bold">4.9/5</p>
-                            <p class="text-purple-200">User Rating</p>
+                            <p class="text-2xl sm:text-3xl font-bold">4.9/5</p>
+                            <p class="text-xs sm:text-sm text-purple-200">User Rating</p>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Right Content - Dashboard Preview -->
-                <div class="float-animation">
-                    <div class="bg-white rounded-2xl shadow-2xl p-6">
+                <div class="float-animation mt-8 lg:mt-0">
+                    <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-gray-900">Dashboard Preview</h3>
+                            <h3 class="font-bold text-gray-900 text-sm sm:text-base">Dashboard Preview</h3>
                             <div class="flex space-x-2">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500"></div>
+                                <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-lg text-white">
-                                <p class="text-sm opacity-80">Today's Revenue</p>
-                                <p class="text-2xl font-bold">2,450 EGP</p>
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
+                            <div class="bg-gradient-to-br from-green-500 to-green-600 p-3 sm:p-4 rounded-lg text-white">
+                                <p class="text-xs opacity-80">Today's Revenue</p>
+                                <p class="text-lg sm:text-2xl font-bold">2,450 EGP</p>
                             </div>
-                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg text-white">
-                                <p class="text-sm opacity-80">Active Devices</p>
-                                <p class="text-2xl font-bold">5/8</p>
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-3 sm:p-4 rounded-lg text-white">
+                                <p class="text-xs opacity-80">Active Devices</p>
+                                <p class="text-lg sm:text-2xl font-bold">5/8</p>
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                                <div class="flex items-center space-x-3">
-                                    <i class="fab fa-playstation text-red-500 text-xl"></i>
+                            <div class="flex items-center justify-between p-2 sm:p-3 bg-red-50 rounded-lg">
+                                <div class="flex items-center space-x-2 sm:space-x-3">
+                                    <i class="fab fa-playstation text-red-500 text-lg sm:text-xl"></i>
                                     <div>
-                                        <p class="font-medium text-sm">PS5 - 1</p>
-                                        <p class="text-xs text-gray-500">In Use</p>
+                                        <p class="font-medium text-xs sm:text-sm">PS5 - 1</p>
+                                        <p class="text-[10px] sm:text-xs text-gray-500">In Use</p>
                                     </div>
                                 </div>
-                                <span class="text-green-600 font-bold">125 EGP</span>
+                                <span class="text-green-600 font-bold text-sm sm:text-base">125 EGP</span>
                             </div>
-                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                                <div class="flex items-center space-x-3">
-                                    <i class="fab fa-playstation text-green-500 text-xl"></i>
+                            <div class="flex items-center justify-between p-2 sm:p-3 bg-green-50 rounded-lg">
+                                <div class="flex items-center space-x-2 sm:space-x-3">
+                                    <i class="fab fa-playstation text-green-500 text-lg sm:text-xl"></i>
                                     <div>
-                                        <p class="font-medium text-sm">PS4 - 2</p>
-                                        <p class="text-xs text-gray-500">Available</p>
+                                        <p class="font-medium text-xs sm:text-sm">PS4 - 2</p>
+                                        <p class="text-[10px] sm:text-xs text-gray-500">Available</p>
                                     </div>
                                 </div>
-                                <span class="text-gray-400 text-sm">30 EGP/hr</span>
+                                <span class="text-gray-400 text-xs sm:text-sm">30 EGP/hr</span>
                             </div>
                         </div>
                     </div>
@@ -142,89 +183,89 @@
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="py-20 px-4">
+    <section id="features" class="py-12 sm:py-20 px-4">
         <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Everything You Need</h2>
-                <p class="text-xl text-gray-600">Powerful features to run your store efficiently</p>
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Everything You Need</h2>
+                <p class="text-lg sm:text-xl text-gray-600">Powerful features to run your store efficiently</p>
             </div>
             
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 <!-- Feature 1 -->
-                <div class="feature-card bg-white p-8 rounded-2xl shadow-lg">
-                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-clock text-blue-600 text-2xl"></i>
+                <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i class="fas fa-clock text-blue-600 text-xl sm:text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Real-Time Tracking</h3>
-                    <p class="text-gray-600">Track active sessions with live timers and automatic cost calculation.</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Real-Time Tracking</h3>
+                    <p class="text-sm sm:text-base text-gray-600">Track active sessions with live timers and automatic cost calculation.</p>
                 </div>
                 
                 <!-- Feature 2 -->
-                <div class="feature-card bg-white p-8 rounded-2xl shadow-lg">
-                    <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i class="fas fa-chart-line text-green-600 text-xl sm:text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Revenue Reports</h3>
-                    <p class="text-gray-600">Get detailed daily, weekly, and monthly revenue analytics.</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Revenue Reports</h3>
+                    <p class="text-sm sm:text-base text-gray-600">Get detailed daily, weekly, and monthly revenue analytics.</p>
                 </div>
                 
                 <!-- Feature 3 -->
-                <div class="feature-card bg-white p-8 rounded-2xl shadow-lg">
-                    <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-gamepad text-purple-600 text-2xl"></i>
+                <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i class="fas fa-gamepad text-purple-600 text-xl sm:text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Device Management</h3>
-                    <p class="text-gray-600">Manage unlimited PS5, PS4, and other gaming devices easily.</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Device Management</h3>
+                    <p class="text-sm sm:text-base text-gray-600">Manage unlimited PS5, PS4, and other gaming devices easily.</p>
                 </div>
                 
                 <!-- Feature 4 -->
-                <div class="feature-card bg-white p-8 rounded-2xl shadow-lg">
-                    <div class="w-16 h-16 bg-yellow-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-mobile-alt text-yellow-600 text-2xl"></i>
+                <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i class="fas fa-mobile-alt text-yellow-600 text-xl sm:text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Mobile Friendly</h3>
-                    <p class="text-gray-600">Access from anywhere on any device - desktop, tablet, or phone.</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Mobile Friendly</h3>
+                    <p class="text-sm sm:text-base text-gray-600">Access from anywhere on any device - desktop, tablet, or phone.</p>
                 </div>
                 
                 <!-- Feature 5 -->
-                <div class="feature-card bg-white p-8 rounded-2xl shadow-lg">
-                    <div class="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-shield-alt text-red-600 text-2xl"></i>
+                <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i class="fas fa-shield-alt text-red-600 text-xl sm:text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Secure & Reliable</h3>
-                    <p class="text-gray-600">Your data is encrypted and backed up automatically every day.</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Secure & Reliable</h3>
+                    <p class="text-sm sm:text-base text-gray-600">Your data is encrypted and backed up automatically every day.</p>
                 </div>
                 
                 <!-- Feature 6 -->
-                <div class="feature-card bg-white p-8 rounded-2xl shadow-lg">
-                    <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center mb-6">
-                        <i class="fas fa-headset text-indigo-600 text-2xl"></i>
+                <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-indigo-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+                        <i class="fas fa-headset text-indigo-600 text-xl sm:text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">24/7 Support</h3>
-                    <p class="text-gray-600">Get help whenever you need it with our dedicated support team.</p>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">24/7 Support</h3>
+                    <p class="text-sm sm:text-base text-gray-600">Get help whenever you need it with our dedicated support team.</p>
                 </div>
             </div>
         </div>
     </section>
     
     <!-- Pricing Section -->
-    <section class="py-20 px-4 bg-gray-100">
+    <section class="py-12 sm:py-20 px-4 bg-gray-100">
         <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
-                <p class="text-xl text-gray-600">Choose the perfect plan for your store</p>
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
+                <p class="text-lg sm:text-xl text-gray-600">Choose the perfect plan for your store</p>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
                 <!-- Free Plan -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Free</h3>
-                    <p class="text-gray-600 mb-6">Perfect to get started</p>
-                    <div class="mb-6">
-                        <span class="text-5xl font-bold text-gray-900">0</span>
-                        <span class="text-gray-600"> EGP/month</span>
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Free</h3>
+                    <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Perfect to get started</p>
+                    <div class="mb-4 sm:mb-6">
+                        <span class="text-4xl sm:text-5xl font-bold text-gray-900">0</span>
+                        <span class="text-sm sm:text-base text-gray-600"> EGP/month</span>
                     </div>
-                    <ul class="space-y-3 mb-8">
+                    <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-3"></i>
                             <span>Up to 5 devices</span>
@@ -242,17 +283,17 @@
                 </div>
                 
                 <!-- Pro Plan -->
-                <div class="bg-gradient-to-br from-blue-600 to-purple-600 p-8 rounded-2xl shadow-2xl transform scale-105">
-                    <div class="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-sm font-bold inline-block mb-4">
+                <div class="bg-gradient-to-br from-blue-600 to-purple-600 p-6 sm:p-8 rounded-2xl shadow-2xl md:transform md:scale-105">
+                    <div class="bg-yellow-400 text-gray-900 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold inline-block mb-3 sm:mb-4">
                         MOST POPULAR
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-2">Pro</h3>
-                    <p class="text-purple-100 mb-6">For growing stores</p>
-                    <div class="mb-6">
-                        <span class="text-5xl font-bold text-white">500</span>
-                        <span class="text-purple-100"> EGP/month</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white mb-2">Pro</h3>
+                    <p class="text-sm sm:text-base text-purple-100 mb-4 sm:mb-6">For growing stores</p>
+                    <div class="mb-4 sm:mb-6">
+                        <span class="text-4xl sm:text-5xl font-bold text-white">500</span>
+                        <span class="text-sm sm:text-base text-purple-100"> EGP/month</span>
                     </div>
-                    <ul class="space-y-3 mb-8 text-white">
+                    <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-white text-sm sm:text-base">
                         <li class="flex items-center">
                             <i class="fas fa-check mr-3"></i>
                             <span>Up to 50 devices</span>
@@ -270,19 +311,19 @@
                             <span>Custom branding</span>
                         </li>
                     </ul>
-                    <a href="/dashboard/index" class="bg-white text-purple-600 px-8 py-3 rounded-lg font-bold w-full inline-block text-center hover:bg-gray-100 transition-all">
+                    <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 rounded-lg font-bold w-full inline-block text-center hover:bg-gray-100 transition-all text-sm sm:text-base">
                         Start Free Trial
                     </a>
                 </div>
                 
                 <!-- Enterprise Plan -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
-                    <p class="text-gray-600 mb-6">For large operations</p>
-                    <div class="mb-6">
-                        <span class="text-5xl font-bold text-gray-900">Custom</span>
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                    <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">For large operations</p>
+                    <div class="mb-4 sm:mb-6">
+                        <span class="text-4xl sm:text-5xl font-bold text-gray-900">Custom</span>
                     </div>
-                    <ul class="space-y-3 mb-8">
+                    <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
                         <li class="flex items-center">
                             <i class="fas fa-check text-green-500 mr-3"></i>
                             <span>Unlimited devices</span>
@@ -307,35 +348,35 @@
     </section>
     
     <!-- CTA Section -->
-    <section class="gradient-bg py-20 px-4">
+    <section class="gradient-bg py-12 sm:py-20 px-4">
         <div class="max-w-4xl mx-auto text-center text-white">
-            <h2 class="text-4xl font-bold mb-6">Ready to Grow Your Store?</h2>
-            <p class="text-xl text-purple-100 mb-8">
+            <h2 class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">Ready to Grow Your Store?</h2>
+            <p class="text-base sm:text-xl text-purple-100 mb-6 sm:mb-8">
                 Join 500+ gaming store owners who trust Station Pro to manage their business.
             </p>
-            <a href="/dashboard/index" class="bg-white text-purple-600 px-12 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-all inline-flex items-center">
+            <a href="/dashboard/index" class="bg-white text-purple-600 px-8 sm:px-12 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
                 <i class="fas fa-rocket mr-2"></i>
                 Start Your Free Trial Now
             </a>
-            <p class="text-purple-100 mt-4">No credit card required • 14-day free trial</p>
+            <p class="text-sm sm:text-base text-purple-100 mt-4">No credit card required • 14-day free trial</p>
         </div>
     </section>
     
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12 px-4">
+    <footer class="bg-gray-900 text-white py-8 sm:py-12 px-4">
         <div class="max-w-7xl mx-auto text-center">
-            <div class="flex items-center justify-center space-x-2 mb-6">
-                <i class="fas fa-gamepad text-3xl"></i>
-                <span class="text-2xl font-bold">Station Pro</span>
+            <div class="flex items-center justify-center space-x-2 mb-4 sm:mb-6">
+                <i class="fas fa-gamepad text-2xl sm:text-3xl"></i>
+                <span class="text-xl sm:text-2xl font-bold">Station Pro</span>
             </div>
-            <p class="text-gray-400 mb-6">Made with BETA Software Solutions</p>
-            <div class="flex justify-center space-x-6 text-gray-400">
+            <p class="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6">Made with BETA Software Solutions</p>
+            <div class="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm sm:text-base text-gray-400">
                 <a href="#" class="hover:text-white">Terms</a>
                 <a href="#" class="hover:text-white">Privacy</a>
                 <a href="#" class="hover:text-white">Contact</a>
                 <a href="#" class="hover:text-white">Support</a>
             </div>
-            <p class="text-gray-500 mt-6">© 2024 Station Pro. All rights reserved.</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">© 2024 Station Pro. All rights reserved.</p>
         </div>
     </footer>
 </body>

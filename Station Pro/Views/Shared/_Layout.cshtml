@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"] - Station Pro</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Global Styles -->
     <link rel="stylesheet" href="@(Url.Content("~/css/global.css"))">
-    
+
     <!-- Page-specific CSS -->
     @RenderSection("Styles", required: false)
 
@@ -31,105 +31,108 @@
 <body class="bg-gray-50">
 
 
-        <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <!-- Logo & Store Name -->
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-gamepad text-blue-600 text-2xl"></i>
-                            <div>
-                                <h1 class="text-xl font-bold text-gray-900">Station Pro</h1>
-                                <p class="text-xs text-gray-500">demo.stationpro.com</p>
-                            </div>
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Store Name -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-gamepad text-blue-600 text-2xl"></i>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-900">Station Pro</h1>
+                            <p class="text-xs text-gray-500">demo.stationpro.com</p>
                         </div>
                     </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden md:flex items-center space-x-1">
-                        <a href="/Dashboard/Index"
-                           class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                            <i class="fas fa-chart-line mr-2"></i>Dashboard
-                        </a>
-                        <a href="/Device/Index"
-                           class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                            <i class="fas fa-gamepad mr-2"></i>Devices
-                        </a>
-                        <a href="/Session/Index"
-                           class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                            <i class="fas fa-clock mr-2"></i>Sessions
-                        </a>
-                        <a href="/Room/Index"
-                           class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                            <i class="fas fa-door-open mr-2"></i>Rooms
-                        </a>
-                        <a href="/Report/Index"
-                           class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                            <i class="fas fa-file-invoice-dollar mr-2"></i>Reports
-                        </a>
-                    </div>
-
-                    <!-- User Menu -->
-                    <div class="flex items-center space-x-4">
-                        <!-- Notifications -->
-                        <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
-
-                        <!-- Logout -->
-                        <a href="/logout" class="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 transition-colors">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
-                    </div>
-
-                    <!-- Mobile Menu Button -->
-                    <button class="md:hidden p-2 text-gray-600" onclick="toggleMobileMenu()">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
                 </div>
-            </div>
 
-            <!-- Mobile Menu -->
-            <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200">
-                <div class="px-4 py-3 space-y-1">
-                    <a href="/Dashboard/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/Dashboard/Index"
+                       class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
                         <i class="fas fa-chart-line mr-2"></i>Dashboard
                     </a>
-                    <a href="/Device/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <a href="/Device/Index"
+                       class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
                         <i class="fas fa-gamepad mr-2"></i>Devices
                     </a>
-                    <a href="/Session/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <a href="/Session/Index"
+                       class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
                         <i class="fas fa-clock mr-2"></i>Sessions
                     </a>
-                    <a href="/Room/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <a href="/Room/Index"
+                       class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
                         <i class="fas fa-door-open mr-2"></i>Rooms
                     </a>
-                    <a href="/Report/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <a href="/Report/Index"
+                       class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
                         <i class="fas fa-file-invoice-dollar mr-2"></i>Reports
                     </a>
                 </div>
-            </div>
-        </nav>
-    
 
-    
-    
+                <!-- User Menu - Fixed positioning -->
+                <div class="flex items-center space-x-3">
+                    <!-- Notifications -->
+                    <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+
+                    <!-- Logout - Fixed with margin -->
+                    <a href="/logout" class="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all ml-2">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="font-medium">Logout</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden p-2 text-gray-600" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200">
+            <div class="px-4 py-3 space-y-1">
+                <a href="/Dashboard/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                </a>
+                <a href="/Device/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-gamepad mr-2"></i>Devices
+                </a>
+                <a href="/Session/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-clock mr-2"></i>Sessions
+                </a>
+                <a href="/Room/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-door-open mr-2"></i>Rooms
+                </a>
+                <a href="/Report/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-file-invoice-dollar mr-2"></i>Reports
+                </a>
+                <a href="/logout" class="block px-4 py-2 rounded-lg text-red-600 hover:bg-red-50">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+
+
+
     <!-- Main Content -->
     <main>
         @RenderBody()
     </main>
-    
+
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
-    
+
     <!-- Global Scripts -->
     <script src="@(Url.Content("~/js/global.js"))"></script>
-    
+
     <!-- Page-specific Scripts -->
     @RenderSection("Scripts", required: false)
-    
+
     <script>
         function toggleMobileMenu() {
             const menu = document.getElementById('mobile-menu');

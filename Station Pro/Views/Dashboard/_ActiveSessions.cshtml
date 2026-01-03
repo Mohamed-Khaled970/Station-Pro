@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<SessionDto>
+
 @if (!Model.Any())
 {
     <div class="text-center py-12">
@@ -17,57 +18,72 @@ else
     <div class="space-y-3">
         @foreach (var session in Model)
         {
-            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-all fade-in">
-                <div class="flex items-center space-x-4 flex-1">
-                    <!-- Device Icon -->
-                    <div class="bg-red-100 p-3 rounded-lg">
-                        <i class="fas fa-gamepad text-red-600 text-xl"></i>
-                    </div>
-                    <!-- Session Info -->
-                    <div class="flex-1">
-                        <h4 class="font-bold text-gray-900">@session.DeviceName</h4>
-                        <div class="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                            @if (!string.IsNullOrEmpty(session.CustomerName))
-                            {
-                                <span>
-                                    <i class="fas fa-user mr-1"></i>
-                                    @session.CustomerName
-                                </span>
-                            }
-                            else
-                            {
-                                <span>
-                                    <i class="fas fa-user-secret mr-1"></i>
-                                    Guest
-                                </span>
-                            }
-                            <span>
-                                <i class="fas fa-clock mr-1"></i>
-                                Started @session.StartTime.ToString("h:mm tt")
-                            </span>
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-all fade-in overflow-hidden">
+                <div class="p-2.5 sm:p-4">
+                    <!-- Mobile & Desktop Layout -->
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+
+                        <!-- Left Section: Device Icon + Info -->
+                        <div class="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
+                            <!-- Device Icon -->
+                            <div class="bg-red-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                                <i class="fas fa-gamepad text-red-600 text-base sm:text-xl"></i>
+                            </div>
+
+                            <!-- Session Info -->
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-gray-900 text-sm sm:text-base truncate">@session.DeviceName</h4>
+                                <div class="flex flex-wrap items-center gap-x-2.5 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-600 mt-0.5">
+                                    @if (!string.IsNullOrEmpty(session.CustomerName))
+                                    {
+                                        <span class="flex items-center gap-1">
+                                            <i class="fas fa-user text-[10px] sm:text-xs"></i>
+                                            <span class="truncate max-w-[100px] sm:max-w-none">@session.CustomerName</span>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="flex items-center gap-1">
+                                            <i class="fas fa-user-secret text-[10px] sm:text-xs"></i>
+                                            Guest
+                                        </span>
+                                    }
+                                    <span class="flex items-center gap-1 whitespace-nowrap">
+                                        <i class="fas fa-clock text-[10px] sm:text-xs"></i>
+                                        <span class="text-[11px] sm:text-xs">@session.StartTime.ToString("h:mm tt")</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Section: Timer, Cost & Button -->
+                        <div class="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 w-full sm:w-auto">
+                            <!-- Timer & Cost -->
+                            <div class="text-left sm:text-right flex-shrink-0">
+                                <!-- Client-side Timer -->
+                                <div class="font-mono text-base sm:text-xl lg:text-2xl font-bold text-blue-600 leading-tight"
+                                     id="timer-@session.Id"
+                                     data-start-time="@session.StartTime.ToString("o")"
+                                     data-hourly-rate="@session.HourlyRate">
+                                    @session.DurationFormatted
+                                </div>
+                                <!-- Dynamic Cost -->
+                                <p class="text-sm sm:text-base lg:text-lg font-bold text-green-600 leading-tight" id="cost-@session.Id">
+                                    @session.TotalCost.ToString("C")
+                                </p>
+                                <p class="text-[10px] sm:text-xs text-gray-500">@session.HourlyRate.ToString("C")/hr</p>
+                            </div>
+
+                            <!-- End Button - Wrapped in constraining div with responsive sizing -->
+                            <div class="flex-shrink-0 btn-end-wrapper">
+                                <button onclick="endSessionWithReceipt(@session.Id)"
+                                        class="btn btn-danger btn-end-responsive">
+                                    <i class="fas fa-stop btn-end-icon"></i>
+                                    <span>End</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <!-- Timer & Cost -->
-                    <div class="text-right">
-                        <!-- Client-side Timer (updates every second via JavaScript) -->
-                        <div class="timer-display mb-2 font-mono text-2xl font-bold text-blue-600"
-                             id="timer-@session.Id"
-                             data-start-time="@session.StartTime.ToString("o")"
-                             data-hourly-rate="@session.HourlyRate">
-                            @session.DurationFormatted
-                        </div>
-                        <!-- Dynamic Cost (updated by JavaScript timer) -->
-                        <p class="text-lg font-bold text-green-600" id="cost-@session.Id">
-                            @session.TotalCost.ToString("C")
-                        </p>
-                        <p class="text-xs text-gray-500">@session.HourlyRate.ToString("C")/hr</p>
-                    </div>
-                    <!-- End Button -->
-                    <button onclick="endSessionWithReceipt(@session.Id)"
-                            class="btn btn-danger">
-                        <i class="fas fa-stop mr-2"></i>
-                        End
-                    </button>
                 </div>
             </div>
         }

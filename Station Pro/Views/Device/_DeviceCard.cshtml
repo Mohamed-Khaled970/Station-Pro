@@ -62,14 +62,21 @@
                     <span class="text-sm font-medium">
                         @(string.IsNullOrEmpty(Model.CurrentSession.CustomerName) ? "Guest" : Model.CurrentSession.CustomerName)
                     </span>
-                    <span class="text-sm font-bold text-green-600">
+                    <!-- DYNAMIC COST - Updated by JavaScript timer -->
+                    <span class="text-sm font-bold text-green-600" id="cost-@Model.CurrentSession.Id">
                         @Model.CurrentSession.TotalCost.ToString("C")
                     </span>
                 </div>
                 <div class="flex items-center justify-between text-xs text-gray-500">
+                    <!-- TIMER ELEMENT - Critical for session-timer.js! -->
                     <span>
                         <i class="fas fa-clock mr-1"></i>
-                        @Model.CurrentSession.DurationFormatted
+                        <span class="font-mono font-bold text-blue-600"
+                              id="timer-@Model.CurrentSession.Id"
+                              data-start-time="@Model.CurrentSession.StartTime.ToString("o")"
+                              data-hourly-rate="@Model.CurrentSession.HourlyRate">
+                            @Model.CurrentSession.DurationFormatted
+                        </span>
                     </span>
                     <span>@Model.CurrentSession.HourlyRate.ToString("C")/hr</span>
                 </div>

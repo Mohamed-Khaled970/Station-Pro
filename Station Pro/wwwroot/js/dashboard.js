@@ -4,13 +4,6 @@
 // UTILITY FUNCTIONS
 // ============================================
 
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(amount);
-}
-
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
@@ -75,103 +68,6 @@ function refreshDashboard() {
 }
 
 // ============================================
-// SESSION TIMER CLASS
-// ============================================
-
-class SessionTimer {
-    constructor(elementId, startTime) {
-        this.elementId = elementId;
-        this.startTime = new Date(startTime);
-        this.timerInterval = null;
-        this.element = document.getElementById(elementId);
-
-        if (this.element) {
-            this.hourlyRate = parseFloat(this.element.dataset.hourlyRate) || 0;
-            this.costElementId = elementId.replace('timer-', 'cost-');
-        }
-    }
-
-    start() {
-        this.update(); // Update immediately
-        this.timerInterval = setInterval(() => this.update(), 1000);
-    }
-
-    stop() {
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-            this.timerInterval = null;
-        }
-    }
-
-    update() {
-        const now = new Date();
-        const elapsed = Math.floor((now - this.startTime) / 1000); // seconds
-
-        const hours = Math.floor(elapsed / 3600);
-        const minutes = Math.floor((elapsed % 3600) / 60);
-        const seconds = elapsed % 60;
-
-        const formatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-        if (this.element) {
-            this.element.textContent = formatted;
-        }
-
-        // Update cost
-        const elapsedHours = elapsed / 3600;
-        const currentCost = elapsedHours * this.hourlyRate;
-        const costElement = document.getElementById(this.costElementId);
-
-        if (costElement) {
-            costElement.textContent = formatCurrency(currentCost);
-        }
-    }
-}
-
-// ============================================
-// SESSION TIMERS
-// ============================================
-
-const activeTimers = new Map();
-
-function startAllTimers() {
-    console.log('Starting all timers...');
-
-    // Stop existing timers first to avoid duplicates
-    activeTimers.forEach(timer => timer.stop());
-    activeTimers.clear();
-
-    // Find all timer elements
-    const timerElements = document.querySelectorAll('[id^="timer-"]');
-    console.log(`Found ${timerElements.length} timer elements`);
-
-    timerElements.forEach(timerElement => {
-        const sessionId = timerElement.id.replace('timer-', '');
-        const startTime = timerElement.dataset.startTime;
-
-        console.log(`Initializing timer for session ${sessionId}, start time: ${startTime}`);
-
-        if (startTime) {
-            const timer = new SessionTimer(timerElement.id, startTime);
-            timer.start();
-            activeTimers.set(sessionId, timer);
-            console.log(`Timer started for session ${sessionId}`);
-        }
-    });
-
-    console.log(`Total active timers: ${activeTimers.size}`);
-}
-
-function stopTimer(sessionId) {
-    const timer = activeTimers.get(sessionId);
-    if (timer) {
-        timer.stop();
-        activeTimers.delete(sessionId);
-        console.log(`Timer stopped for session ${sessionId}`);
-    }
-}
-
-// ============================================
 // DASHBOARD INITIALIZATION
 // ============================================
 
@@ -180,25 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDashboard();
 });
 
-// Listen for HTMX swaps and restart timers
-document.body.addEventListener('htmx:afterSwap', (event) => {
-    console.log('HTMX afterSwap event:', event.detail.target.id);
-
-    // If the active sessions container was updated, restart timers
-    if (event.detail.target.id === 'active-sessions-container') {
-        console.log('Active sessions updated, restarting timers...');
-
-        // Small delay to ensure DOM is fully updated
-        setTimeout(() => {
-            startAllTimers();
-        }, 100);
-    }
-});
-
 function initializeDashboard() {
-    // Start session timers
-    startAllTimers();
-
     // Load device cards
     loadDeviceCards();
 
@@ -259,11 +137,17 @@ async function endSessionWithReceipt(sessionId, paymentMethod = 1) {
     }
 
     try {
-        // Stop the timer for this session
-        stopTimer(sessionId);
+        // Stop the timer for this session (uses global function from session-timer.js)
+        if (typeof stopTimer === 'function') {
+            stopTimer(sessionId);
+        }
+
+        // Get current path (handle tenant URLs)
+        const currentPath = window.location.pathname;
+        const basePath = currentPath.replace(/\/(dashboard|Dashboard).*/, '');
 
         // Call the End endpoint
-        const response = await fetch(`/Dashboard/End?sessionId=${sessionId}&paymentMethod=${paymentMethod}`, {
+        const response = await fetch(`${basePath}/Dashboard/End?sessionId=${sessionId}&paymentMethod=${paymentMethod}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -498,7 +382,7 @@ function exportDashboardData() {
     const data = {
         date: new Date().toISOString(),
         stats: dashboardMetrics.metrics,
-        sessions: Array.from(activeTimers.keys())
+        sessions: typeof activeTimers !== 'undefined' ? Array.from(activeTimers.keys()) : []
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -511,13 +395,3 @@ function exportDashboardData() {
 
     URL.revokeObjectURL(url);
 }
-
-// ============================================
-// CLEANUP ON PAGE UNLOAD
-// ============================================
-
-window.addEventListener('beforeunload', () => {
-    // Stop all timers
-    activeTimers.forEach(timer => timer.stop());
-    activeTimers.clear();
-});

@@ -106,7 +106,22 @@
     font-size: 1.5rem;
 }
 
-/* Responsive Adjustments */
+/* ============================================ */
+/* RESPONSIVE MOBILE STYLES */
+/* ============================================ */
+
+/* Tablet and below (1024px) */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .device-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile (768px and below) */
 @media (max-width: 768px) {
     .stats-grid {
         grid-template-columns: 1fr;
@@ -116,8 +131,478 @@
         grid-template-columns: 1fr;
     }
 
-    .session-card {
+    /* Make header stack vertically */
+    .mb-8.fade-in {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+
+    #refresh-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Adjust card padding on mobile */
+    .card {
+        padding: 1rem !important;
+    }
+}
+
+/* Small mobile (480px and below) */
+@media (max-width: 480px) {
+    /* Further reduce font sizes */
+    h1 {
+        font-size: 1.5rem !important;
+    }
+
+    h2 {
+        font-size: 1.25rem !important;
+    }
+
+    h3, h4 {
+        font-size: 1rem !important;
+    }
+
+    /* Compact stat cards */
+    .stat-card {
+        padding: 1rem !important;
+    }
+
+    /* Stack quick actions */
+    .quick-action {
+        padding: 0.75rem;
+    }
+
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+}
+
+/* ============================================ */
+/* FIX OVERFLOW ISSUES */
+/* ============================================ */
+
+/* Prevent horizontal scroll */
+body {
+    overflow-x: hidden;
+}
+
+.max-w-7xl {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Ensure containers don't overflow */
+.container,
+.card,
+.device-card,
+.session-card-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Make images and media responsive */
+img,
+video,
+iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ============================================ */
+/* IMPROVED TOUCH TARGETS FOR MOBILE */
+/* ============================================ */
+
+@media (max-width: 768px) {
+    /* Better spacing for touch */
+    .space-x-2 > * + * {
+        margin-left: 0.5rem;
+    }
+
+    .space-y-3 > * + * {
+        margin-top: 0.75rem;
+    }
+}
+
+/* ============================================ */
+/* LOADING STATES */
+/* ============================================ */
+
+.loading {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================ */
+/* FADE IN ANIMATIONS */
+/* ============================================ */
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================ */
+/* BEAUTIFUL SUCCESS NOTIFICATION */
+/* ============================================ */
+
+.success-notification-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+    .success-notification-overlay.show {
+        opacity: 1;
+    }
+
+.success-notification-content {
+    background: white;
+    border-radius: 24px;
+    padding: 3rem 2rem 2rem;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+}
+
+.success-notification-overlay.show .success-notification-content {
+    transform: scale(1) translateY(0);
+}
+
+.success-notification-icon-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 2rem;
+}
+
+.success-notification-icon-circle {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+    animation: successPulse 2s ease infinite;
+}
+
+.success-notification-icon {
+    font-size: 3.5rem;
+    color: white;
+    animation: successIconScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-notification-checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 120px;
+}
+
+.checkmark {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 3;
+    stroke: #10b981;
+    stroke-miterlimit: 10;
+    animation: fillCheckmark 0.4s ease-in-out 0.4s forwards, scaleCheckmark 0.3s ease-in-out 0.9s both;
+}
+
+.checkmark-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 3;
+    stroke-miterlimit: 10;
+    stroke: #10b981;
+    fill: none;
+    animation: strokeCheckmark 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: strokeCheckmark 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes strokeCheckmark {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scaleCheckmark {
+    0%, 100% {
+        transform: none;
+    }
+
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+@keyframes fillCheckmark {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px #10b981;
+    }
+}
+
+@keyframes successPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 15px 50px rgba(16, 185, 129, 0.6);
+    }
+}
+
+@keyframes successIconScale {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-notification-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+}
+
+.success-notification-message {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.success-notification-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.success-notification-btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    padding: 0.875rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .success-notification-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    }
+
+    .success-notification-btn-primary:active {
+        transform: translateY(0);
+    }
+
+/* Confetti effect (optional enhancement) */
+@keyframes confetti-fall {
+    to {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+    .success-notification-content {
+        padding: 2rem 1.5rem 1.5rem;
+    }
+
+    .success-notification-icon-wrapper {
+        width: 100px;
+        height: 100px;
+    }
+
+    .success-notification-icon-circle {
+        width: 100px;
+        height: 100px;
+    }
+
+    .success-notification-icon {
+        font-size: 3rem;
+    }
+
+    .success-notification-checkmark {
+        width: 100px;
+        height: 100px;
+    }
+
+    .checkmark {
+        width: 100px;
+        height: 100px;
+    }
+
+    .success-notification-title {
+        font-size: 1.5rem;
+    }
+
+    .success-notification-message {
+        font-size: 0.875rem;
+    }
+
+    .success-notification-btn-primary {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* ============================================ */
+/* PRINT STYLES */
+/* ============================================ */
+
+@media print {
+    .no-print,
+    button,
+    .btn,
+    nav,
+    .sidebar,
+    .success-notification-overlay {
+        display: none !important;
+    }
+
+    .card {
+        page-break-inside: avoid;
+    }
+}
+
+/* ============================================ */
+/* RESPONSIVE END BUTTON STYLES */
+/* ============================================ */
+
+/* Mobile - Small size (default) */
+.btn-end-wrapper {
+    width: auto;
+    height: 28px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.btn-end-responsive {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    height: 28px !important;
+    max-height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 10px !important;
+    font-size: 10px !important;
+    line-height: 28px !important;
+    white-space: nowrap !important;
+    border-radius: 6px !important;
+}
+
+.btn-end-icon {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    font-size: 8px !important;
+    margin-right: 4px !important;
+}
+
+/* Tablet - Medium size (640px and up) */
+@media (min-width: 640px) {
+    .btn-end-wrapper {
+        height: 36px;
+    }
+
+    .btn-end-responsive {
+        height: 36px !important;
+        max-height: 36px !important;
+        min-height: 36px !important;
+        padding: 0 14px !important;
+        font-size: 12px !important;
+        line-height: 36px !important;
+    }
+
+    .btn-end-icon {
+        font-size: 10px !important;
+        margin-right: 5px !important;
+    }
+}
+
+/* Desktop - Large size (1024px and up) */
+@media (min-width: 1024px) {
+    .btn-end-wrapper {
+        height: 40px;
+    }
+
+    .btn-end-responsive {
+        height: 40px !important;
+        max-height: 40px !important;
+        min-height: 40px !important;
+        padding: 0 16px !important;
+        font-size: 14px !important;
+        line-height: 40px !important;
+    }
+
+    .btn-end-icon {
+        font-size: 12px !important;
+        margin-right: 6px !important;
     }
 }
