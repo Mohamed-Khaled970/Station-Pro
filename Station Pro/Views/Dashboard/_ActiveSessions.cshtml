@@ -76,7 +76,8 @@ else
 
                             <!-- End Button - Wrapped in constraining div with responsive sizing -->
                             <div class="flex-shrink-0 btn-end-wrapper">
-                                <button onclick="endSessionWithReceipt(@session.Id)"
+                                <button data-session-id="@session.Id"
+                                        onclick="endSessionWithReceipt(this.getAttribute('data-session-id'))"
                                         class="btn btn-danger btn-end-responsive">
                                     <i class="fas fa-stop btn-end-icon"></i>
                                     <span>End</span>

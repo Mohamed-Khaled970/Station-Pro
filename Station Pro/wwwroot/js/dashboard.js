@@ -1,6 +1,12 @@
 ﻿// wwwroot/js/dashboard.js
 
 // ============================================
+// GLOBAL VARIABLES
+// ============================================
+let pendingSessionId = null;
+let selectedPaymentMethod = 1; // Default: Cash
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 
@@ -102,44 +108,67 @@ async function loadDeviceCards() {
 }
 
 // ============================================
-// QUICK START SESSION
+// END SESSION - NEW BEAUTIFUL APPROACH
 // ============================================
 
-async function quickStartSession(deviceId) {
-    try {
-        const response = await fetch(`/session/quick-start`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ deviceId })
-        });
+function endSessionWithReceipt(sessionId) {
+    // Store the session ID
+    pendingSessionId = sessionId;
 
-        if (response.ok) {
-            showToast('Session started successfully!', 'success');
-            // HTMX will auto-refresh the containers
-        } else {
-            showToast('Failed to start session', 'error');
-        }
-    } catch (error) {
-        console.error('Error starting session:', error);
-        showToast('An error occurred', 'error');
+    // Get session details from the DOM
+    const timerElement = document.getElementById(`timer-${sessionId}`);
+    const costElement = document.getElementById(`cost-${sessionId}`);
+
+    if (timerElement && costElement) {
+        const duration = timerElement.textContent.trim();
+        const cost = costElement.textContent.trim();
+        const deviceName = timerElement.closest('.rounded-lg').querySelector('h4')?.textContent.trim() || 'Unknown Device';
+
+        // Update confirmation modal with session details
+        document.getElementById('confirm-device-name').textContent = deviceName;
+        document.getElementById('confirm-duration').textContent = duration;
+        document.getElementById('confirm-cost').textContent = cost;
+    }
+
+    // Reset payment method to Cash
+    selectedPaymentMethod = 1;
+    document.getElementById('payment-cash').classList.add('active');
+    document.getElementById('payment-card').classList.remove('active');
+
+    // Show confirmation modal
+    openModal('end-session-confirm-modal');
+}
+
+function selectPaymentMethod(method) {
+    selectedPaymentMethod = method;
+
+    // Update button states
+    const cashBtn = document.getElementById('payment-cash');
+    const cardBtn = document.getElementById('payment-card');
+
+    if (method === 1) {
+        cashBtn.classList.add('active');
+        cardBtn.classList.remove('active');
+    } else {
+        cardBtn.classList.add('active');
+        cashBtn.classList.remove('active');
     }
 }
 
-// ============================================
-// END SESSION WITH RECEIPT
-// ============================================
+function closeEndSessionModal() {
+    closeModal('end-session-confirm-modal');
+}
 
-async function endSessionWithReceipt(sessionId, paymentMethod = 1) {
-    if (!confirm('Are you sure you want to end this session?')) {
-        return;
-    }
+async function confirmEndSession() {
+    if (!pendingSessionId) return;
 
     try {
-        // Stop the timer for this session (uses global function from session-timer.js)
+        // Close confirmation modal
+        closeEndSessionModal();
+
+        // Stop the timer for this session
         if (typeof stopTimer === 'function') {
-            stopTimer(sessionId);
+            stopTimer(pendingSessionId);
         }
 
         // Get current path (handle tenant URLs)
@@ -147,7 +176,7 @@ async function endSessionWithReceipt(sessionId, paymentMethod = 1) {
         const basePath = currentPath.replace(/\/(dashboard|Dashboard).*/, '');
 
         // Call the End endpoint
-        const response = await fetch(`${basePath}/Dashboard/End?sessionId=${sessionId}&paymentMethod=${paymentMethod}`, {
+        const response = await fetch(`${basePath}/Dashboard/End?sessionId=${pendingSessionId}&paymentMethod=${selectedPaymentMethod}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -252,6 +281,32 @@ function setupStatsRefresh() {
             });
         }
     });
+}
+
+// ============================================
+// QUICK START SESSION
+// ============================================
+
+async function quickStartSession(deviceId) {
+    try {
+        const response = await fetch(`/session/quick-start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ deviceId })
+        });
+
+        if (response.ok) {
+            showToast('Session started successfully!', 'success');
+            // HTMX will auto-refresh the containers
+        } else {
+            showToast('Failed to start session', 'error');
+        }
+    } catch (error) {
+        console.error('Error starting session:', error);
+        showToast('An error occurred', 'error');
+    }
 }
 
 // ============================================
@@ -371,6 +426,13 @@ document.addEventListener('keydown', (e) => {
     if (e.altKey && e.key === 'r') {
         e.preventDefault();
         window.location.href = '/report';
+    }
+
+    // Escape: Close modals
+    if (e.key === 'Escape') {
+        closeModal('end-session-confirm-modal');
+        closeModal('receipt-modal');
+        closeModal('start-session-modal');
     }
 });
 

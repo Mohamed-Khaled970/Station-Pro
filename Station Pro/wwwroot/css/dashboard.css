@@ -606,3 +606,36 @@ iframe {
         margin-right: 6px !important;
     }
 }
+
+
+.payment-method-btn {
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+    .payment-method-btn:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .payment-method-btn.active {
+        border-color: #3b82f6;
+        background: #dbeafe;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .payment-method-btn i {
+        color: #6b7280;
+    }
+
+    .payment-method-btn.active i {
+        color: #3b82f6;
+    }

@@ -9,13 +9,16 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
         // Static sessions list to track active sessions
         private static List<SessionDto> _activeSessions = GenerateInitialSessions();
 
+        // NEW: Static list to store completed sessions
+        private static List<SessionReportDto> _completedSessions = new List<SessionReportDto>();
+
         // Main Dashboard Index
         public IActionResult Index()
         {
             var stats = new DashboardStatsDto
             {
                 TodayRevenue = CalculateTodayRevenue(),
-                TotalSessions = _activeSessions.Count + 18, // +18 completed today
+                TotalSessions = _activeSessions.Count + _completedSessions.Count,
                 ActiveDevices = _activeSessions.Count,
                 TotalDevices = 12,
                 ActiveSessions = _activeSessions.Count,
@@ -31,7 +34,7 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             var stats = new DashboardStatsDto
             {
                 TodayRevenue = CalculateTodayRevenue(),
-                TotalSessions = _activeSessions.Count + 18,
+                TotalSessions = _activeSessions.Count + _completedSessions.Count,
                 ActiveDevices = _activeSessions.Count,
                 TotalDevices = 12,
                 ActiveSessions = _activeSessions.Count,
@@ -139,7 +142,7 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
         }
 
         // ============================================
-        // END SESSION - Main endpoint
+        // END SESSION - Main endpoint (UPDATED)
         // ============================================
 
         [HttpPost]
@@ -173,11 +176,36 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                 CompletedAt = DateTime.Now
             };
 
+            // NEW: Save completed session to the completed sessions list
+            var completedSession = new SessionReportDto
+            {
+                Id = session.Id,
+                DeviceName = session.DeviceName,
+                DeviceType = GetDeviceType(session.DeviceName).ToString(),
+                CustomerName = session.CustomerName,
+                StartTime = session.StartTime,
+                EndTime = session.EndTime.Value,
+                Duration = duration,
+                DurationFormatted = receipt.DurationFormatted,
+                HourlyRate = session.HourlyRate,
+                TotalCost = totalCost,
+                Status = "Completed",
+                PaymentMethod = paymentMethod == 1 ? "Cash" : "Card"
+            };
+
+            _completedSessions.Add(completedSession);
+
             // Remove from active sessions
             _activeSessions.Remove(session);
 
             // Return the receipt partial view for display in modal
             return PartialView("_SessionReceipt", receipt);
+        }
+
+        // NEW: Method to get completed sessions (for ReportController)
+        public static List<SessionReportDto> GetCompletedSessions()
+        {
+            return _completedSessions;
         }
 
         // ============================================
@@ -256,8 +284,12 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                 activeRevenue += (decimal)(duration.TotalHours * (double)session.HourlyRate);
             }
 
-            // Add completed sessions revenue (simulated)
-            return activeRevenue + 2450.50m;
+            // Add completed sessions revenue
+            decimal completedRevenue = _completedSessions
+                .Where(s => s.StartTime.Date == DateTime.Today)
+                .Sum(s => s.TotalCost);
+
+            return activeRevenue + completedRevenue;
         }
 
         private decimal CalculateAverageCost()
@@ -283,6 +315,4 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             return DeviceType.Other;
         }
     }
-
-
 }

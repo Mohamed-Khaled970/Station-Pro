@@ -1,0 +1,280 @@
+﻿@model CompleteReportDto
+
+@{
+    ViewData["Title"] = "Reports & Analytics";
+    var selectedPeriod = ViewBag.SelectedPeriod ?? "today";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/report.css">
+}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="mb-8 fade-in">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                        <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+                        Reports & Analytics
+                    </h1>
+                    <p class="text-gray-600">
+                        Detailed insights and performance metrics for your station
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="report-actions">
+                    <a href="@Url.Action("ExportCsv", new { period = selectedPeriod })"
+                       class="btn-export">
+                        <i class="fas fa-download"></i>
+                        Export CSV
+                    </a>
+                    <a href="@Url.Action("Print", new { period = selectedPeriod })"
+                       target="_blank"
+                       class="btn-print">
+                        <i class="fas fa-print"></i>
+                        Print Report
+                    </a>
+                </div>
+            </div>
+
+            <!-- Period Selection Tabs -->
+            <div class="period-tabs">
+                <a href="@Url.Action("Index", new { period = "today" })"
+                   class="period-tab @(selectedPeriod == "today" ? "active" : "")">
+                    Today
+                </a>
+                <a href="@Url.Action("Index", new { period = "yesterday" })"
+                   class="period-tab @(selectedPeriod == "yesterday" ? "active" : "")">
+                    Yesterday
+                </a>
+                <a href="@Url.Action("Index", new { period = "week" })"
+                   class="period-tab @(selectedPeriod == "week" ? "active" : "")">
+                    Last 7 Days
+                </a>
+                <a href="@Url.Action("Index", new { period = "month" })"
+                   class="period-tab @(selectedPeriod == "month" ? "active" : "")">
+                    Last 30 Days
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Revenue -->
+            <div class="report-card fade-in">
+                <div class="summary-stat">
+                    <div class="summary-stat-icon revenue">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="summary-stat-value">
+                        EGP @Model.Summary.TotalRevenue.ToString("N2")
+                    </div>
+                    <div class="summary-stat-label">Total Revenue</div>
+                </div>
+            </div>
+
+            <!-- Total Sessions -->
+            <div class="report-card fade-in">
+                <div class="summary-stat">
+                    <div class="summary-stat-icon sessions">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="summary-stat-value">
+                        @Model.Summary.TotalSessions
+                    </div>
+                    <div class="summary-stat-label">Total Sessions</div>
+                </div>
+            </div>
+
+            <!-- Average Session -->
+            <div class="report-card fade-in">
+                <div class="summary-stat">
+                    <div class="summary-stat-icon duration">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="summary-stat-value">
+                        EGP @Model.Summary.AverageSessionRevenue.ToString("N2")
+                    </div>
+                    <div class="summary-stat-label">Avg. Session Revenue</div>
+                </div>
+            </div>
+
+            <!-- Most Used Device -->
+            <div class="report-card fade-in">
+                <div class="summary-stat">
+                    <div class="summary-stat-icon device">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <div class="summary-stat-value" style="font-size: 1.25rem;">
+                        @Model.Summary.MostUsedDevice
+                    </div>
+                    <div class="summary-stat-label">Most Used Device</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Performance -->
+        <div class="report-card fade-in mb-8">
+            <div class="chart-header">
+                <h3 class="chart-title">
+                    <i class="fas fa-trophy text-yellow-500"></i>
+                    Device Performance
+                </h3>
+            </div>
+
+            @if (Model.DevicePerformance.Any())
+            {
+                <div class="divide-y divide-gray-200">
+                    @foreach (var device in Model.DevicePerformance)
+                    {
+                        <div class="performance-item">
+                            <div class="performance-header">
+                                <div class="performance-device">
+                                    <div class="performance-icon @device.DeviceType.ToLower()">
+                                        <i class="fas fa-gamepad"></i>
+                                    </div>
+                                    <div>
+                                        <div class="performance-name">@device.DeviceName</div>
+                                        <div class="performance-type">@device.DeviceType</div>
+                                    </div>
+                                </div>
+                                <div class="performance-revenue">
+                                    EGP @device.TotalRevenue.ToString("N2")
+                                </div>
+                            </div>
+
+                            <div class="performance-stats">
+                                <div class="performance-stat">
+                                    <div class="performance-stat-value">@device.SessionCount</div>
+                                    <div class="performance-stat-label">Sessions</div>
+                                </div>
+                                <div class="performance-stat">
+                                    <div class="performance-stat-value">
+                                        @((int)device.TotalUsageTime.TotalHours)h @device.TotalUsageTime.Minutes)m
+                                    </div>
+                                    <div class="performance-stat-label">Usage Time</div>
+                                </div>
+                                <div class="performance-stat">
+                                    <div class="performance-stat-value">
+                                        @device.UtilizationPercentage.ToString("N1")%
+                                    </div>
+                                    <div class="performance-stat-label">Utilization</div>
+                                </div>
+                            </div>
+
+                            <div class="performance-progress">
+                                <div class="performance-progress-bar"
+                                     data-width="@device.UtilizationPercentage%">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-gamepad empty-state-icon"></i>
+                    <p class="empty-state-message">No device data available</p>
+                </div>
+            }
+        </div>
+
+        <!-- Sessions Table -->
+        <div class="report-card fade-in">
+            <div class="chart-header mb-4">
+                <h3 class="chart-title">
+                    <i class="fas fa-list text-blue-600"></i>
+                    Session Details
+                </h3>
+                <p class="text-sm text-gray-500">
+                    @Model.Sessions.Count session(s) in this period
+                </p>
+            </div>
+
+            @if (Model.Sessions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="sessions-table">
+                        <thead>
+                            <tr>
+                                <th data-sortable>Date & Time</th>
+                                <th data-sortable>Device</th>
+                                <th data-sortable>Customer</th>
+                                <th data-sortable>Duration</th>
+                                <th data-sortable>Rate</th>
+                                <th data-sortable>Total</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var session in Model.Sessions)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="font-semibold text-gray-900">
+                                            @session.StartTime.ToString("MMM dd, yyyy")
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            @session.StartTime.ToString("hh:mm tt")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="font-semibold text-gray-900">@session.DeviceName</div>
+                                        <div class="text-xs text-gray-500">@session.DeviceType</div>
+                                    </td>
+                                    <td>
+                                        @(session.CustomerName ?? "Guest")
+                                    </td>
+                                    <td class="font-mono text-sm">
+                                        @session.DurationFormatted
+                                    </td>
+                                    <td class="font-semibold">
+                                        EGP @session.HourlyRate.ToString("N2")/hr
+                                    </td>
+                                    <td class="font-bold text-green-600">
+                                        EGP @session.TotalCost.ToString("N2")
+                                    </td>
+                                    <td>
+                                        <span class="table-status @session.Status.ToLower()">
+                                            @session.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="table-payment @session.PaymentMethod.ToLower()">
+                                            <i class="fas fa-@(session.PaymentMethod.ToLower() == "cash" ? "money-bill-wave" :
+                                                              session.PaymentMethod.ToLower() == "card" ? "credit-card" : "globe")"></i>
+                                            @session.PaymentMethod
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <h4 class="empty-state-title">No Sessions Found</h4>
+                    <p class="empty-state-message">
+                        There are no sessions in the selected time period
+                    </p>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/report.js"></script>
+}

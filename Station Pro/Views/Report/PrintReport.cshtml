@@ -1,0 +1,314 @@
+﻿@model CompleteReportDto
+
+@{
+    ViewData["Title"] = "Print Report";
+    Layout = null; // No layout for print
+    var selectedPeriod = ViewBag.SelectedPeriod ?? "today";
+    var periodName = selectedPeriod switch
+    {
+        "today" => "Today",
+        "yesterday" => "Yesterday",
+        "week" => "Last 7 Days",
+        "month" => "Last 30 Days",
+        _ => "Custom Period"
+    };
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report - @periodName - @DateTime.Now.ToString("MMM dd, yyyy")</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @@media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .print-header {
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+            border: 2px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .device-row {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+            .device-row:last-child {
+                border-bottom: none;
+            }
+    </style>
+</head>
+<body class="bg-white p-8">
+
+    <!-- Print Button (hidden on print) -->
+    <div class="no-print mb-4 flex justify-end gap-3">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+            <i class="fas fa-print"></i>
+            Print Report
+        </button>
+        <button onclick="window.close()" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2">
+            <i class="fas fa-times"></i>
+            Close
+        </button>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <div class="print-header">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="fas fa-gamepad text-blue-600 text-4xl"></i>
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Station Pro</h1>
+                            <p class="text-sm text-gray-500">demo.stationpro.com</p>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Financial Report</h2>
+                    <p class="text-gray-600">Period: @periodName</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Report Generated:</p>
+                    <p class="font-semibold text-gray-900">@DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                    <p class="text-sm text-gray-500">@DateTime.Now.ToString("hh:mm tt")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-bar text-blue-600"></i>
+                Summary Statistics
+            </h3>
+
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <!-- Total Revenue -->
+                <div class="stat-card text-center">
+                    <i class="fas fa-dollar-sign text-3xl text-green-600 mb-2"></i>
+                    <div class="text-2xl font-bold text-gray-900">EGP @Model.Summary.TotalRevenue.ToString("N2")</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">TOTAL REVENUE</div>
+                </div>
+
+                <!-- Total Sessions -->
+                <div class="stat-card text-center">
+                    <i class="fas fa-clock text-3xl text-blue-600 mb-2"></i>
+                    <div class="text-2xl font-bold text-gray-900">@Model.Summary.TotalSessions</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">TOTAL SESSIONS</div>
+                </div>
+
+                <!-- Average Session Revenue -->
+                <div class="stat-card text-center">
+                    <i class="fas fa-chart-line text-3xl text-purple-600 mb-2"></i>
+                    <div class="text-2xl font-bold text-gray-900">EGP @Model.Summary.AverageSessionRevenue.ToString("N2")</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">AVG. SESSION REVENUE</div>
+                </div>
+
+                <!-- Completed vs Cancelled -->
+                <div class="stat-card text-center">
+                    <i class="fas fa-check-circle text-3xl text-orange-600 mb-2"></i>
+                    <div class="text-2xl font-bold text-gray-900">@Model.Summary.CompletedSessions</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">COMPLETED SESSIONS</div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <span class="text-gray-600">Most Used Device:</span>
+                    <span class="font-bold text-gray-900 ml-2">@Model.Summary.MostUsedDevice</span>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <span class="text-gray-600">Report Period:</span>
+                    <span class="font-bold text-gray-900 ml-2">
+                        @Model.Summary.StartDate.ToString("MMM dd") - @Model.Summary.EndDate.ToString("MMM dd, yyyy")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Performance -->
+        @if (Model.DevicePerformance.Any())
+        {
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-trophy text-yellow-500"></i>
+                    Device Performance
+                </h3>
+
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Device</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Type</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Sessions</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Usage Time</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Utilization</th>
+                            <th class="border border-gray-300 px-4 py-3 text-right font-semibold text-gray-700">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var device in Model.DevicePerformance)
+                        {
+                            <tr class="device-row">
+                                <td class="border border-gray-300 px-4 py-3 font-semibold text-gray-900">@device.DeviceName</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-700">@device.DeviceType</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-900">@device.SessionCount</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center text-gray-700">
+                                    @((int)device.TotalUsageTime.TotalHours)h @device.TotalUsageTime.Minutes)m
+                                </td>
+                                <td class="border border-gray-300 px-4 py-3 text-center font-semibold text-blue-600">
+                                    @device.UtilizationPercentage.ToString("N1")%
+                                </td>
+                                <td class="border border-gray-300 px-4 py-3 text-right font-bold text-green-600">
+                                    EGP @device.TotalRevenue.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-100 font-bold">
+                            <td colspan="2" class="border border-gray-300 px-4 py-3 text-right">TOTAL:</td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">@Model.DevicePerformance.Sum(d => d.SessionCount)</td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                @{
+                                    var totalHours = (int)Model.DevicePerformance.Sum(d => d.TotalUsageTime.TotalMinutes) / 60;
+                                    var totalMins = (int)Model.DevicePerformance.Sum(d => d.TotalUsageTime.TotalMinutes) % 60;
+                                }
+                                @totalHours)h @totalMins)m
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3"></td>
+                            <td class="border border-gray-300 px-4 py-3 text-right text-green-600">
+                                EGP @Model.DevicePerformance.Sum(d => d.TotalRevenue).ToString("N2")
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+
+        <!-- Page Break for Print -->
+        <div class="page-break"></div>
+
+        <!-- Session Details -->
+        @if (Model.Sessions.Any())
+        {
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-list text-blue-600"></i>
+                    Session Details (@Model.Sessions.Count sessions)
+                </h3>
+
+                <table class="w-full border-collapse border border-gray-300 text-sm">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Date & Time</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Device</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Customer</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Duration</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Rate</th>
+                            <th class="border border-gray-300 px-3 py-2 text-right font-semibold text-gray-700">Total</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Status</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var session in Model.Sessions)
+                        {
+                            <tr>
+                                <td class="border border-gray-300 px-3 py-2">
+                                    <div class="font-semibold text-gray-900">@session.StartTime.ToString("MMM dd, yyyy")</div>
+                                    <div class="text-xs text-gray-500">@session.StartTime.ToString("hh:mm tt")</div>
+                                </td>
+                                <td class="border border-gray-300 px-3 py-2">
+                                    <div class="font-semibold text-gray-900">@session.DeviceName</div>
+                                    <div class="text-xs text-gray-500">@session.DeviceType</div>
+                                </td>
+                                <td class="border border-gray-300 px-3 py-2 text-gray-700">
+                                    @(session.CustomerName ?? "Guest")
+                                </td>
+                                <td class="border border-gray-300 px-3 py-2 text-center font-mono">
+                                    @session.DurationFormatted
+                                </td>
+                                <td class="border border-gray-300 px-3 py-2 text-center text-gray-700">
+                                    EGP @session.HourlyRate.ToString("N2")
+                                </td>
+                                <td class="border border-gray-300 px-3 py-2 text-right font-bold text-green-600">
+                                    EGP @session.TotalCost.ToString("N2")
+                                </td>
+                                <td class="border border-gray-300 px-3 py-2 text-center">
+                                    <span class="inline-block px-2 py-1 rounded text-xs font-semibold
+                                        @(session.Status == "Completed" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")">
+                                        @session.Status
+                                    </span>
+                                </td>
+                                <td class="border border-gray-300 px-3 py-2 text-center text-gray-700">
+                                    @session.PaymentMethod
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <!-- Footer -->
+        <div class="mt-8 pt-4 border-t-2 border-gray-300 text-center text-sm text-gray-500">
+            <p>This is a computer-generated report from Station Pro</p>
+            <p>© @DateTime.Now.Year Station Pro - Gaming Station Management System</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Auto-print dialog on load (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+
+</body>
+</html>
