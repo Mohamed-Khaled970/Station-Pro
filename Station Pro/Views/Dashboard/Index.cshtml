@@ -66,6 +66,7 @@
 
             <!-- Quick Actions (1 column) -->
             <div class="space-y-6">
+
                 <!-- Quick Actions Card -->
                 <div class="card p-6 fade-in">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">
@@ -78,12 +79,12 @@
                             <i class="fas fa-play mr-2"></i>
                             Start New Session
                         </button>
-                        <a href="@Html.TenantUrl("Device", "Create")"
+                        <a href="@Html.TenantUrl("Device", "Index")"
                            class="btn btn-outline w-full">
                             <i class="fas fa-plus mr-2"></i>
                             Add Device
                         </a>
-                        <a href="@Html.TenantUrl("Report", "Today")"
+                        <a href="@Html.TenantUrl("Report", "Index", new { period = "today" })"
                            class="btn btn-secondary w-full">
                             <i class="fas fa-file-invoice mr-2"></i>
                             View Reports

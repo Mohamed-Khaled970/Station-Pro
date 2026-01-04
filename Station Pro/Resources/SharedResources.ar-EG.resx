@@ -1,0 +1,286 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<!-- 
+		Microsoft ResX Schema
+
+		Version 1.3
+
+		The primary goals of this format is to allow a simple XML format 
+		that is mostly human readable. The generation and parsing of the 
+		various data types are done through the TypeConverter classes 
+		associated with the data types.
+
+		Example:
+
+		... ado.net/XML headers & schema ...
+		<resheader name="resmimetype">text/microsoft-resx</resheader>
+		<resheader name="version">1.3</resheader>
+		<resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+		<resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+		<data name="Name1">this is my long string</data>
+		<data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+		<data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+			[base64 mime encoded serialized .NET Framework object]
+		</data>
+		<data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+			[base64 mime encoded string representing a byte array form of the .NET Framework object]
+		</data>
+
+		There are any number of "resheader" rows that contain simple 
+		name/value pairs.
+
+		Each data row contains a name, and value. The row also contains a 
+		type or mimetype. Type corresponds to a .NET class that support 
+		text/value conversion through the TypeConverter architecture. 
+		Classes that don't support this are serialized and stored with the 
+		mimetype set.
+
+		The mimetype is used for serialized objects, and tells the 
+		ResXResourceReader how to depersist the object. This is currently not 
+		extensible. For a given mimetype the value must be set accordingly:
+
+		Note - application/x-microsoft.net.object.binary.base64 is the format 
+		that the ResXResourceWriter will generate, however the reader can 
+		read any of the formats listed below.
+
+		mimetype: application/x-microsoft.net.object.binary.base64
+		value   : The object must be serialized with 
+			: System.Serialization.Formatters.Binary.BinaryFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.soap.base64
+		value   : The object must be serialized with 
+			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.bytearray.base64
+		value   : The object must be serialized into a byte array 
+			: using a System.ComponentModel.TypeConverter
+			: and then encoded with base64 encoding.
+	-->
+	
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>1.3</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<data name="Login" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+	<data name="StartFreeTrial" xml:space="preserve">
+    <value>ابدأ النسخة التجريبية</value>
+  </data>
+	<data name="TryFree" xml:space="preserve">
+    <value>جرب مجاناً</value>
+  </data>
+	<data name="ManageYourGamingStore" xml:space="preserve">
+    <value>أدر متجر الألعاب الخاص بك كالمحترفين</value>
+  </data>
+	<data name="HeroDescription" xml:space="preserve">
+    <value>تتبع الأجهزة، وإدارة الجلسات، وزيادة إيراداتك مع ستيشن برو - نظام الإدارة الكامل لمتاجر البلايستيشن في مصر.</value>
+  </data>
+	<data name="SeeHowItWorks" xml:space="preserve">
+    <value>شاهد كيف يعمل</value>
+  </data>
+	<data name="ActiveStores" xml:space="preserve">
+    <value>متجر نشط</value>
+  </data>
+	<data name="SessionsTracked" xml:space="preserve">
+    <value>جلسة مسجلة</value>
+  </data>
+	<data name="UserRating" xml:space="preserve">
+    <value>تقييم المستخدمين</value>
+  </data>
+	<data name="DashboardPreview" xml:space="preserve">
+    <value>معاينة لوحة التحكم</value>
+  </data>
+	<data name="TodayRevenue" xml:space="preserve">
+    <value>إيرادات اليوم</value>
+  </data>
+	<data name="ActiveDevices" xml:space="preserve">
+    <value>الأجهزة النشطة</value>
+  </data>
+	<data name="InUse" xml:space="preserve">
+    <value>قيد الاستخدام</value>
+  </data>
+	<data name="Available" xml:space="preserve">
+    <value>متاح</value>
+  </data>
+	<data name="EverythingYouNeed" xml:space="preserve">
+    <value>كل ما تحتاجه</value>
+  </data>
+	<data name="PowerfulFeatures" xml:space="preserve">
+    <value>ميزات قوية لإدارة متجرك بكفاءة</value>
+  </data>
+	<data name="RealTimeTracking" xml:space="preserve">
+    <value>التتبع في الوقت الفعلي</value>
+  </data>
+	<data name="RealTimeTrackingDesc" xml:space="preserve">
+    <value>تتبع الجلسات النشطة مع مؤقتات مباشرة وحساب التكلفة التلقائي.</value>
+  </data>
+	<data name="RevenueReports" xml:space="preserve">
+    <value>تقارير الإيرادات</value>
+  </data>
+	<data name="RevenueReportsDesc" xml:space="preserve">
+    <value>احصل على تحليلات تفصيلية يومية وأسبوعية وشهرية للإيرادات.</value>
+  </data>
+	<data name="DeviceManagement" xml:space="preserve">
+    <value>إدارة الأجهزة</value>
+  </data>
+	<data name="DeviceManagementDesc" xml:space="preserve">
+    <value>إدارة أجهزة PS5 و PS4 وأجهزة الألعاب الأخرى بسهولة.</value>
+  </data>
+	<data name="MobileFriendly" xml:space="preserve">
+    <value>متوافق مع الجوال</value>
+  </data>
+	<data name="MobileFriendlyDesc" xml:space="preserve">
+    <value>الوصول من أي مكان على أي جهاز - سطح المكتب أو الجهاز اللوحي أو الهاتف.</value>
+  </data>
+	<data name="SecureReliable" xml:space="preserve">
+    <value>آمن وموثوق</value>
+  </data>
+	<data name="SecureReliableDesc" xml:space="preserve">
+    <value>بياناتك مشفرة ويتم نسخها احتياطياً تلقائياً كل يوم.</value>
+  </data>
+	<data name="Support247" xml:space="preserve">
+    <value>دعم على مدار الساعة</value>
+  </data>
+	<data name="Support247Desc" xml:space="preserve">
+    <value>احصل على المساعدة كلما احتجت إليها مع فريق الدعم المخصص لدينا.</value>
+  </data>
+	<data name="SimplePricing" xml:space="preserve">
+    <value>أسعار بسيطة</value>
+  </data>
+	<data name="ChoosePerfectPlan" xml:space="preserve">
+    <value>اختر الخطة المثالية لمتجرك</value>
+  </data>
+	<data name="Free" xml:space="preserve">
+    <value>مجاني</value>
+  </data>
+	<data name="PerfectToStart" xml:space="preserve">
+    <value>مثالي للبدء</value>
+  </data>
+	<data name="UpTo5Devices" xml:space="preserve">
+    <value>حتى 5 أجهزة</value>
+  </data>
+	<data name="BasicReports" xml:space="preserve">
+    <value>تقارير أساسية</value>
+  </data>
+	<data name="EmailSupport" xml:space="preserve">
+    <value>دعم عبر البريد الإلكتروني</value>
+  </data>
+	<data name="GetStarted" xml:space="preserve">
+    <value>ابدأ الآن</value>
+  </data>
+	<data name="Pro" xml:space="preserve">
+    <value>احترافي</value>
+  </data>
+	<data name="MostPopular" xml:space="preserve">
+    <value>الأكثر شعبية</value>
+  </data>
+	<data name="ForGrowingStores" xml:space="preserve">
+    <value>للمتاجر المتنامية</value>
+  </data>
+	<data name="UpTo50Devices" xml:space="preserve">
+    <value>حتى 50 جهاز</value>
+  </data>
+	<data name="AdvancedAnalytics" xml:space="preserve">
+    <value>تحليلات متقدمة</value>
+  </data>
+	<data name="PrioritySupport" xml:space="preserve">
+    <value>دعم ذو أولوية</value>
+  </data>
+	<data name="CustomBranding" xml:space="preserve">
+    <value>علامة تجارية مخصصة</value>
+  </data>
+	<data name="Enterprise" xml:space="preserve">
+    <value>للشركات</value>
+  </data>
+	<data name="ForLargeOperations" xml:space="preserve">
+    <value>للعمليات الكبيرة</value>
+  </data>
+	<data name="Custom" xml:space="preserve">
+    <value>مخصص</value>
+  </data>
+	<data name="UnlimitedDevices" xml:space="preserve">
+    <value>أجهزة غير محدودة</value>
+  </data>
+	<data name="AllProFeatures" xml:space="preserve">
+    <value>جميع ميزات الاحترافي</value>
+  </data>
+	<data name="DedicatedSupport" xml:space="preserve">
+    <value>دعم مخصص</value>
+  </data>
+	<data name="CustomIntegrations" xml:space="preserve">
+    <value>تكاملات مخصصة</value>
+  </data>
+	<data name="ContactUs" xml:space="preserve">
+    <value>اتصل بنا</value>
+  </data>
+	<data name="ReadyToGrow" xml:space="preserve">
+    <value>هل أنت مستعد لتنمية متجرك؟</value>
+  </data>
+	<data name="Join500Stores" xml:space="preserve">
+    <value>انضم إلى أكثر من 500 صاحب متجر ألعاب يثقون في ستيشن برو لإدارة أعمالهم.</value>
+  </data>
+	<data name="StartFreeTrialNow" xml:space="preserve">
+    <value>ابدأ النسخة التجريبية المجانية الآن</value>
+  </data>
+	<data name="NoCreditCard" xml:space="preserve">
+    <value>لا حاجة لبطاقة ائتمان • تجربة مجانية لمدة 14 يوم</value>
+  </data>
+	<data name="MadeBy" xml:space="preserve">
+    <value>صنع بواسطة بيتا لحلول البرمجيات</value>
+  </data>
+	<data name="Terms" xml:space="preserve">
+    <value>الشروط</value>
+  </data>
+	<data name="Privacy" xml:space="preserve">
+    <value>الخصوصية</value>
+  </data>
+	<data name="Contact" xml:space="preserve">
+    <value>اتصل</value>
+  </data>
+	<data name="Support" xml:space="preserve">
+    <value>الدعم</value>
+  </data>
+	<data name="AllRightsReserved" xml:space="preserve">
+    <value>© 2024 ستيشن برو. جميع الحقوق محفوظة.</value>
+  </data>
+	
+</root>

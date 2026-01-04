@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Station Pro", "Station Pro\Station Pro.csproj", "{04ABD8B9-E60E-47D6-ADAB-504A1817BD74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StationPro", "Station Pro\StationPro.csproj", "{04ABD8B9-E60E-47D6-ADAB-504A1817BD74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StationPro.Domain", "StationPro.Domain\StationPro.Domain.csproj", "{88F973A9-E88F-47E0-83AC-27DB5BD66A96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StationPro.Domain", "StationPro.Domain\StationPro.Domain.csproj", "{88F973A9-E88F-47E0-83AC-27DB5BD66A96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StationPro.Infrastructure", "StationPro.Infrastructure\StationPro.Infrastructure.csproj", "{6E75C1AB-7D1E-418A-93DF-F2314F20F18F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StationPro.Infrastructure", "StationPro.Infrastructure\StationPro.Infrastructure.csproj", "{6E75C1AB-7D1E-418A-93DF-F2314F20F18F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StationPro.Application", "StationPro.Application\StationPro.Application.csproj", "{1B4D6112-DF8A-420A-830B-6635BF2D9CE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StationPro.Application", "StationPro.Application\StationPro.Application.csproj", "{1B4D6112-DF8A-420A-830B-6635BF2D9CE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

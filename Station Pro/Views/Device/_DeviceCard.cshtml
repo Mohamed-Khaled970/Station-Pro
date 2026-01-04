@@ -68,7 +68,7 @@
                     </span>
                 </div>
                 <div class="flex items-center justify-between text-xs text-gray-500">
-                    <!-- TIMER ELEMENT - Critical for session-timer.js! -->
+                    <!-- LIVE TIMER - Critical for session-timer.js! -->
                     <span>
                         <i class="fas fa-clock mr-1"></i>
                         <span class="font-mono font-bold text-blue-600"
@@ -88,9 +88,7 @@
     <div class="flex space-x-2">
         @if (Model.Status == "Available")
         {
-            <button hx-post="@Html.TenantUrl("Session", "QuickStart")?deviceId=@Model.Id"
-                    hx-target="body"
-                    hx-swap="beforeend"
+            <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name')"
                     class="btn btn-success flex-1">
                 <i class="fas fa-play mr-2"></i>
                 Start
