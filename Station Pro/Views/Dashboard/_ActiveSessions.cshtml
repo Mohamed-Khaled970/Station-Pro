@@ -1,15 +1,18 @@
 ﻿@model IEnumerable<SessionDto>
+@using Microsoft.Extensions.Localization
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
 
 @if (!Model.Any())
 {
     <div class="text-center py-12">
         <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
-        <p class="text-gray-500 font-medium">No active sessions</p>
-        <p class="text-gray-400 text-sm mt-2">Start a new session to see it here</p>
+        <p class="text-gray-500 font-medium">@Localizer["NoActiveSessions"]</p>
+        <p class="text-gray-400 text-sm mt-2">@Localizer["StartSessionToSee"]</p>
         <button onclick="openModal('start-session-modal')"
                 class="btn btn-primary mt-4">
             <i class="fas fa-play mr-2"></i>
-            Start Session
+            @Localizer["StartSession"]
         </button>
     </div>
 }
@@ -45,7 +48,7 @@ else
                                     {
                                         <span class="flex items-center gap-1">
                                             <i class="fas fa-user-secret text-[10px] sm:text-xs"></i>
-                                            Guest
+                                            @Localizer["Guest"]
                                         </span>
                                     }
                                     <span class="flex items-center gap-1 whitespace-nowrap">
@@ -71,16 +74,16 @@ else
                                 <p class="text-sm sm:text-base lg:text-lg font-bold text-green-600 leading-tight" id="cost-@session.Id">
                                     @session.TotalCost.ToString("C")
                                 </p>
-                                <p class="text-[10px] sm:text-xs text-gray-500">@session.HourlyRate.ToString("C")/hr</p>
+                                <p class="text-[10px] sm:text-xs text-gray-500">@session.HourlyRate.ToString("C")/@Localizer["hr"]</p>
                             </div>
 
-                            <!-- End Button - Wrapped in constraining div with responsive sizing -->
+                            <!-- End Button -->
                             <div class="flex-shrink-0 btn-end-wrapper">
                                 <button data-session-id="@session.Id"
                                         onclick="endSessionWithReceipt(this.getAttribute('data-session-id'))"
                                         class="btn btn-danger btn-end-responsive">
                                     <i class="fas fa-stop btn-end-icon"></i>
-                                    <span>End</span>
+                                    <span>@Localizer["End"]</span>
                                 </button>
                             </div>
                         </div>

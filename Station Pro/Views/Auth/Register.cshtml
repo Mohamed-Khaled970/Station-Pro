@@ -1,105 +1,121 @@
-﻿@{
-    ViewData["Title"] = "Create Your Store";
+﻿@using Microsoft.AspNetCore.Localization
+@using Microsoft.Extensions.Localization
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = Localizer["CreateStore"];
     Layout = null;
+
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.Culture.Name ?? "en-US";
+    var isRtl = currentCulture.StartsWith("ar");
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@currentCulture" dir="@(isRtl ? "rtl" : "ltr")">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - Station Pro</title>
+    <title>@ViewData["Title"] - @Localizer["StationPro"]</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="~/css/auth.css">
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: @(isRtl ? "'Cairo', sans-serif" : "'Inter', sans-serif");
+        }
+    </style>
 </head>
 <body class="gaming-bg min-h-screen py-12 px-4">
-
     <div class="max-w-6xl mx-auto">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
 
-            <!-- Left Side - Branding & Features -->
-            <div class="text-white space-y-8 fade-in">
+            <!-- Left/Right Side - Branding & Features -->
+            <div class="text-white space-y-8 fade-in @(isRtl ? "lg:order-2" : "")">
                 <div>
                     <div class="inline-flex items-center justify-center w-20 h-20 icon-box rounded-3xl mb-6">
                         <i class="fas fa-gamepad text-white text-3xl"></i>
                     </div>
                     <h1 class="text-5xl font-bold mb-4 leading-tight">
-                        Launch Your<br />Gaming Empire
+                        @Localizer["LaunchYourGamingEmpire"]
                     </h1>
                     <p class="text-xl text-white/90 leading-relaxed">
-                        Create your professional gaming store in minutes. Manage inventory, track sales, and grow your business with Station Pro.
+                        @Localizer["RegisterDescription"]
                     </p>
                 </div>
 
                 <!-- Feature Cards -->
                 <div class="space-y-4">
                     <div class="feature-card glass-card p-6 rounded-2xl">
-                        <div class="flex items-start space-x-4">
+                        <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-4">
                             <div class="flex-shrink-0">
                                 <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center">
                                     <i class="fas fa-rocket text-white text-xl"></i>
                                 </div>
                             </div>
                             <div>
-                                <h3 class="text-gray-900 font-semibold text-lg mb-1">Quick Setup</h3>
-                                <p class="text-gray-600">Get started in under 5 minutes with our intuitive setup wizard</p>
+                                <h3 class="text-gray-900 font-semibold text-lg mb-1">@Localizer["QuickSetup"]</h3>
+                                <p class="text-gray-600">@Localizer["QuickSetupDesc"]</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="feature-card glass-card p-6 rounded-2xl">
-                        <div class="flex items-start space-x-4">
+                        <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-4">
                             <div class="flex-shrink-0">
                                 <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
                                     <i class="fas fa-shield-alt text-white text-xl"></i>
                                 </div>
                             </div>
                             <div>
-                                <h3 class="text-gray-900 font-semibold text-lg mb-1">Secure & Reliable</h3>
-                                <p class="text-gray-600">Enterprise-grade security to protect your business data</p>
+                                <h3 class="text-gray-900 font-semibold text-lg mb-1">@Localizer["SecureReliable"]</h3>
+                                <p class="text-gray-600">@Localizer["SecureReliableDesc"]</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="feature-card glass-card p-6 rounded-2xl">
-                        <div class="flex items-start space-x-4">
+                        <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-4">
                             <div class="flex-shrink-0">
                                 <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
                                     <i class="fas fa-chart-line text-white text-xl"></i>
                                 </div>
                             </div>
                             <div>
-                                <h3 class="text-gray-900 font-semibold text-lg mb-1">Powerful Analytics</h3>
-                                <p class="text-gray-600">Track sales, inventory, and customer insights in real-time</p>
+                                <h3 class="text-gray-900 font-semibold text-lg mb-1">@Localizer["PowerfulAnalytics"]</h3>
+                                <p class="text-gray-600">@Localizer["PowerfulAnalyticsDesc"]</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Trust Badges -->
-                <div class="flex items-center space-x-8 pt-4">
+                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-8 pt-4">
                     <div class="text-center">
                         <div class="text-3xl font-bold">14</div>
-                        <div class="text-sm text-white/80">Days Free Trial</div>
+                        <div class="text-sm text-white/80">@Localizer["DaysFree"]</div>
                     </div>
                     <div class="text-center">
                         <div class="text-3xl font-bold">24/7</div>
-                        <div class="text-sm text-white/80">Support</div>
+                        <div class="text-sm text-white/80">@Localizer["Support"]</div>
                     </div>
                     <div class="text-center">
                         <div class="text-3xl font-bold">100%</div>
-                        <div class="text-sm text-white/80">Secure</div>
+                        <div class="text-sm text-white/80">@Localizer["Secure"]</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Side - Registration Form -->
-            <div class="slide-up" style="animation-delay: 0.2s">
+            <!-- Right/Left Side - Registration Form -->
+            <div class="slide-up @(isRtl ? "lg:order-1" : "")" style="animation-delay: 0.2s">
                 <div class="glass-card rounded-3xl shadow-2xl p-10">
                     <div class="mb-8">
-                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Create Your Store</h2>
-                        <p class="text-gray-600">Fill in your details to get started</p>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">@Localizer["CreateYourStore"]</h2>
+                        <p class="text-gray-600">@Localizer["RegisterSubtitle"]</p>
                     </div>
 
                     <form id="register-form" action="/register" method="POST" class="space-y-6">
@@ -107,55 +123,58 @@
                         <!-- Store Name -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-store text-indigo-600 mr-2"></i>Store Name
+                                <i class="fas fa-store text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["StoreName"]
                             </label>
                             <input type="text"
                                    name="StoreName"
                                    class="form-input w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                   placeholder="Ahmed's Gaming Store"
+                                   placeholder="@Localizer["StoreNamePlaceholder"]"
                                    required>
                         </div>
 
                         <!-- Email -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-envelope text-indigo-600 mr-2"></i>Email Address
+                                <i class="fas fa-envelope text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["EmailAddress"]
                             </label>
                             <input type="email"
                                    name="Email"
                                    class="form-input w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                   placeholder="ahmed@example.com"
+                                   placeholder="@Localizer["EmailPlaceholder"]"
+                                   dir="ltr"
                                    required>
                         </div>
 
                         <!-- Phone -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-phone text-indigo-600 mr-2"></i>Phone Number
+                                <i class="fas fa-phone text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["PhoneNumber"]
                             </label>
                             <input type="tel"
                                    name="PhoneNumber"
                                    class="form-input w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                   placeholder="01234567890"
+                                   placeholder="@Localizer["PhonePlaceholder"]"
+                                   dir="ltr"
                                    required>
                         </div>
 
                         <!-- Password -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-lock text-indigo-600 mr-2"></i>Password
+                                <i class="fas fa-lock text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Password"]
                             </label>
                             <div class="relative">
                                 <input type="password"
                                        name="Password"
                                        id="password"
-                                       class="form-input w-full px-4 py-3.5 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                       placeholder="••••••••"
+                                       class="form-input w-full px-4 py-3.5 @(isRtl ? "pl-12" : "pr-12") border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                                       placeholder="@Localizer["PasswordPlaceholder"]"
                                        minlength="6"
+                                       dir="ltr"
                                        required>
                                 <button type="button"
                                         onclick="togglePassword('password')"
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        class="absolute @(isRtl ? "left-4" : "right-4") top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -164,49 +183,50 @@
                         <!-- Confirm Password -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-lock text-indigo-600 mr-2"></i>Confirm Password
+                                <i class="fas fa-lock text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["ConfirmPassword"]
                             </label>
                             <div class="relative">
                                 <input type="password"
                                        name="ConfirmPassword"
                                        id="confirm-password"
-                                       class="form-input w-full px-4 py-3.5 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                       placeholder="••••••••"
+                                       class="form-input w-full px-4 py-3.5 @(isRtl ? "pl-12" : "pr-12") border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                                       placeholder="@Localizer["PasswordPlaceholder"]"
+                                       dir="ltr"
                                        required>
                                 <button type="button"
                                         onclick="togglePassword('confirm-password')"
-                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        class="absolute @(isRtl ? "left-4" : "right-4") top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <p class="form-error hidden" id="password-match-error">Passwords don't match</p>
+                            <p class="form-error hidden" id="password-match-error">@Localizer["PasswordMismatch"]</p>
                         </div>
 
                         <!-- Terms -->
-                        <div class="flex items-start space-x-3">
+                        <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-3">
                             <input type="checkbox"
                                    id="terms"
                                    class="mt-1 w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                    required>
                             <label for="terms" class="text-sm text-gray-600 leading-relaxed">
-                                I agree to the <a href="#" class="text-indigo-600 hover:underline font-medium">Terms & Conditions</a>
-                                and <a href="#" class="text-indigo-600 hover:underline font-medium">Privacy Policy</a>
+                                @Localizer["AgreeToTerms"] <a href="#" class="text-indigo-600 hover:underline font-medium">@Localizer["TermsAndConditions"]</a>
+                                @Localizer["And"] <a href="#" class="text-indigo-600 hover:underline font-medium">@Localizer["PrivacyPolicy"]</a>
                             </label>
                         </div>
 
                         <!-- Submit Button -->
                         <button type="submit" class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base shadow-lg">
-                            <i class="fas fa-rocket mr-2"></i>
-                            Create My Store
+                            <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
+                            @Localizer["CreateMyStore"]
                         </button>
                     </form>
 
                     <!-- Login Link -->
                     <div class="mt-8 text-center">
                         <p class="text-gray-600">
-                            Already have an account?
-                            <a href="@Url.Action("Login", "Auth")" class="text-indigo-600 hover:text-indigo-700 font-semibold ml-1">
-                                Login here
+                            @Localizer["AlreadyHaveAccount"]
+                            <a href="@Url.Action("Login", "Auth")" class="text-indigo-600 hover:text-indigo-700 font-semibold @(isRtl ? "mr-1" : "ml-1")">
+                                @Localizer["LoginHere"]
                             </a>
                         </p>
                     </div>

@@ -1,7 +1,10 @@
 ﻿@model DashboardStatsDto
+@using Microsoft.Extensions.Localization
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
 
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = Localizer["Dashboard"];
 }
 
 @section Styles {
@@ -15,15 +18,15 @@
         <div class="mb-8 fade-in flex justify-between items-center">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                    Welcome back! 👋
+                    @Localizer["WelcomeBack"] 👋
                 </h1>
-                <p class="text-gray-600">Here's what's happening with your store today</p>
+                <p class="text-gray-600">@Localizer["TodayStatus"]</p>
             </div>
             <button onclick="refreshDashboard()"
                     id="refresh-btn"
                     class="btn btn-primary flex items-center gap-2">
                 <i class="fas fa-sync-alt" id="refresh-icon"></i>
-                Refresh
+                @Localizer["Refresh"]
             </button>
         </div>
 
@@ -44,11 +47,11 @@
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold text-gray-900">
                             <i class="fas fa-clock text-blue-600 mr-2"></i>
-                            Active Sessions
+                            @Localizer["ActiveSessions"]
                         </h2>
                         <span class="text-sm text-gray-500">
                             <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
-                            Updates every 15s
+                            @Localizer["UpdatesEvery15s"]
                         </span>
                     </div>
 
@@ -58,7 +61,7 @@
                          hx-swap="innerHTML">
                         <div class="text-center py-12">
                             <div class="loading mx-auto mb-4"></div>
-                            <p class="text-gray-500">Loading sessions...</p>
+                            <p class="text-gray-500">@Localizer["LoadingSessions"]</p>
                         </div>
                     </div>
                 </div>
@@ -71,23 +74,23 @@
                 <div class="card p-6 fade-in">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">
                         <i class="fas fa-bolt text-yellow-500 mr-2"></i>
-                        Quick Actions
+                        @Localizer["QuickActions"]
                     </h3>
                     <div class="space-y-3">
                         <button onclick="openModal('start-session-modal')"
                                 class="btn btn-primary w-full">
                             <i class="fas fa-play mr-2"></i>
-                            Start New Session
+                            @Localizer["StartNewSession"]
                         </button>
                         <a href="@Html.TenantUrl("Device", "Index")"
                            class="btn btn-outline w-full">
                             <i class="fas fa-plus mr-2"></i>
-                            Add Device
+                            @Localizer["AddDevice"]
                         </a>
                         <a href="@Html.TenantUrl("Report", "Index", new { period = "today" })"
                            class="btn btn-secondary w-full">
                             <i class="fas fa-file-invoice mr-2"></i>
-                            View Reports
+                            @Localizer["ViewReports"]
                         </a>
                     </div>
                 </div>
@@ -96,23 +99,23 @@
                 <div class="card p-6 fade-in">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">
                         <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
-                        Today's Summary
+                        @Localizer["TodaySummary"]
                     </h3>
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Revenue</span>
+                            <span class="text-gray-600">@Localizer["Revenue"]</span>
                             <span class="font-bold text-green-600">@Model.TodayRevenue.ToString("C")</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Total Sessions</span>
+                            <span class="text-gray-600">@Localizer["TotalSessions"]</span>
                             <span class="font-bold text-gray-900">@Model.TotalSessions</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Avg. Session</span>
+                            <span class="text-gray-600">@Localizer["AvgSession"]</span>
                             <span class="font-bold text-gray-900">@Model.AverageSessionCost.ToString("C")</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Device Usage</span>
+                            <span class="text-gray-600">@Localizer["DeviceUsage"]</span>
                             <span class="font-bold text-blue-600">@Model.ActiveDevices/@Model.TotalDevices</span>
                         </div>
                     </div>
@@ -123,12 +126,12 @@
                     <div class="flex items-start space-x-3">
                         <i class="fas fa-question-circle text-2xl mt-1"></i>
                         <div>
-                            <h4 class="font-bold mb-2">Need Help?</h4>
+                            <h4 class="font-bold mb-2">@Localizer["NeedHelp"]</h4>
                             <p class="text-sm text-blue-100 mb-3">
-                                Check our guide or contact support
+                                @Localizer["CheckGuideOrSupport"]
                             </p>
                             <button class="text-sm font-semibold hover:underline">
-                                View Guide →
+                                @Localizer["ViewGuide"] →
                             </button>
                         </div>
                     </div>
@@ -142,11 +145,11 @@
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-gray-900">
                         <i class="fas fa-gamepad text-blue-600 mr-2"></i>
-                        All Devices
+                        @Localizer["AllDevices"]
                     </h2>
                     <a href="@Html.TenantUrl("Device", "Index")"
                        class="text-blue-600 hover:text-blue-700 font-semibold text-sm">
-                        View All →
+                        @Localizer["ViewAll"] →
                     </a>
                 </div>
 
@@ -166,35 +169,35 @@
 <div id="start-session-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="text-xl font-bold text-gray-900">Start New Session</h3>
+            <h3 class="text-xl font-bold text-gray-900">@Localizer["StartNewSession"]</h3>
         </div>
         <form hx-post="@Html.TenantUrl("Session", "Start")"
               hx-target="#active-sessions-container"
               hx-on::after-request="closeModal('start-session-modal')">
             <div class="modal-body space-y-4">
                 <div>
-                    <label class="form-label">Select Device</label>
+                    <label class="form-label">@Localizer["SelectDevice"]</label>
                     <select name="DeviceId" class="form-input" required>
-                        <option value="">Choose a device...</option>
+                        <option value="">@Localizer["ChooseDevice"]</option>
                     </select>
                 </div>
                 <div>
-                    <label class="form-label">Customer Name (Optional)</label>
-                    <input type="text" name="CustomerName" class="form-input" placeholder="Enter customer name">
+                    <label class="form-label">@Localizer["CustomerNameOptional"]</label>
+                    <input type="text" name="CustomerName" class="form-input" placeholder="@Localizer["EnterCustomerName"]">
                 </div>
                 <div>
-                    <label class="form-label">Customer Phone (Optional)</label>
+                    <label class="form-label">@Localizer["CustomerPhoneOptional"]</label>
                     <input type="tel" name="CustomerPhone" class="form-input" placeholder="01234567890">
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeModal('start-session-modal')"
                         class="btn btn-secondary">
-                    Cancel
+                    @Localizer["Cancel"]
                 </button>
                 <button type="submit" class="btn btn-success">
                     <i class="fas fa-play mr-2"></i>
-                    Start Session
+                    @Localizer["StartSession"]
                 </button>
             </div>
         </form>
@@ -212,47 +215,47 @@
 
             <!-- Title -->
             <h3 class="text-2xl font-bold text-gray-900 mb-2">
-                End Session?
+                @Localizer["EndSession"]
             </h3>
 
             <!-- Message -->
             <p class="text-gray-600 mb-2">
-                Are you sure you want to end this session?
+                @Localizer["EndSessionConfirmation"]
             </p>
 
             <!-- Session Details -->
             <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm text-gray-600">Device:</span>
+                    <span class="text-sm text-gray-600">@Localizer["Device"]:</span>
                     <span class="font-semibold text-gray-900" id="confirm-device-name">-</span>
                 </div>
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm text-gray-600">Duration:</span>
+                    <span class="text-sm text-gray-600">@Localizer["Duration"]:</span>
                     <span class="font-mono font-semibold text-blue-600" id="confirm-duration">-</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">Estimated Cost:</span>
+                    <span class="text-sm text-gray-600">@Localizer["EstimatedCost"]:</span>
                     <span class="font-bold text-green-600 text-lg" id="confirm-cost">-</span>
                 </div>
             </div>
 
             <!-- Payment Method Selection -->
             <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-700 mb-3">Payment Method</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">@Localizer["PaymentMethod"]</label>
                 <div class="grid grid-cols-2 gap-3">
                     <button type="button"
                             onclick="selectPaymentMethod(1)"
                             id="payment-cash"
                             class="payment-method-btn active">
                         <i class="fas fa-money-bill-wave text-xl mb-1"></i>
-                        <span class="block text-sm font-semibold">Cash</span>
+                        <span class="block text-sm font-semibold">@Localizer["Cash"]</span>
                     </button>
                     <button type="button"
                             onclick="selectPaymentMethod(2)"
                             id="payment-card"
                             class="payment-method-btn">
                         <i class="fas fa-credit-card text-xl mb-1"></i>
-                        <span class="block text-sm font-semibold">Card</span>
+                        <span class="block text-sm font-semibold">@Localizer["Card"]</span>
                     </button>
                 </div>
             </div>
@@ -263,20 +266,20 @@
                         onclick="closeEndSessionModal()"
                         class="flex-1 btn btn-secondary">
                     <i class="fas fa-times mr-2"></i>
-                    Cancel
+                    @Localizer["Cancel"]
                 </button>
                 <button type="button"
                         onclick="confirmEndSession()"
                         class="flex-1 btn btn-danger">
                     <i class="fas fa-stop mr-2"></i>
-                    End Session
+                    @Localizer["EndSession"]
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 🎉 RECEIPT MODAL - STAYS IN DASHBOARD VIEW (WON'T BE REFRESHED) -->
+<!-- Receipt Modal -->
 <div id="receipt-modal" class="modal-overlay hidden" style="z-index: 9999;">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div id="receipt-content" class="animate-scale-in">
@@ -291,7 +294,6 @@
 }
 
 <style>
-    /* Receipt modal animation */
     @@keyframes scale-in {
         from {
             opacity: 0;
@@ -308,7 +310,6 @@
         animation: scale-in 0.3s ease-out;
     }
 
-    /* Ensure modal appears above everything */
     #receipt-modal {
         backdrop-filter: blur(4px);
         background-color: rgba(0, 0, 0, 0.5);

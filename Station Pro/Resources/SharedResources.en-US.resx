@@ -1,288 +1,812 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-	<!-- 
-		Microsoft ResX Schema
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
 
-		Version 1.3
-
-		The primary goals of this format is to allow a simple XML format 
-		that is mostly human readable. The generation and parsing of the 
-		various data types are done through the TypeConverter classes 
-		associated with the data types.
-
-		Example:
-
-		... ado.net/XML headers & schema ...
-		<resheader name="resmimetype">text/microsoft-resx</resheader>
-		<resheader name="version">1.3</resheader>
-		<resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-		<resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-		<data name="Name1">this is my long string</data>
-		<data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-		<data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-			[base64 mime encoded serialized .NET Framework object]
-		</data>
-		<data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-			[base64 mime encoded string representing a byte array form of the .NET Framework object]
-		</data>
-
-		There are any number of "resheader" rows that contain simple 
-		name/value pairs.
-
-		Each data row contains a name, and value. The row also contains a 
-		type or mimetype. Type corresponds to a .NET class that support 
-		text/value conversion through the TypeConverter architecture. 
-		Classes that don't support this are serialized and stored with the 
-		mimetype set.
-
-		The mimetype is used for serialized objects, and tells the 
-		ResXResourceReader how to depersist the object. This is currently not 
-		extensible. For a given mimetype the value must be set accordingly:
-
-		Note - application/x-microsoft.net.object.binary.base64 is the format 
-		that the ResXResourceWriter will generate, however the reader can 
-		read any of the formats listed below.
-
-		mimetype: application/x-microsoft.net.object.binary.base64
-		value   : The object must be serialized with 
-			: System.Serialization.Formatters.Binary.BinaryFormatter
-			: and then encoded with base64 encoding.
-
-		mimetype: application/x-microsoft.net.object.soap.base64
-		value   : The object must be serialized with 
-			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-			: and then encoded with base64 encoding.
-
-		mimetype: application/x-microsoft.net.object.bytearray.base64
-		value   : The object must be serialized into a byte array 
-			: using a System.ComponentModel.TypeConverter
-			: and then encoded with base64 encoding.
-	-->
-	
-	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-		<xsd:element name="root" msdata:IsDataSet="true">
-			<xsd:complexType>
-				<xsd:choice maxOccurs="unbounded">
-					<xsd:element name="data">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
-							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="resheader">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" use="required" />
-						</xsd:complexType>
-					</xsd:element>
-				</xsd:choice>
-			</xsd:complexType>
-		</xsd:element>
-	</xsd:schema>
-	<resheader name="resmimetype">
-		<value>text/microsoft-resx</value>
-	</resheader>
-	<resheader name="version">
-		<value>1.3</value>
-	</resheader>
-	<resheader name="reader">
-		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
-	<resheader name="writer">
-		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
-
-
-	<data name="Login" xml:space="preserve">
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Login" xml:space="preserve">
     <value>Login</value>
   </data>
-	<data name="StartFreeTrial" xml:space="preserve">
+  <data name="StartFreeTrial" xml:space="preserve">
     <value>Start Free Trial</value>
   </data>
-	<data name="TryFree" xml:space="preserve">
+  <data name="TryFree" xml:space="preserve">
     <value>Try Free</value>
   </data>
-	<data name="ManageYourGamingStore" xml:space="preserve">
+  <data name="ManageYourGamingStore" xml:space="preserve">
     <value>Manage Your Gaming Store Like a Pro</value>
   </data>
-	<data name="HeroDescription" xml:space="preserve">
+  <data name="HeroDescription" xml:space="preserve">
     <value>Track devices, manage sessions, and grow your revenue with Station Pro - The complete management system for PlayStation stores in Egypt.</value>
   </data>
-	<data name="SeeHowItWorks" xml:space="preserve">
+  <data name="SeeHowItWorks" xml:space="preserve">
     <value>See How It Works</value>
   </data>
-	<data name="ActiveStores" xml:space="preserve">
+  <data name="ActiveStores" xml:space="preserve">
     <value>Active Stores</value>
   </data>
-	<data name="SessionsTracked" xml:space="preserve">
+  <data name="SessionsTracked" xml:space="preserve">
     <value>Sessions Tracked</value>
   </data>
-	<data name="UserRating" xml:space="preserve">
+  <data name="UserRating" xml:space="preserve">
     <value>User Rating</value>
   </data>
-	<data name="DashboardPreview" xml:space="preserve">
+  <data name="DashboardPreview" xml:space="preserve">
     <value>Dashboard Preview</value>
   </data>
-	<data name="TodayRevenue" xml:space="preserve">
+  <data name="TodayRevenue" xml:space="preserve">
     <value>Today's Revenue</value>
   </data>
-	<data name="ActiveDevices" xml:space="preserve">
+  <data name="ActiveDevices" xml:space="preserve">
     <value>Active Devices</value>
   </data>
-	<data name="InUse" xml:space="preserve">
+  <data name="InUse" xml:space="preserve">
     <value>In Use</value>
   </data>
-	<data name="Available" xml:space="preserve">
+  <data name="Available" xml:space="preserve">
     <value>Available</value>
   </data>
-	<data name="EverythingYouNeed" xml:space="preserve">
+  <data name="EverythingYouNeed" xml:space="preserve">
     <value>Everything You Need</value>
   </data>
-	<data name="PowerfulFeatures" xml:space="preserve">
+  <data name="PowerfulFeatures" xml:space="preserve">
     <value>Powerful features to run your store efficiently</value>
   </data>
-	<data name="RealTimeTracking" xml:space="preserve">
+  <data name="RealTimeTracking" xml:space="preserve">
     <value>Real-Time Tracking</value>
   </data>
-	<data name="RealTimeTrackingDesc" xml:space="preserve">
+  <data name="RealTimeTrackingDesc" xml:space="preserve">
     <value>Track active sessions with live timers and automatic cost calculation.</value>
   </data>
-	<data name="RevenueReports" xml:space="preserve">
+  <data name="RevenueReports" xml:space="preserve">
     <value>Revenue Reports</value>
   </data>
-	<data name="RevenueReportsDesc" xml:space="preserve">
+  <data name="RevenueReportsDesc" xml:space="preserve">
     <value>Get detailed daily, weekly, and monthly revenue analytics.</value>
   </data>
-	<data name="DeviceManagement" xml:space="preserve">
+  <data name="DeviceManagement" xml:space="preserve">
     <value>Device Management</value>
   </data>
-	<data name="DeviceManagementDesc" xml:space="preserve">
+  <data name="DeviceManagementDesc" xml:space="preserve">
     <value>Manage unlimited PS5, PS4, and other gaming devices easily.</value>
   </data>
-	<data name="MobileFriendly" xml:space="preserve">
+  <data name="MobileFriendly" xml:space="preserve">
     <value>Mobile Friendly</value>
   </data>
-	<data name="MobileFriendlyDesc" xml:space="preserve">
+  <data name="MobileFriendlyDesc" xml:space="preserve">
     <value>Access from anywhere on any device - desktop, tablet, or phone.</value>
+  </data>
+  <data name="SecureReliable" xml:space="preserve">
+    <value>Secure and Reliable</value>
+  </data>
+  <data name="SecureReliableDesc" xml:space="preserve">
+    <value>Your data is encrypted and backed up automatically every day.</value>
+  </data>
+  <data name="Support247" xml:space="preserve">
+    <value>24/7 Support</value>
+  </data>
+  <data name="Support247Desc" xml:space="preserve">
+    <value>Get help whenever you need it with our dedicated support team.</value>
+  </data>
+  <data name="SimplePricing" xml:space="preserve">
+    <value>Simple Pricing</value>
+  </data>
+  <data name="ChoosePerfectPlan" xml:space="preserve">
+    <value>Choose the perfect plan for your store</value>
+  </data>
+  <data name="Free" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="PerfectToStart" xml:space="preserve">
+    <value>Perfect to get started</value>
+  </data>
+  <data name="UpTo5Devices" xml:space="preserve">
+    <value>Up to 5 devices</value>
+  </data>
+  <data name="BasicReports" xml:space="preserve">
+    <value>Basic reports</value>
+  </data>
+  <data name="EmailSupport" xml:space="preserve">
+    <value>Email support</value>
+  </data>
+  <data name="GetStarted" xml:space="preserve">
+    <value>Get Started</value>
+  </data>
+  <data name="Pro" xml:space="preserve">
+    <value>Pro</value>
+  </data>
+  <data name="MostPopular" xml:space="preserve">
+    <value>MOST POPULAR</value>
+  </data>
+  <data name="ForGrowingStores" xml:space="preserve">
+    <value>For growing stores</value>
+  </data>
+  <data name="UpTo50Devices" xml:space="preserve">
+    <value>Up to 50 devices</value>
+  </data>
+  <data name="AdvancedAnalytics" xml:space="preserve">
+    <value>Advanced analytics</value>
+  </data>
+  <data name="PrioritySupport" xml:space="preserve">
+    <value>Priority support</value>
+  </data>
+  <data name="CustomBranding" xml:space="preserve">
+    <value>Custom branding</value>
+  </data>
+  <data name="Enterprise" xml:space="preserve">
+    <value>Enterprise</value>
+  </data>
+  <data name="ForLargeOperations" xml:space="preserve">
+    <value>For large operations</value>
+  </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="UnlimitedDevices" xml:space="preserve">
+    <value>Unlimited devices</value>
+  </data>
+  <data name="AllProFeatures" xml:space="preserve">
+    <value>All Pro features</value>
+  </data>
+  <data name="DedicatedSupport" xml:space="preserve">
+    <value>Dedicated support</value>
+  </data>
+  <data name="CustomIntegrations" xml:space="preserve">
+    <value>Custom integrations</value>
+  </data>
+  <data name="ContactUs" xml:space="preserve">
+    <value>Contact Us</value>
+  </data>
+  <data name="ReadyToGrow" xml:space="preserve">
+    <value>Ready to Grow Your Store?</value>
+  </data>
+  <data name="Join500Stores" xml:space="preserve">
+    <value>Join 500+ gaming store owners who trust Station Pro to manage their business.</value>
+  </data>
+  <data name="StartFreeTrialNow" xml:space="preserve">
+    <value>Start Your Free Trial Now</value>
+  </data>
+  <data name="NoCreditCard" xml:space="preserve">
+    <value>No credit card required • 14-day free trial</value>
+  </data>
+  <data name="MadeBy" xml:space="preserve">
+    <value>Made with BETA Software Solutions</value>
+  </data>
+  <data name="Terms" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="AllRightsReserved" xml:space="preserve">
+    <value>© 2024 Station Pro. All rights reserved.</value>
+  </data>
+  <data name="WelcomeBack" xml:space="preserve">
+    <value>Welcome back! 👋</value>
+  </data>
+  <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Here's what's happening with your store today</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="ActiveSessions" xml:space="preserve">
+    <value>Active Sessions</value>
+  </data>
+  <data name="TotalRevenue" xml:space="preserve">
+    <value>Total Revenue</value>
+  </data>
+  <data name="TotalSessions" xml:space="preserve">
+    <value>Total Sessions</value>
+  </data>
+  <data name="AvailableDevices" xml:space="preserve">
+    <value>Available Devices</value>
+  </data>
+  <data name="ActiveSessionsTitle" xml:space="preserve">
+    <value>Active Sessions</value>
+  </data>
+  <data name="UpdatesEvery15s" xml:space="preserve">
+    <value>Updates every 15s</value>
+  </data>
+  <data name="LoadingSessions" xml:space="preserve">
+    <value>Loading sessions...</value>
+  </data>
+  <data name="NoActiveSessions" xml:space="preserve">
+    <value>No Active Sessions</value>
+  </data>
+  <data name="NoActiveSessionsDesc" xml:space="preserve">
+    <value>Start a new session to see it here</value>
+  </data>
+  <data name="QuickActions" xml:space="preserve">
+    <value>Quick Actions</value>
+  </data>
+  <data name="StartNewSession" xml:space="preserve">
+    <value>Start New Session</value>
+  </data>
+  <data name="AddDevice" xml:space="preserve">
+    <value>Add Device</value>
+  </data>
+  <data name="ViewReports" xml:space="preserve">
+    <value>View Reports</value>
+  </data>
+  <data name="TodaysSummary" xml:space="preserve">
+    <value>Today's Summary</value>
+  </data>
+  <data name="Revenue" xml:space="preserve">
+    <value>Revenue</value>
+  </data>
+  <data name="Sessions" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+  <data name="AvgSession" xml:space="preserve">
+    <value>Avg. Session</value>
+  </data>
+  <data name="DeviceUsage" xml:space="preserve">
+    <value>Device Usage</value>
+  </data>
+  <data name="NeedHelp" xml:space="preserve">
+    <value>Need Help?</value>
+  </data>
+  <data name="NeedHelpDesc" xml:space="preserve">
+    <value>Check our guide or contact support</value>
+  </data>
+  <data name="ViewGuide" xml:space="preserve">
+    <value>View Guide →</value>
+  </data>
+  <data name="AllDevices" xml:space="preserve">
+    <value>All Devices</value>
+  </data>
+  <data name="ViewAll" xml:space="preserve">
+    <value>View All →</value>
+  </data>
+  <data name="StartSessionTitle" xml:space="preserve">
+    <value>Start New Session</value>
+  </data>
+  <data name="SelectDevice" xml:space="preserve">
+    <value>Select Device</value>
+  </data>
+  <data name="ChooseDevice" xml:space="preserve">
+    <value>Choose a device...</value>
+  </data>
+  <data name="CustomerName" xml:space="preserve">
+    <value>Customer Name (Optional)</value>
+  </data>
+  <data name="EnterCustomerName" xml:space="preserve">
+    <value>Enter customer name</value>
+  </data>
+  <data name="CustomerPhone" xml:space="preserve">
+    <value>Customer Phone (Optional)</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="StartSession" xml:space="preserve">
+    <value>Start Session</value>
+  </data>
+  <data name="EndSession" xml:space="preserve">
+    <value>End Session?</value>
+  </data>
+  <data name="EndSessionConfirm" xml:space="preserve">
+    <value>Are you sure you want to end this session?</value>
+  </data>
+  <data name="Device" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="EstimatedCost" xml:space="preserve">
+    <value>Estimated Cost</value>
+  </data>
+  <data name="PaymentMethod" xml:space="preserve">
+    <value>Payment Method</value>
+  </data>
+  <data name="Cash" xml:space="preserve">
+    <value>Cash</value>
+  </data>
+  <data name="Card" xml:space="preserve">
+    <value>Card</value>
+  </data>
+  <data name="EndSessionButton" xml:space="preserve">
+    <value>End Session</value>
+  </data>
+  <data name="Maintenance" xml:space="preserve">
+    <value>Maintenance</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="CurrentSession" xml:space="preserve">
+    <value>Current Session</value>
+  </data>
+  <data name="Guest" xml:space="preserve">
+    <value>Guest</value>
+  </data>
+  <data name="HourlyRate" xml:space="preserve">
+    <value>Hourly Rate</value>
+  </data>
+  <data name="StartSessionBtn" xml:space="preserve">
+    <value>Start Session</value>
+  </data>
+  <data name="PlayStation" xml:space="preserve">
+    <value>PlayStation</value>
+  </data>
+  <data name="Xbox" xml:space="preserve">
+    <value>Xbox</value>
+  </data>
+  <data name="PC" xml:space="preserve">
+    <value>PC</value>
+  </data>
+  <data name="PingPong" xml:space="preserve">
+    <value>Ping Pong</value>
+  </data>
+  <data name="Pool" xml:space="preserve">
+    <value>Pool</value>
+  </data>
+  <data name="Billiards" xml:space="preserve">
+    <value>Billiards</value>
+  </data>
+  <data name="StationPro" xml:space="preserve">
+    <value>Station Pro</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Devices" xml:space="preserve">
+    <value>Devices</value>
+  </data>
+  <data name="Rooms" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="Reports" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="ReportsAnalytics" xml:space="preserve">
+    <value>Reports and Analytics</value>
+  </data>
+  <data name="ReportsSubtitle" xml:space="preserve">
+    <value>Detailed insights and performance metrics for your station</value>
+  </data>
+  <data name="ExportCSV" xml:space="preserve">
+    <value>Export CSV</value>
+  </data>
+  <data name="PrintReport" xml:space="preserve">
+    <value>Print Report</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="Last7Days" xml:space="preserve">
+    <value>Last 7 Days</value>
+  </data>
+  <data name="Last30Days" xml:space="preserve">
+    <value>Last 30 Days</value>
+  </data>
+  <data name="AvgSessionRevenue" xml:space="preserve">
+    <value>Avg. Session Revenue</value>
+  </data>
+  <data name="MostUsedDevice" xml:space="preserve">
+    <value>Most Used Device</value>
+  </data>
+  <data name="CompletedSessions" xml:space="preserve">
+    <value>Completed Sessions</value>
+  </data>
+  <data name="DevicePerformance" xml:space="preserve">
+    <value>Device Performance</value>
+  </data>
+  <data name="SessionCount" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+  <data name="UsageTime" xml:space="preserve">
+    <value>Usage Time</value>
+  </data>
+  <data name="Utilization" xml:space="preserve">
+    <value>Utilization</value>
+  </data>
+  <data name="NoDeviceData" xml:space="preserve">
+    <value>No device data available</value>
+  </data>
+  <data name="SessionDetails" xml:space="preserve">
+    <value>Session Details</value>
+  </data>
+  <data name="SessionsInPeriod" xml:space="preserve">
+    <value>session(s) in this period</value>
+  </data>
+  <data name="DateTime" xml:space="preserve">
+    <value>Date and Time</value>
+  </data>
+  <data name="Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Rate" xml:space="preserve">
+    <value>Rate</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Payment" xml:space="preserve">
+    <value>Payment</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>Online</value>
+  </data>
+  <data name="NoSessionsFound" xml:space="preserve">
+    <value>No Sessions Found</value>
+  </data>
+  <data name="NoSessionsInPeriod" xml:space="preserve">
+    <value>There are no sessions in the selected time period</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Hour" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="Hours" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="Minute" xml:space="preserve">
+    <value>Minute</value>
+  </data>
+  <data name="Minutes" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
+  <data name="Second" xml:space="preserve">
+    <value>Second</value>
+  </data>
+  <data name="Seconds" xml:space="preserve">
+    <value>Seconds</value>
+  </data>
+  <data name="CheckGuideOrSupport" xml:space="preserve">
+    <value>Check Guide Or Support</value>
+  </data>
+  <data name="EndSessionConfirmation" xml:space="preserve">
+    <value>End Session Confirmation</value>
+  </data>
+  <data name="PerSession" xml:space="preserve">
+    <value>Per Session</value>
+  </data>
+  <data name="RunningNow" xml:space="preserve">
+    <value>Running Now</value>
+  </data>
+  <data name="SessionCompleted" xml:space="preserve">
+    <value>Session Completed</value>
+  </data>
+  <data name="SessionNumber" xml:space="preserve">
+    <value>Session Number</value>
+  </data>
+  <data name="ThankYouForUsing" xml:space="preserve">
+    <value>Thank You For Using</value>
+  </data>
+  <data name="TodayStatus" xml:space="preserve">
+    <value>Today Status</value>
+  </data>
+  <data name="TodaySummary" xml:space="preserve">
+    <value>Today Summary</value>
+  </data>
+  <data name="TotalAmount" xml:space="preserve">
+    <value>Total Amount</value>
+  </data>
+  <data name="TotalDuration" xml:space="preserve">
+    <value>Total Duration</value>
+  </data>
+
+
+	<!-- Authentication - Register Page -->
+	<data name="CreateStore" xml:space="preserve">
+    <value>Create Your Store</value>
+  </data>
+	<data name="LaunchYourGamingEmpire" xml:space="preserve">
+    <value>Launch Your Gaming Empire</value>
+  </data>
+	<data name="RegisterDescription" xml:space="preserve">
+    <value>Create your professional gaming store in minutes. Manage inventory, track sales, and grow your business with Station Pro.</value>
+  </data>
+	<data name="QuickSetup" xml:space="preserve">
+    <value>Quick Setup</value>
+  </data>
+	<data name="QuickSetupDesc" xml:space="preserve">
+    <value>Get started in under 5 minutes with our intuitive setup wizard</value>
   </data>
 	<data name="SecureReliable" xml:space="preserve">
     <value>Secure and Reliable</value>
   </data>
 	<data name="SecureReliableDesc" xml:space="preserve">
-    <value>Your data is encrypted and backed up automatically every day.</value>
+    <value>Enterprise-grade security to protect your business data</value>
   </data>
-	<data name="Support247" xml:space="preserve">
-    <value>24/7 Support</value>
+	<data name="PowerfulAnalytics" xml:space="preserve">
+    <value>Powerful Analytics</value>
   </data>
-	<data name="Support247Desc" xml:space="preserve">
-    <value>Get help whenever you need it with our dedicated support team.</value>
+	<data name="PowerfulAnalyticsDesc" xml:space="preserve">
+    <value>Track sales, inventory, and customer insights in real-time</value>
   </data>
-	<data name="SimplePricing" xml:space="preserve">
-    <value>Simple Pricing</value>
+	<data name="DaysFree" xml:space="preserve">
+    <value>Days Free Trial</value>
   </data>
-	<data name="ChoosePerfectPlan" xml:space="preserve">
-    <value>Choose the perfect plan for your store</value>
+	<data name="Secure" xml:space="preserve">
+    <value>Secure</value>
   </data>
-	<data name="Free" xml:space="preserve">
-    <value>Free</value>
+	<data name="CreateYourStore" xml:space="preserve">
+    <value>Create Your Store</value>
   </data>
-	<data name="PerfectToStart" xml:space="preserve">
-    <value>Perfect to get started</value>
+	<data name="RegisterSubtitle" xml:space="preserve">
+    <value>Fill in your details to get started</value>
   </data>
-	<data name="UpTo5Devices" xml:space="preserve">
-    <value>Up to 5 devices</value>
+	<data name="StoreName" xml:space="preserve">
+    <value>Store Name</value>
   </data>
-	<data name="BasicReports" xml:space="preserve">
-    <value>Basic reports</value>
+	<data name="StoreNamePlaceholder" xml:space="preserve">
+    <value>Ahmed's Gaming Store</value>
   </data>
-	<data name="EmailSupport" xml:space="preserve">
-    <value>Email support</value>
+	<data name="PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
   </data>
-	<data name="GetStarted" xml:space="preserve">
-    <value>Get Started</value>
+	<data name="PhonePlaceholder" xml:space="preserve">
+    <value>01234567890</value>
   </data>
-	<data name="Pro" xml:space="preserve">
-    <value>Pro</value>
+	<data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirm Password</value>
   </data>
-	<data name="MostPopular" xml:space="preserve">
-    <value>MOST POPULAR</value>
+	<data name="PasswordMismatch" xml:space="preserve">
+    <value>Passwords don't match</value>
   </data>
-	<data name="ForGrowingStores" xml:space="preserve">
-    <value>For growing stores</value>
+	<data name="AgreeToTerms" xml:space="preserve">
+    <value>I agree to the</value>
   </data>
-	<data name="UpTo50Devices" xml:space="preserve">
-    <value>Up to 50 devices</value>
+	<data name="TermsAndConditions" xml:space="preserve">
+    <value>Terms and Conditions</value>
   </data>
-	<data name="AdvancedAnalytics" xml:space="preserve">
-    <value>Advanced analytics</value>
+	<data name="And" xml:space="preserve">
+    <value>and</value>
   </data>
-	<data name="PrioritySupport" xml:space="preserve">
-    <value>Priority support</value>
+	<data name="PrivacyPolicy" xml:space="preserve">
+    <value>Privacy Policy</value>
   </data>
-	<data name="CustomBranding" xml:space="preserve">
-    <value>Custom branding</value>
+	<data name="CreateMyStore" xml:space="preserve">
+    <value>Create My Store</value>
   </data>
-	<data name="Enterprise" xml:space="preserve">
-    <value>Enterprise</value>
+	<data name="AlreadyHaveAccount" xml:space="preserve">
+    <value>Already have an account?</value>
   </data>
-	<data name="ForLargeOperations" xml:space="preserve">
-    <value>For large operations</value>
+	<data name="LoginHere" xml:space="preserve">
+    <value>Login here</value>
   </data>
-	<data name="Custom" xml:space="preserve">
-    <value>Custom</value>
+
+	<data name="Login" xml:space="preserve">
+    <value>Login</value>
   </data>
-	<data name="UnlimitedDevices" xml:space="preserve">
-    <value>Unlimited devices</value>
+	<data name="WelcomeBack" xml:space="preserve">
+    <value>Welcome Back to</value>
   </data>
-	<data name="AllProFeatures" xml:space="preserve">
-    <value>All Pro features</value>
+	<data name="LoginDescription" xml:space="preserve">
+    <value>Access your gaming store dashboard and continue managing your business with powerful tools and insights.</value>
   </data>
-	<data name="DedicatedSupport" xml:space="preserve">
-    <value>Dedicated support</value>
+	<data name="RealtimeDashboard" xml:space="preserve">
+    <value>Real-time Dashboard</value>
   </data>
-	<data name="CustomIntegrations" xml:space="preserve">
-    <value>Custom integrations</value>
+	<data name="RealtimeDashboardDesc" xml:space="preserve">
+    <value>Monitor your sales, inventory, and performance metrics instantly</value>
   </data>
-	<data name="ContactUs" xml:space="preserve">
-    <value>Contact Us</value>
+	<data name="AccessAnywhere" xml:space="preserve">
+    <value>Access Anywhere</value>
   </data>
-	<data name="ReadyToGrow" xml:space="preserve">
-    <value>Ready to Grow Your Store?</value>
+	<data name="AccessAnywhereDesc" xml:space="preserve">
+    <value>Manage your store from any device, anytime, anywhere</value>
   </data>
-	<data name="Join500Stores" xml:space="preserve">
-    <value>Join 500+ gaming store owners who trust Station Pro to manage their business.</value>
+	<data name="CustomerManagement" xml:space="preserve">
+    <value>Customer Management</value>
   </data>
-	<data name="StartFreeTrialNow" xml:space="preserve">
-    <value>Start Your Free Trial Now</value>
+	<data name="CustomerManagementDesc" xml:space="preserve">
+    <value>Track customer orders and build lasting relationships</value>
   </data>
-	<data name="NoCreditCard" xml:space="preserve">
-    <value>No credit card required • 14-day free trial</value>
+	<data name="ActiveStores" xml:space="preserve">
+    <value>Active Stores</value>
   </data>
-	<data name="MadeBy" xml:space="preserve">
-    <value>Made with BETA Software Solutions</value>
-  </data>
-	<data name="Terms" xml:space="preserve">
-    <value>Terms</value>
-  </data>
-	<data name="Privacy" xml:space="preserve">
-    <value>Privacy</value>
-  </data>
-	<data name="Contact" xml:space="preserve">
-    <value>Contact</value>
+	<data name="UserRating" xml:space="preserve">
+    <value>User Rating</value>
   </data>
 	<data name="Support" xml:space="preserve">
     <value>Support</value>
   </data>
-	<data name="AllRightsReserved" xml:space="preserve">
-    <value>© 2024 Station Pro. All rights reserved.</value>
+	<data name="WelcomeBackTitle" xml:space="preserve">
+    <value>Welcome Back!</value>
   </data>
-	
+	<data name="LoginSubtitle" xml:space="preserve">
+    <value>Login to access your store dashboard</value>
+  </data>
+	<data name="EmailAddress" xml:space="preserve">
+    <value>Email Address</value>
+  </data>
+	<data name="EmailPlaceholder" xml:space="preserve">
+    <value>ahmed@example.com</value>
+  </data>
+	<data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+	<data name="PasswordPlaceholder" xml:space="preserve">
+    <value>••••••••</value>
+  </data>
+	<data name="RememberMe" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+	<data name="ForgotPassword" xml:space="preserve">
+    <value>Forgot password?</value>
+  </data>
+	<data name="LoginButton" xml:space="preserve">
+    <value>Login to Dashboard</value>
+  </data>
+	<data name="NoAccount" xml:space="preserve">
+    <value>Don't have an account?</value>
+  </data>
+	<data name="CreateAccount" xml:space="preserve">
+    <value>Create one now</value>
+  </data>
 	
 </root>

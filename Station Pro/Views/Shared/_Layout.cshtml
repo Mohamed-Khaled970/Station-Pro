@@ -1,5 +1,16 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using Microsoft.AspNetCore.Localization
+@using Microsoft.Extensions.Localization
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.Culture.Name ?? "en-US";
+    var isRtl = currentCulture.StartsWith("ar");
+}
+
+<!DOCTYPE html>
+<html lang="@currentCulture" dir="@(isRtl ? "rtl" : "ltr")">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,21 +33,19 @@
 
     <style>
         @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        <link rel="stylesheet" href="~/css/global.css" >
     </style>
 </head>
 <body class="bg-gray-50">
-
 
     <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo & Store Name -->
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-2">
+                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-4">
+                    <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2">
                         <i class="fas fa-gamepad text-blue-600 text-2xl"></i>
                         <div>
                             <h1 class="text-xl font-bold text-gray-900">Station Pro</h1>
@@ -46,41 +55,44 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden md:flex items-center space-x-1">
-                    <a href="/Dashboard/Index"
+                <div class="hidden md:flex items-center @(isRtl ? "space-x-reverse" : "") space-x-1">
+                    <a href="@Html.TenantUrl("Dashboard", "Index")"
                        class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                        <i class="fas fa-chart-line @(isRtl ? "ml-2" : "mr-2")"></i>  @Localizer["Dashboard"]
                     </a>
-                    <a href="/Device/Index"
+                    <a href="@Html.TenantUrl("Device", "Index")"
                        class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                        <i class="fas fa-gamepad mr-2"></i>Devices
+                        <i class="fas fa-gamepad @(isRtl ? "ml-2" : "mr-2")"></i>  @Localizer["Devices"]
                     </a>
-                    <a href="/Session/Index"
+                    <a href="@Html.TenantUrl("Session", "Index")"
                        class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                        <i class="fas fa-clock mr-2"></i>Sessions
+                        <i class="fas fa-clock @(isRtl ? "ml-2" : "mr-2")"></i>  @Localizer["Sessions"]
                     </a>
-                    <a href="/Room/Index"
+                    <a href="@Html.TenantUrl("Room", "Index")"
                        class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                        <i class="fas fa-door-open mr-2"></i>Rooms
+                        <i class="fas fa-door-open @(isRtl ? "ml-2" : "mr-2")"></i>  @Localizer["Rooms"]
                     </a>
-                    <a href="/Report/Index"
+                    <a href="@Html.TenantUrl("Report", "Index")"
                        class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
-                        <i class="fas fa-file-invoice-dollar mr-2"></i>Reports
+                        <i class="fas fa-file-invoice-dollar @(isRtl ? "ml-2" : "mr-2")"></i>  @Localizer["Reports"]
                     </a>
                 </div>
 
-                <!-- User Menu - Fixed positioning -->
-                <div class="flex items-center space-x-3">
+                <!-- User Menu -->
+                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-3">
+
+
+
                     <!-- Notifications -->
                     <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
                         <i class="fas fa-bell text-xl"></i>
-                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                        <span class="absolute top-0 @(isRtl ? "left-0" : "right-0") w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
 
-                    <!-- Logout - Fixed with margin -->
-                    <a href="/logout" class="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all ml-2">
+                    <!-- Logout -->
+                    <a href="/logout" class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all @(isRtl ? "mr-2" : "ml-2")">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span class="font-medium">Logout</span>
+                        <span class="font-medium">@Localizer["Logout"]</span>
                     </a>
                 </div>
 
@@ -94,30 +106,27 @@
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200">
             <div class="px-4 py-3 space-y-1">
-                <a href="/Dashboard/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                <a href="@Html.TenantUrl("Dashboard", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-chart-line @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Dashboard"]
                 </a>
-                <a href="/Device/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-gamepad mr-2"></i>Devices
+                <a href="@Html.TenantUrl("Device", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-gamepad @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Devices"]
                 </a>
-                <a href="/Session/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-clock mr-2"></i>Sessions
+                <a href="@Html.TenantUrl("Session", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-clock @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Sessions"]
                 </a>
-                <a href="/Room/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-door-open mr-2"></i>Rooms
+                <a href="@Html.TenantUrl("Room", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-door-open @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Rooms"]
                 </a>
-                <a href="/Report/Index" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-file-invoice-dollar mr-2"></i>Reports
+                <a href="@Html.TenantUrl("Report", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                    <i class="fas fa-file-invoice-dollar @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Reports"]
                 </a>
                 <a href="/logout" class="block px-4 py-2 rounded-lg text-red-600 hover:bg-red-50">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    <i class="fas fa-sign-out-alt @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Logout"]
                 </a>
             </div>
         </div>
     </nav>
-
-
-
 
     <!-- Main Content -->
     <main>
@@ -125,7 +134,7 @@
     </main>
 
     <!-- Toast Notifications -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    <div id="toast-container" class="fixed top-4 @(isRtl ? "left-4" : "right-4") z-50 space-y-2"></div>
 
     <!-- Global Scripts -->
     <script src="@(Url.Content("~/js/global.js"))"></script>
@@ -138,6 +147,20 @@
             const menu = document.getElementById('mobile-menu');
             menu.classList.toggle('hidden');
         }
+
+        function toggleLangDropdown() {
+            const menu = document.getElementById('langMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('langDropdown');
+            const menu = document.getElementById('langMenu');
+            if (dropdown && menu && !dropdown.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
