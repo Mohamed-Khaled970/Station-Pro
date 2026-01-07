@@ -23,6 +23,28 @@ body {
 }
 
 /* ============================================ */
+/* LOGO CONSISTENCY FIX - ENHANCED */
+/* ============================================ */
+
+/* Force consistent logo size across all pages */
+nav .fa-gamepad,
+.fa-gamepad.text-2xl,
+nav i.fa-gamepad {
+    font-size: 1.5rem !important;
+    line-height: 1 !important;
+}
+
+/* Ensure the logo container doesn't affect size */
+nav .flex.items-center i.fa-gamepad {
+    font-size: 1.5rem !important;
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* ============================================ */
 /* COMPREHENSIVE RTL SUPPORT */
 /* ============================================ */
 
@@ -63,7 +85,7 @@ body {
 }
 
 [dir="rtl"] .ml-2 {
-    margin-left: 0 !important;
+    margin-left: 9px !important;
     margin-right: 0.5rem !important;
 }
 
@@ -128,7 +150,7 @@ body {
     padding-right: 1rem !important;
 }
 
-/* Space utilities - CRITICAL FIX */
+/* Space utilities - Enhanced for better RTL support */
 [dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]) {
     margin-right: 0.25rem !important;
     margin-left: 0 !important;
@@ -151,6 +173,17 @@ body {
 
 [dir="rtl"] .space-x-6 > :not([hidden]) ~ :not([hidden]) {
     margin-right: 1.5rem !important;
+    margin-left: 0 !important;
+}
+
+/* CRITICAL: Fix for navigation link icons in RTL */
+[dir="rtl"] .nav-link i {
+    margin-left: 0.5rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="ltr"] .nav-link i {
+    margin-right: 0.5rem !important;
     margin-left: 0 !important;
 }
 

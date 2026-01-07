@@ -34,8 +34,6 @@
     <style>
         @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         @@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
-
-        <link rel="stylesheet" href="~/css/global.css" >
     </style>
 </head>
 <body class="bg-gray-50">
@@ -44,14 +42,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo & Store Name -->
-                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-4">
-                    <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2">
-                        <i class="fas fa-gamepad text-blue-600 text-2xl"></i>
-                        <div>
-                            <h1 class="text-xl font-bold text-gray-900">Station Pro</h1>
-                            <p class="text-xs text-gray-500">demo.stationpro.com</p>
-                        </div>
-                    </div>
+                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2">
+                    <i class="fas fa-gamepad text-blue-600 text-xl"></i>
+                    <span class="text-lg font-bold text-gray-900">Station Pro</span>
                 </div>
 
                 <!-- Navigation Links -->
@@ -80,9 +73,6 @@
 
                 <!-- User Menu -->
                 <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-3">
-
-
-
                     <!-- Notifications -->
                     <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
                         <i class="fas fa-bell text-xl"></i>
@@ -90,7 +80,7 @@
                     </button>
 
                     <!-- Logout -->
-                    <a href="/logout" class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all @(isRtl ? "mr-2" : "ml-2")">
+                    <a href="/logout" class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
                         <i class="fas fa-sign-out-alt"></i>
                         <span class="font-medium">@Localizer["Logout"]</span>
                     </a>
