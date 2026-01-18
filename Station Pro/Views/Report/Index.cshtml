@@ -1,7 +1,10 @@
 ﻿@model CompleteReportDto
+@using Microsoft.Extensions.Localization
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
 
 @{
-    ViewData["Title"] = "Reports & Analytics";
+    ViewData["Title"] = Localizer["Reports"];
     var selectedPeriod = ViewBag.SelectedPeriod ?? "today";
 }
 
@@ -18,10 +21,10 @@
                 <div>
                     <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                         <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
-                        Reports & Analytics
+                        @Localizer["ReportsAnalytics"]
                     </h1>
                     <p class="text-gray-600">
-                        Detailed insights and performance metrics for your station
+                        @Localizer["ReportsSubtitle"]
                     </p>
                 </div>
 
@@ -30,13 +33,13 @@
                     <a href="@Url.Action("ExportCsv", new { period = selectedPeriod })"
                        class="btn-export">
                         <i class="fas fa-download"></i>
-                        Export CSV
+                        @Localizer["ExportCSV"]
                     </a>
                     <a href="@Url.Action("Print", new { period = selectedPeriod })"
                        target="_blank"
                        class="btn-print">
                         <i class="fas fa-print"></i>
-                        Print Report
+                        @Localizer["PrintReport"]
                     </a>
                 </div>
             </div>
@@ -45,19 +48,19 @@
             <div class="period-tabs">
                 <a href="@Url.Action("Index", new { period = "today" })"
                    class="period-tab @(selectedPeriod == "today" ? "active" : "")">
-                    Today
+                    @Localizer["Today"]
                 </a>
                 <a href="@Url.Action("Index", new { period = "yesterday" })"
                    class="period-tab @(selectedPeriod == "yesterday" ? "active" : "")">
-                    Yesterday
+                    @Localizer["Yesterday"]
                 </a>
                 <a href="@Url.Action("Index", new { period = "week" })"
                    class="period-tab @(selectedPeriod == "week" ? "active" : "")">
-                    Last 7 Days
+                    @Localizer["Last7Days"]
                 </a>
                 <a href="@Url.Action("Index", new { period = "month" })"
                    class="period-tab @(selectedPeriod == "month" ? "active" : "")">
-                    Last 30 Days
+                    @Localizer["Last30Days"]
                 </a>
             </div>
         </div>
@@ -73,7 +76,7 @@
                     <div class="summary-stat-value">
                         EGP @Model.Summary.TotalRevenue.ToString("N2")
                     </div>
-                    <div class="summary-stat-label">Total Revenue</div>
+                    <div class="summary-stat-label">@Localizer["TotalRevenue"]</div>
                 </div>
             </div>
 
@@ -86,7 +89,7 @@
                     <div class="summary-stat-value">
                         @Model.Summary.TotalSessions
                     </div>
-                    <div class="summary-stat-label">Total Sessions</div>
+                    <div class="summary-stat-label">@Localizer["TotalSessions"]</div>
                 </div>
             </div>
 
@@ -99,7 +102,7 @@
                     <div class="summary-stat-value">
                         EGP @Model.Summary.AverageSessionRevenue.ToString("N2")
                     </div>
-                    <div class="summary-stat-label">Avg. Session Revenue</div>
+                    <div class="summary-stat-label">@Localizer["AvgSessionRevenue"]</div>
                 </div>
             </div>
 
@@ -112,7 +115,7 @@
                     <div class="summary-stat-value" style="font-size: 1.25rem;">
                         @Model.Summary.MostUsedDevice
                     </div>
-                    <div class="summary-stat-label">Most Used Device</div>
+                    <div class="summary-stat-label">@Localizer["MostUsedDevice"]</div>
                 </div>
             </div>
         </div>
@@ -122,7 +125,7 @@
             <div class="chart-header">
                 <h3 class="chart-title">
                     <i class="fas fa-trophy text-yellow-500"></i>
-                    Device Performance
+                    @Localizer["DevicePerformance"]
                 </h3>
             </div>
 
@@ -150,19 +153,19 @@
                             <div class="performance-stats">
                                 <div class="performance-stat">
                                     <div class="performance-stat-value">@device.SessionCount</div>
-                                    <div class="performance-stat-label">Sessions</div>
+                                    <div class="performance-stat-label">@Localizer["Sessions"]</div>
                                 </div>
                                 <div class="performance-stat">
                                     <div class="performance-stat-value">
-                                        @((int)device.TotalUsageTime.TotalHours)h @device.TotalUsageTime.Minutes)m
+                                        @((int)device.TotalUsageTime.TotalHours)@Localizer["hr"] @device.TotalUsageTime.Minutes@Localizer["Minute"]
                                     </div>
-                                    <div class="performance-stat-label">Usage Time</div>
+                                    <div class="performance-stat-label">@Localizer["UsageTime"]</div>
                                 </div>
                                 <div class="performance-stat">
                                     <div class="performance-stat-value">
                                         @device.UtilizationPercentage.ToString("N1")%
                                     </div>
-                                    <div class="performance-stat-label">Utilization</div>
+                                    <div class="performance-stat-label">@Localizer["Utilization"]</div>
                                 </div>
                             </div>
 
@@ -179,7 +182,7 @@
             {
                 <div class="empty-state">
                     <i class="fas fa-gamepad empty-state-icon"></i>
-                    <p class="empty-state-message">No device data available</p>
+                    <p class="empty-state-message">@Localizer["NoDeviceData"]</p>
                 </div>
             }
         </div>
@@ -189,10 +192,10 @@
             <div class="chart-header mb-4">
                 <h3 class="chart-title">
                     <i class="fas fa-list text-blue-600"></i>
-                    Session Details
+                    @Localizer["SessionDetails"]
                 </h3>
                 <p class="text-sm text-gray-500">
-                    @Model.Sessions.Count session(s) in this period
+                    @Model.Sessions.Count @Localizer["SessionsInPeriod"]
                 </p>
             </div>
 
@@ -202,14 +205,14 @@
                     <table class="sessions-table">
                         <thead>
                             <tr>
-                                <th data-sortable>Date & Time</th>
-                                <th data-sortable>Device</th>
-                                <th data-sortable>Customer</th>
-                                <th data-sortable>Duration</th>
-                                <th data-sortable>Rate</th>
-                                <th data-sortable>Total</th>
-                                <th>Status</th>
-                                <th>Payment</th>
+                                <th data-sortable>@Localizer["DateTime"]</th>
+                                <th data-sortable>@Localizer["Device"]</th>
+                                <th data-sortable>@Localizer["Customer"]</th>
+                                <th data-sortable>@Localizer["Duration"]</th>
+                                <th data-sortable>@Localizer["Rate"]</th>
+                                <th data-sortable>@Localizer["Total"]</th>
+                                <th>@Localizer["Status"]</th>
+                                <th>@Localizer["Payment"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -229,13 +232,13 @@
                                         <div class="text-xs text-gray-500">@session.DeviceType</div>
                                     </td>
                                     <td>
-                                        @(session.CustomerName ?? "Guest")
+                                        @(session.CustomerName ?? Localizer["Guest"])
                                     </td>
                                     <td class="font-mono text-sm">
                                         @session.DurationFormatted
                                     </td>
                                     <td class="font-semibold">
-                                        EGP @session.HourlyRate.ToString("N2")/hr
+                                        EGP @session.HourlyRate.ToString("N2")/@Localizer["hr"]
                                     </td>
                                     <td class="font-bold text-green-600">
                                         EGP @session.TotalCost.ToString("N2")
@@ -264,9 +267,9 @@
                     <div class="empty-state-icon">
                         <i class="fas fa-inbox"></i>
                     </div>
-                    <h4 class="empty-state-title">No Sessions Found</h4>
+                    <h4 class="empty-state-title">@Localizer["NoSessionsFound"]</h4>
                     <p class="empty-state-message">
-                        There are no sessions in the selected time period
+                        @Localizer["NoSessionsInPeriod"]
                     </p>
                 </div>
             }

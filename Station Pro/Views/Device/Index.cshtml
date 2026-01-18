@@ -1,8 +1,11 @@
 ﻿@model IEnumerable<DeviceDto>
 @using StationPro.Domain.Entities
+@using Microsoft.Extensions.Localization
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
 
 @{
-    ViewData["Title"] = "Devices";
+    ViewData["Title"] = Localizer["Devices"];
 }
 
 @section Styles {
@@ -17,14 +20,14 @@
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">
                     <i class="fas fa-gamepad text-blue-600 mr-2"></i>
-                    My Devices
+                    @Localizer["MyDevices"]
                 </h1>
-                <p class="text-gray-600">Manage all your gaming devices</p>
+                <p class="text-gray-600">@Localizer["ManageAllDevices"]</p>
             </div>
             <button onclick="openModal('add-device-modal')"
                     class="btn btn-primary mt-4 md:mt-0">
                 <i class="fas fa-plus mr-2"></i>
-                Add Device
+                @Localizer["AddDevice"]
             </button>
         </div>
 
@@ -33,7 +36,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Total Devices</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["TotalDevices"]</p>
                         <p class="text-2xl font-bold text-gray-900">@Model.Count()</p>
                     </div>
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -45,7 +48,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Available</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["Available"]</p>
                         <p class="text-2xl font-bold text-green-600">@Model.Count(d => d.Status == "Available")</p>
                     </div>
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -57,7 +60,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">In Use</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["InUse"]</p>
                         <p class="text-2xl font-bold text-red-600">@Model.Count(d => d.Status == "In Use")</p>
                     </div>
                     <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -69,7 +72,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Avg. Rate</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["AvgRate"]</p>
                         <p class="text-2xl font-bold text-purple-600">
                             @(Model.Any() ? Model.Average(d => d.HourlyRate).ToString("C") : "0 EGP")
                         </p>
@@ -89,7 +92,7 @@
                     <div class="relative">
                         <input type="text"
                                id="search-input"
-                               placeholder="Search devices..."
+                               placeholder="@Localizer["SearchDevices"]"
                                class="form-input pl-10"
                                onkeyup="filterDevices()">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -101,22 +104,22 @@
                     <button onclick="filterByStatus('all')"
                             class="filter-btn active"
                             data-filter="all">
-                        All
+                        @Localizer["All"]
                     </button>
                     <button onclick="filterByStatus('available')"
                             class="filter-btn"
                             data-filter="available">
-                        Available
+                        @Localizer["Available"]
                     </button>
                     <button onclick="filterByStatus('in-use')"
                             class="filter-btn"
                             data-filter="in-use">
-                        In Use
+                        @Localizer["InUse"]
                     </button>
                     <button onclick="filterByStatus('maintenance')"
                             class="filter-btn"
                             data-filter="maintenance">
-                        Maintenance
+                        @Localizer["Maintenance"]
                     </button>
                 </div>
             </div>
@@ -126,117 +129,7 @@
         <div id="devices-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach (var device in Model)
             {
-                var statusClass = device.Status == "Available" ? "available" :
-                device.Status == "In Use" ? "in-use" :
-                device.Status == "Maintenance" ? "maintenance" : "offline";
-                var statusFilter = device.Status == "Available" ? "available" :
-                device.Status == "In Use" ? "in-use" :
-                device.Status == "Maintenance" ? "maintenance" : "offline";
-                var iconBgClass = device.Status == "Available" ? "bg-green-100" :
-                device.Status == "In Use" ? "bg-red-100" :
-                device.Status == "Maintenance" ? "bg-yellow-100" : "bg-gray-100";
-                var iconColorClass = device.Status == "Available" ? "text-green-600" :
-                device.Status == "In Use" ? "text-red-600" :
-                device.Status == "Maintenance" ? "text-yellow-600" : "text-gray-600";
-                var statusBadgeClass = device.Status == "Available" ? "status-available" :
-                device.Status == "In Use" ? "status-in-use" :
-                device.Status == "Maintenance" ? "status-maintenance" : "status-offline";
-                var deviceIconClass = ((int)device.Type == 1 || (int)device.Type == 2 || (int)device.Type == 3) ? "fab fa-playstation" :
-                (int)device.Type == 4 ? "fab fa-xbox" :
-                (int)device.Type == 5 ? "fas fa-desktop" :
-                (int)device.Type == 6 ? "fas fa-table-tennis" :
-                ((int)device.Type == 7 || (int)device.Type == 8) ? "fas fa-circle" : "fas fa-gamepad";
-
-                <div class="device-card @statusClass fade-in"
-                     data-device-name="@device.Name.ToLower()"
-                     data-device-status="@statusFilter"
-                     data-device-id="@device.Id">
-
-                    <!-- Device Header -->
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="@iconBgClass p-3 rounded-xl">
-                                <i class="@deviceIconClass @iconColorClass text-2xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-lg text-gray-900">@device.Name</h3>
-                                <p class="text-sm text-gray-500">@device.TypeName</p>
-                            </div>
-                        </div>
-
-                        <!-- Status Badge -->
-                        <span class="status-badge @statusBadgeClass">
-                            @device.StatusName
-                        </span>
-                    </div>
-
-                    <!-- Device Details -->
-                    <div class="border-t border-gray-100 pt-4 mb-4 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Hourly Rate</span>
-                            <span class="text-lg font-bold text-blue-600">@device.HourlyRate.ToString("C")</span>
-                        </div>
-
-                        @if (device.CurrentSession != null)
-                        {
-                            <div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500">
-                                <p class="text-xs text-gray-600 mb-1">Active Session</p>
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-sm font-medium">
-                                        @(string.IsNullOrEmpty(device.CurrentSession.CustomerName) ? "Guest" : device.CurrentSession.CustomerName)
-                                    </span>
-                                    <span class="text-sm font-bold text-green-600">
-                                        @device.CurrentSession.TotalCost.ToString("C")
-                                    </span>
-                                </div>
-                                <div class="flex items-center justify-between text-xs text-gray-500">
-                                    <span>
-                                        <i class="fas fa-clock mr-1"></i>
-                                        @device.CurrentSession.DurationFormatted
-                                    </span>
-                                    <span>@device.CurrentSession.HourlyRate.ToString("C")/hr</span>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex space-x-2">
-                        @if (device.Status == "Available")
-                        {
-                            <button hx-post="@Html.TenantUrl("Session", "QuickStart")?deviceId=@device.Id"
-                                    hx-target="body"
-                                    hx-swap="beforeend"
-                                    class="btn btn-success flex-1">
-                                <i class="fas fa-play mr-2"></i>
-                                Start
-                            </button>
-                        }
-                        else if (device.Status == "In Use")
-                        {
-                            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                                <i class="fas fa-spinner fa-pulse mr-2"></i>
-                                In Use
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                                <i class="fas fa-tools mr-2"></i>
-                                @device.StatusName
-                            </button>
-                        }
-
-                        <button onclick="editDevice(@device.Id)"
-                                class="btn btn-outline">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="deleteDevice(@device.Id, '@device.Name')"
-                                class="btn btn-danger">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
+                <partial name="_DeviceCard" model="device" />
             }
         </div>
 
@@ -244,11 +137,11 @@
         {
             <div class="card p-12 text-center">
                 <i class="fas fa-gamepad text-gray-300 text-6xl mb-4"></i>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">No devices yet</h3>
-                <p class="text-gray-600 mb-6">Add your first device to get started</p>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">@Localizer["NoDevicesYet"]</h3>
+                <p class="text-gray-600 mb-6">@Localizer["AddFirstDevice"]</p>
                 <button onclick="openModal('add-device-modal')" class="btn btn-primary">
                     <i class="fas fa-plus mr-2"></i>
-                    Add First Device
+                    @Localizer["AddFirstDeviceButton"]
                 </button>
             </div>
         }
@@ -259,7 +152,7 @@
 <div id="add-device-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="text-xl font-bold text-gray-900">Add New Device</h3>
+            <h3 class="text-xl font-bold text-gray-900">@Localizer["AddNewDevice"]</h3>
         </div>
         <form id="add-device-form" hx-post="@Html.TenantUrl("Device", "Create")"
               hx-target="#devices-grid"
@@ -269,50 +162,50 @@
                 <div>
                     <label class="form-label">
                         <i class="fas fa-tag text-blue-600 mr-2"></i>
-                        Device Name
+                        @Localizer["DeviceName"]
                     </label>
                     <input type="text"
                            name="Name"
                            class="form-input"
-                           placeholder="PS5 - 1"
+                           placeholder="@Localizer["DeviceNamePlaceholder"]"
                            required>
-                    <p class="text-xs text-gray-500 mt-1">Give your device a unique name</p>
+                    <p class="text-xs text-gray-500 mt-1">@Localizer["GiveDeviceUniqueName"]</p>
                 </div>
 
                 <div>
                     <label class="form-label">
                         <i class="fas fa-gamepad text-blue-600 mr-2"></i>
-                        Device Type
+                        @Localizer["DeviceType"]
                     </label>
                     <select name="Type" class="form-input" required>
-                        <option value="">Choose device type...</option>
-                        <option value="1">🎮 PlayStation 5</option>
-                        <option value="2">🎮 PlayStation 4</option>
-                        <option value="3">🎮 PlayStation 3</option>
-                        <option value="4">🎮 Xbox</option>
-                        <option value="5">💻 PC Gaming</option>
-                        <option value="6">🏓 Ping Pong</option>
-                        <option value="7">🎱 Pool Table</option>
-                        <option value="8">🎱 Billiards</option>
-                        <option value="99">🎯 Other</option>
+                        <option value="">@Localizer["ChooseDeviceType"]</option>
+                        <option value="1">@Localizer["PlayStation5"]</option>
+                        <option value="2">@Localizer["PlayStation4"]</option>
+                        <option value="3">@Localizer["PlayStation3"]</option>
+                        <option value="4">@Localizer["XboxDevice"]</option>
+                        <option value="5">@Localizer["PCGaming"]</option>
+                        <option value="6">@Localizer["PingPongTable"]</option>
+                        <option value="7">@Localizer["PoolTable"]</option>
+                        <option value="8">@Localizer["BilliardsTable"]</option>
+                        <option value="99">@Localizer["OtherDevice"]</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="form-label">
                         <i class="fas fa-coins text-blue-600 mr-2"></i>
-                        Hourly Rate (EGP)
+                        @Localizer["HourlyRateEGP"]
                     </label>
                     <div class="relative">
                         <input type="number"
                                name="HourlyRate"
                                class="form-input"
-                               placeholder="50"
+                               placeholder="@Localizer["RatePlaceholder"]"
                                step="0.01"
                                min="0"
                                required>
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                            EGP/hour
+                            @Localizer["EGPPerHour"]
                         </span>
                     </div>
                 </div>
@@ -322,11 +215,11 @@
                         onclick="closeModal('add-device-modal')"
                         class="btn btn-secondary">
                     <i class="fas fa-times mr-2"></i>
-                    Cancel
+                    @Localizer["Cancel"]
                 </button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-plus mr-2"></i>
-                    Add Device
+                    @Localizer["AddDeviceButton"]
                 </button>
             </div>
         </form>
@@ -337,13 +230,13 @@
 <div id="edit-device-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="text-xl font-bold text-gray-900">Edit Device</h3>
+            <h3 class="text-xl font-bold text-gray-900">@Localizer["EditDevice"]</h3>
         </div>
         <form id="edit-device-form">
             <input type="hidden" id="edit-device-id" name="Id">
             <div class="modal-body space-y-4">
                 <div>
-                    <label class="form-label">Device Name</label>
+                    <label class="form-label">@Localizer["DeviceName"]</label>
                     <input type="text"
                            id="edit-device-name"
                            name="Name"
@@ -352,7 +245,7 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Hourly Rate (EGP)</label>
+                    <label class="form-label">@Localizer["HourlyRateEGP"]</label>
                     <input type="number"
                            id="edit-device-rate"
                            name="HourlyRate"
@@ -363,12 +256,12 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Status</label>
+                    <label class="form-label">@Localizer["Status"]</label>
                     <select id="edit-device-status" name="Status" class="form-input" required>
-                        <option value="1">Available</option>
-                        <option value="2">In Use</option>
-                        <option value="3">Maintenance</option>
-                        <option value="4">Offline</option>
+                        <option value="1">@Localizer["Available"]</option>
+                        <option value="2">@Localizer["InUse"]</option>
+                        <option value="3">@Localizer["Maintenance"]</option>
+                        <option value="4">@Localizer["Offline"]</option>
                     </select>
                 </div>
 
@@ -378,7 +271,7 @@
                            name="IsActive"
                            class="w-4 h-4 text-blue-600 border-gray-300 rounded">
                     <label for="edit-device-active" class="text-sm text-gray-700">
-                        Device is active
+                        @Localizer["DeviceIsActive"]
                     </label>
                 </div>
             </div>
@@ -386,11 +279,11 @@
                 <button type="button"
                         onclick="closeModal('edit-device-modal')"
                         class="btn btn-secondary">
-                    Cancel
+                    @Localizer["Cancel"]
                 </button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-2"></i>
-                    Save Changes
+                    @Localizer["SaveChanges"]
                 </button>
             </div>
         </form>

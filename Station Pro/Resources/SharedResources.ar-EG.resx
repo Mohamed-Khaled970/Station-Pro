@@ -835,4 +835,352 @@
     <value>بدء الجلسة</value>
   </data>
 
+	<!-- Sessions Page - New Localizations -->
+	<data name="ManageAllSessions" xml:space="preserve">
+  <value>إدارة جميع الجلسات</value>
+</data>
+	<data name="AvgDuration" xml:space="preserve">
+  <value>متوسط المدة</value>
+</data>
+	<data name="PopularDevice" xml:space="preserve">
+  <value>الجهاز الأكثر شعبية</value>
+</data>
+	<data name="DateRange" xml:space="preserve">
+  <value>الفترة الزمنية</value>
+</data>
+	<data name="ThisWeek" xml:space="preserve">
+  <value>هذا الأسبوع</value>
+</data>
+	<data name="ThisMonth" xml:space="preserve">
+  <value>هذا الشهر</value>
+</data>
+	<data name="AllSessions" xml:space="preserve">
+  <value>جميع الجلسات</value>
+</data>
+	<data name="Active" xml:space="preserve">
+  <value>نشط</value>
+</data>
+	<data name="AllDevices" xml:space="preserve">
+  <value>جميع الأجهزة</value>
+</data>
+	<data name="SearchCustomer" xml:space="preserve">
+  <value>البحث عن عميل...</value>
+</data>
+	<data name="ClearFilters" xml:space="preserve">
+  <value>مسح الفلاتر</value>
+</data>
+	<data name="SessionsList" xml:space="preserve">
+  <value>قائمة الجلسات</value>
+</data>
+	<data name="Results" xml:space="preserve">
+  <value>نتيجة</value>
+</data>
+	<data name="TryDifferentFilters" xml:space="preserve">
+  <value>جرب فلاتر مختلفة</value>
+</data>
+	<data name="StartTime" xml:space="preserve">
+  <value>وقت البدء</value>
+</data>
+	<data name="Cost" xml:space="preserve">
+  <value>التكلفة</value>
+</data>
+	<data name="ViewDetails" xml:space="preserve">
+  <value>عرض التفاصيل</value>
+</data>
+	<data name="PrintReceipt" xml:space="preserve">
+  <value>طباعة الإيصال</value>
+</data>
+	<data name="Page" xml:space="preserve">
+  <value>صفحة</value>
+</data>
+	<data name="Of" xml:space="preserve">
+  <value>من</value>
+</data>
+	<data name="CustomerNameOptional" xml:space="preserve">
+  <value>اسم العميل (اختياري)</value>
+</data>
+	<data name="CustomerPhoneOptional" xml:space="preserve">
+  <value>رقم هاتف العميل (اختياري)</value>
+</data>
+
+	<!-- Session Details Modal -->
+	<data name="SessionActive" xml:space="preserve">
+  <value>الجلسة نشطة</value>
+</data>
+	<data name="SessionCompleted" xml:space="preserve">
+  <value>الجلسة مكتملة</value>
+</data>
+	<data name="SessionID" xml:space="preserve">
+  <value>رقم الجلسة</value>
+</data>
+	<data name="DeviceInformation" xml:space="preserve">
+  <value>معلومات الجهاز</value>
+</data>
+	<data name="Type" xml:space="preserve">
+  <value>النوع</value>
+</data>
+	<data name="CustomerInformation" xml:space="preserve">
+  <value>معلومات العميل</value>
+</data>
+	<data name="Name" xml:space="preserve">
+  <value>الاسم</value>
+</data>
+	<data name="SessionTimeline" xml:space="preserve">
+  <value>الخط الزمني للجلسة</value>
+</data>
+	<data name="SessionStarted" xml:space="preserve">
+  <value>بدأت الجلسة</value>
+</data>
+	<data name="SessionEnded" xml:space="preserve">
+  <value>انتهت الجلسة</value>
+</data>
+	<data name="hours" xml:space="preserve">
+  <value>ساعات</value>
+</data>
+	<data name="minutes" xml:space="preserve">
+  <value>دقائق</value>
+</data>
+	<data name="PaymentSummary" xml:space="preserve">
+  <value>ملخص الدفع</value>
+</data>
+	<data name="TotalCost" xml:space="preserve">
+  <value>التكلفة الإجمالية</value>
+</data>
+
+	<!-- Additional Common Terms -->
+	<data name="StartSessionToSee" xml:space="preserve">
+  <value>ابدأ جلسة جديدة لرؤيتها هنا</value>
+</data>
+	<data name="End" xml:space="preserve">
+  <value>إنهاء</value>
+</data>
+	<data name="hr" xml:space="preserve">
+  <value>س</value>
+</data>
+
+	<!-- Reports Page - Missing Keys -->
+	<data name="SummaryStatistics" xml:space="preserve">
+  <value>الإحصائيات الموجزة</value>
+</data>
+	<data name="FinancialReport" xml:space="preserve">
+  <value>التقرير المالي</value>
+</data>
+	<data name="Period" xml:space="preserve">
+  <value>الفترة</value>
+</data>
+	<data name="ReportGenerated" xml:space="preserve">
+  <value>تم إنشاء التقرير</value>
+</data>
+	<data name="ReportPeriod" xml:space="preserve">
+  <value>فترة التقرير</value>
+</data>
+	<data name="TOTAL" xml:space="preserve">
+  <value>الإجمالي</value>
+</data>
+	<data name="PrintReportButton" xml:space="preserve">
+  <value>طباعة التقرير</value>
+</data>
+	<data name="CloseWindow" xml:space="preserve">
+  <value>إغلاق</value>
+</data>
+	<data name="ComputerGeneratedReport" xml:space="preserve">
+  <value>هذا تقرير تم إنشاؤه بواسطة الكمبيوتر من ستيشن برو</value>
+</data>
+	<data name="CopyrightNotice" xml:space="preserve">
+  <value>ستيشن برو - نظام إدارة محطات الألعاب</value>
+</data>
+
+	<!-- Rooms Page - Missing Keys -->
+	<data name="RoomsManagement" xml:space="preserve">
+  <value>إدارة الغرف</value>
+</data>
+	<data name="ManageVIPRooms" xml:space="preserve">
+  <value>إدارة الغرف VIP وكبائن الألعاب والصالات</value>
+</data>
+	<data name="AddRoom" xml:space="preserve">
+  <value>إضافة غرفة</value>
+</data>
+	<data name="TotalRooms" xml:space="preserve">
+  <value>إجمالي الغرف</value>
+</data>
+	<data name="Occupied" xml:space="preserve">
+  <value>مشغولة</value>
+</data>
+	<data name="TotalCapacity" xml:space="preserve">
+  <value>السعة الإجمالية</value>
+</data>
+	<data name="SearchRooms" xml:space="preserve">
+  <value>البحث عن غرف...</value>
+</data>
+	<data name="All" xml:space="preserve">
+  <value>الكل</value>
+</data>
+	<data name="Reserved" xml:space="preserve">
+  <value>محجوزة</value>
+</data>
+	<data name="NoRoomsYet" xml:space="preserve">
+  <value>لا توجد غرف بعد</value>
+</data>
+	<data name="AddFirstRoom" xml:space="preserve">
+  <value>أضف غرفتك الأولى للبدء</value>
+</data>
+	<data name="AddFirstRoomButton" xml:space="preserve">
+  <value>إضافة أول غرفة</value>
+</data>
+	<data name="AddNewRoom" xml:space="preserve">
+  <value>إضافة غرفة جديدة</value>
+</data>
+	<data name="RoomName" xml:space="preserve">
+  <value>اسم الغرفة</value>
+</data>
+	<data name="RoomNamePlaceholder" xml:space="preserve">
+  <value>غرفة VIP 1</value>
+</data>
+	<data name="HourlyRateEGP" xml:space="preserve">
+  <value>السعر بالساعة (جنيه)</value>
+</data>
+	<data name="Capacity" xml:space="preserve">
+  <value>السعة</value>
+</data>
+	<data name="CapacityPlaceholder" xml:space="preserve">
+  <value>4</value>
+</data>
+	<data name="NumberOfDevices" xml:space="preserve">
+  <value>عدد الأجهزة</value>
+</data>
+	<data name="DeviceCountPlaceholder" xml:space="preserve">
+  <value>2</value>
+</data>
+	<data name="HowManyDevices" xml:space="preserve">
+  <value>كم عدد أجهزة الألعاب في هذه الغرفة؟</value>
+</data>
+	<data name="RoomHasAC" xml:space="preserve">
+  <value>الغرفة بها تكييف</value>
+</data>
+	<data name="AddRoomButton" xml:space="preserve">
+  <value>إضافة الغرفة</value>
+</data>
+	<data name="EditRoom" xml:space="preserve">
+  <value>تعديل الغرفة</value>
+</data>
+	<data name="RoomIsActive" xml:space="preserve">
+  <value>الغرفة نشطة</value>
+</data>
+	<data name="SaveChanges" xml:space="preserve">
+  <value>حفظ التغييرات</value>
+</data>
+	<data name="BookNow" xml:space="preserve">
+  <value>احجز الآن</value>
+</data>
+	<data name="People" xml:space="preserve">
+  <value>أشخاص</value>
+</data>
+	<data name="CurrentOccupancy" xml:space="preserve">
+  <value>الإشغال الحالي</value>
+</data>
+	<data name="AC" xml:space="preserve">
+  <value>تكييف</value>
+</data>
+	<data name="DevicesSingular" xml:space="preserve">
+  <value>جهاز</value>
+</data>
+	<data name="DevicesPlural" xml:space="preserve">
+  <value>أجهزة</value>
+</data>
+
+	<!-- Devices Page - Missing Keys -->
+	<data name="MyDevices" xml:space="preserve">
+  <value>أجهزتي</value>
+</data>
+	<data name="ManageAllDevices" xml:space="preserve">
+  <value>إدارة جميع أجهزة الألعاب الخاصة بك</value>
+</data>
+	<data name="TotalDevices" xml:space="preserve">
+  <value>إجمالي الأجهزة</value>
+</data>
+	<data name="AvgRate" xml:space="preserve">
+  <value>متوسط السعر</value>
+</data>
+	<data name="SearchDevices" xml:space="preserve">
+  <value>البحث عن أجهزة...</value>
+</data>
+	<data name="NoDevicesYet" xml:space="preserve">
+  <value>لا توجد أجهزة بعد</value>
+</data>
+	<data name="AddFirstDevice" xml:space="preserve">
+  <value>أضف جهازك الأول للبدء</value>
+</data>
+	<data name="AddFirstDeviceButton" xml:space="preserve">
+  <value>إضافة أول جهاز</value>
+</data>
+	<data name="AddNewDevice" xml:space="preserve">
+  <value>إضافة جهاز جديد</value>
+</data>
+	<data name="DeviceName" xml:space="preserve">
+  <value>اسم الجهاز</value>
+</data>
+	<data name="DeviceNamePlaceholder" xml:space="preserve">
+  <value>بلايستيشن 5 - 1</value>
+</data>
+	<data name="GiveDeviceUniqueName" xml:space="preserve">
+  <value>أعط جهازك اسماً فريداً</value>
+</data>
+	<data name="DeviceType" xml:space="preserve">
+  <value>نوع الجهاز</value>
+</data>
+	<data name="ChooseDeviceType" xml:space="preserve">
+  <value>اختر نوع الجهاز...</value>
+</data>
+	<data name="PlayStation5" xml:space="preserve">
+  <value>🎮 بلايستيشن 5</value>
+</data>
+	<data name="PlayStation4" xml:space="preserve">
+  <value>🎮 بلايستيشن 4</value>
+</data>
+	<data name="PlayStation3" xml:space="preserve">
+  <value>🎮 بلايستيشن 3</value>
+</data>
+	<data name="XboxDevice" xml:space="preserve">
+  <value>🎮 إكس بوكس</value>
+</data>
+	<data name="PCGaming" xml:space="preserve">
+  <value>💻 كمبيوتر ألعاب</value>
+</data>
+	<data name="PingPongTable" xml:space="preserve">
+  <value>🏓 تنس طاولة</value>
+</data>
+	<data name="PoolTable" xml:space="preserve">
+  <value>🎱 طاولة بلياردو</value>
+</data>
+	<data name="BilliardsTable" xml:space="preserve">
+  <value>🎱 بلياردو</value>
+</data>
+	<data name="OtherDevice" xml:space="preserve">
+  <value>🎯 أخرى</value>
+</data>
+	<data name="RatePlaceholder" xml:space="preserve">
+  <value>50</value>
+</data>
+	<data name="EGPPerHour" xml:space="preserve">
+  <value>جنيه/ساعة</value>
+</data>
+	<data name="AddDeviceButton" xml:space="preserve">
+  <value>إضافة الجهاز</value>
+</data>
+	<data name="EditDevice" xml:space="preserve">
+  <value>تعديل الجهاز</value>
+</data>
+	<data name="DeviceIsActive" xml:space="preserve">
+  <value>الجهاز نشط</value>
+</data>
+	<data name="Start" xml:space="preserve">
+  <value>بدء</value>
+</data>
+	<data name="ActiveSession" xml:space="preserve">
+  <value>جلسة نشطة</value>
+</data>
+	<data name="UsageTime" xml:space="preserve">
+  <value>وقت الاستخدام</value>
+</data>
+
 </root>

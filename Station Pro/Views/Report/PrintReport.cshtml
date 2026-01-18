@@ -1,16 +1,19 @@
 ﻿@model CompleteReportDto
+@using Microsoft.Extensions.Localization
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
 
 @{
-    ViewData["Title"] = "Print Report";
+    ViewData["Title"] = Localizer["PrintReport"];
     Layout = null; // No layout for print
     var selectedPeriod = ViewBag.SelectedPeriod ?? "today";
     var periodName = selectedPeriod switch
     {
-        "today" => "Today",
-        "yesterday" => "Yesterday",
-        "week" => "Last 7 Days",
-        "month" => "Last 30 Days",
-        _ => "Custom Period"
+        "today" => Localizer["Today"],
+        "yesterday" => Localizer["Yesterday"],
+        "week" => Localizer["Last7Days"],
+        "month" => Localizer["Last30Days"],
+        _ => Localizer["CustomPeriod"]
     };
 }
 
@@ -19,7 +22,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report - @periodName - @DateTime.Now.ToString("MMM dd, yyyy")</title>
+    <title>@Localizer["PrintReport"] - @periodName - @DateTime.Now.ToString("MMM dd, yyyy")</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -88,11 +91,11 @@
     <div class="no-print mb-4 flex justify-end gap-3">
         <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
             <i class="fas fa-print"></i>
-            Print Report
+            @Localizer["PrintReportButton"]
         </button>
         <button onclick="window.close()" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2">
             <i class="fas fa-times"></i>
-            Close
+            @Localizer["Close"]
         </button>
     </div>
 
@@ -105,15 +108,15 @@
                     <div class="flex items-center gap-3 mb-3">
                         <i class="fas fa-gamepad text-blue-600 text-4xl"></i>
                         <div>
-                            <h1 class="text-3xl font-bold text-gray-900">Station Pro</h1>
+                            <h1 class="text-3xl font-bold text-gray-900">@Localizer["StationPro"]</h1>
                             <p class="text-sm text-gray-500">demo.stationpro.com</p>
                         </div>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-800">Financial Report</h2>
-                    <p class="text-gray-600">Period: @periodName</p>
+                    <h2 class="text-2xl font-bold text-gray-800">@Localizer["FinancialReport"]</h2>
+                    <p class="text-gray-600">@Localizer["Period"]: @periodName</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm text-gray-500">Report Generated:</p>
+                    <p class="text-sm text-gray-500">@Localizer["ReportGenerated"]:</p>
                     <p class="font-semibold text-gray-900">@DateTime.Now.ToString("MMMM dd, yyyy")</p>
                     <p class="text-sm text-gray-500">@DateTime.Now.ToString("hh:mm tt")</p>
                 </div>
@@ -124,7 +127,7 @@
         <div class="mb-8">
             <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <i class="fas fa-chart-bar text-blue-600"></i>
-                Summary Statistics
+                @Localizer["SummaryStatistics"]
             </h3>
 
             <div class="grid grid-cols-4 gap-4 mb-6">
@@ -132,39 +135,39 @@
                 <div class="stat-card text-center">
                     <i class="fas fa-dollar-sign text-3xl text-green-600 mb-2"></i>
                     <div class="text-2xl font-bold text-gray-900">EGP @Model.Summary.TotalRevenue.ToString("N2")</div>
-                    <div class="text-sm text-gray-600 font-semibold mt-1">TOTAL REVENUE</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["TotalRevenue"].ToString().ToUpper()</div>
                 </div>
 
                 <!-- Total Sessions -->
                 <div class="stat-card text-center">
                     <i class="fas fa-clock text-3xl text-blue-600 mb-2"></i>
                     <div class="text-2xl font-bold text-gray-900">@Model.Summary.TotalSessions</div>
-                    <div class="text-sm text-gray-600 font-semibold mt-1">TOTAL SESSIONS</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["TotalSessions"].ToString().ToUpper()</div>
                 </div>
 
                 <!-- Average Session Revenue -->
                 <div class="stat-card text-center">
                     <i class="fas fa-chart-line text-3xl text-purple-600 mb-2"></i>
                     <div class="text-2xl font-bold text-gray-900">EGP @Model.Summary.AverageSessionRevenue.ToString("N2")</div>
-                    <div class="text-sm text-gray-600 font-semibold mt-1">AVG. SESSION REVENUE</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["AvgSessionRevenue"].ToString().ToUpper()</div>
                 </div>
 
-                <!-- Completed vs Cancelled -->
+                <!-- Completed Sessions -->
                 <div class="stat-card text-center">
                     <i class="fas fa-check-circle text-3xl text-orange-600 mb-2"></i>
                     <div class="text-2xl font-bold text-gray-900">@Model.Summary.CompletedSessions</div>
-                    <div class="text-sm text-gray-600 font-semibold mt-1">COMPLETED SESSIONS</div>
+                    <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["CompletedSessions"].ToString().ToUpper()</div>
                 </div>
             </div>
 
             <!-- Additional Info -->
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <span class="text-gray-600">Most Used Device:</span>
+                    <span class="text-gray-600">@Localizer["MostUsedDevice"]:</span>
                     <span class="font-bold text-gray-900 ml-2">@Model.Summary.MostUsedDevice</span>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <span class="text-gray-600">Report Period:</span>
+                    <span class="text-gray-600">@Localizer["ReportPeriod"]:</span>
                     <span class="font-bold text-gray-900 ml-2">
                         @Model.Summary.StartDate.ToString("MMM dd") - @Model.Summary.EndDate.ToString("MMM dd, yyyy")
                     </span>
@@ -178,18 +181,18 @@
             <div class="mb-8">
                 <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fas fa-trophy text-yellow-500"></i>
-                    Device Performance
+                    @Localizer["DevicePerformance"]
                 </h3>
 
                 <table class="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr class="bg-gray-100">
-                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">Device</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Type</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Sessions</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Usage Time</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">Utilization</th>
-                            <th class="border border-gray-300 px-4 py-3 text-right font-semibold text-gray-700">Revenue</th>
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">@Localizer["Device"]</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["Type"]</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["Sessions"]</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["UsageTime"]</th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["Utilization"]</th>
+                            <th class="border border-gray-300 px-4 py-3 text-right font-semibold text-gray-700">@Localizer["Revenue"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -200,7 +203,7 @@
                                 <td class="border border-gray-300 px-4 py-3 text-center text-gray-700">@device.DeviceType</td>
                                 <td class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-900">@device.SessionCount</td>
                                 <td class="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                                    @((int)device.TotalUsageTime.TotalHours)h @device.TotalUsageTime.Minutes)m
+                                    @((int)device.TotalUsageTime.TotalHours)@Localizer["hr"] @device.TotalUsageTime.Minutes@Localizer["Minute"]
                                 </td>
                                 <td class="border border-gray-300 px-4 py-3 text-center font-semibold text-blue-600">
                                     @device.UtilizationPercentage.ToString("N1")%
@@ -213,14 +216,14 @@
                     </tbody>
                     <tfoot>
                         <tr class="bg-gray-100 font-bold">
-                            <td colspan="2" class="border border-gray-300 px-4 py-3 text-right">TOTAL:</td>
+                            <td colspan="2" class="border border-gray-300 px-4 py-3 text-right">@Localizer["TOTAL"]:</td>
                             <td class="border border-gray-300 px-4 py-3 text-center">@Model.DevicePerformance.Sum(d => d.SessionCount)</td>
                             <td class="border border-gray-300 px-4 py-3 text-center">
                                 @{
                                     var totalHours = (int)Model.DevicePerformance.Sum(d => d.TotalUsageTime.TotalMinutes) / 60;
                                     var totalMins = (int)Model.DevicePerformance.Sum(d => d.TotalUsageTime.TotalMinutes) % 60;
                                 }
-                                @totalHours)h @totalMins)m
+                                @totalHours@Localizer["hr"] @totalMins@Localizer["Minute"]
                             </td>
                             <td class="border border-gray-300 px-4 py-3"></td>
                             <td class="border border-gray-300 px-4 py-3 text-right text-green-600">
@@ -241,20 +244,20 @@
             <div class="mb-8">
                 <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fas fa-list text-blue-600"></i>
-                    Session Details (@Model.Sessions.Count sessions)
+                    @Localizer["SessionDetails"] (@Model.Sessions.Count @Localizer["Sessions"])
                 </h3>
 
                 <table class="w-full border-collapse border border-gray-300 text-sm">
                     <thead>
                         <tr class="bg-gray-100">
-                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Date & Time</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Device</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Customer</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Duration</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Rate</th>
-                            <th class="border border-gray-300 px-3 py-2 text-right font-semibold text-gray-700">Total</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Status</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">Payment</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">@Localizer["DateTime"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">@Localizer["Device"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">@Localizer["Customer"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Duration"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Rate"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-right font-semibold text-gray-700">@Localizer["Total"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Status"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Payment"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -270,7 +273,7 @@
                                     <div class="text-xs text-gray-500">@session.DeviceType</div>
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-gray-700">
-                                    @(session.CustomerName ?? "Guest")
+                                    @(session.CustomerName ?? Localizer["Guest"])
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-center font-mono">
                                     @session.DurationFormatted
@@ -299,8 +302,8 @@
 
         <!-- Footer -->
         <div class="mt-8 pt-4 border-t-2 border-gray-300 text-center text-sm text-gray-500">
-            <p>This is a computer-generated report from Station Pro</p>
-            <p>© @DateTime.Now.Year Station Pro - Gaming Station Management System</p>
+            <p>@Localizer["ComputerGeneratedReport"]</p>
+            <p>© @DateTime.Now.Year @Localizer["StationPro"] - @Localizer["CopyrightNotice"]</p>
         </div>
 
     </div>

@@ -808,5 +808,361 @@
 	<data name="CreateAccount" xml:space="preserve">
     <value>Create one now</value>
   </data>
+
+	<!-- Sessions Page - New Localizations -->
+	<data name="ManageAllSessions" xml:space="preserve">
+  <value>Manage all your sessions</value>
+</data>
+	<data name="AvgDuration" xml:space="preserve">
+  <value>Avg. Duration</value>
+</data>
+	<data name="PopularDevice" xml:space="preserve">
+  <value>Popular Device</value>
+</data>
+	<data name="DateRange" xml:space="preserve">
+  <value>Date Range</value>
+</data>
+	<data name="ThisWeek" xml:space="preserve">
+  <value>This Week</value>
+</data>
+	<data name="ThisMonth" xml:space="preserve">
+  <value>This Month</value>
+</data>
+	<data name="AllSessions" xml:space="preserve">
+  <value>All Sessions</value>
+</data>
+	<data name="Active" xml:space="preserve">
+  <value>Active</value>
+</data>
+	<data name="AllDevices" xml:space="preserve">
+  <value>All Devices</value>
+</data>
+	<data name="SearchCustomer" xml:space="preserve">
+  <value>Search for customer...</value>
+</data>
+	<data name="ClearFilters" xml:space="preserve">
+  <value>Clear Filters</value>
+</data>
+	<data name="SessionsList" xml:space="preserve">
+  <value>Sessions List</value>
+</data>
+	<data name="Results" xml:space="preserve">
+  <value>Results</value>
+</data>
+	<data name="TryDifferentFilters" xml:space="preserve">
+  <value>Try different filters</value>
+</data>
+	<data name="StartTime" xml:space="preserve">
+  <value>Start Time</value>
+</data>
+	<data name="Cost" xml:space="preserve">
+  <value>Cost</value>
+</data>
+	<data name="ViewDetails" xml:space="preserve">
+  <value>View Details</value>
+</data>
+	<data name="PrintReceipt" xml:space="preserve">
+  <value>Print Receipt</value>
+</data>
+	<data name="Page" xml:space="preserve">
+  <value>Page</value>
+</data>
+	<data name="Of" xml:space="preserve">
+  <value>of</value>
+</data>
+	<data name="CustomerNameOptional" xml:space="preserve">
+  <value>Customer Name (Optional)</value>
+</data>
+	<data name="CustomerPhoneOptional" xml:space="preserve">
+  <value>Customer Phone (Optional)</value>
+</data>
+
+	<!-- Session Details Modal -->
+	<data name="SessionActive" xml:space="preserve">
+  <value>Session Active</value>
+</data>
+	<data name="SessionCompleted" xml:space="preserve">
+  <value>Session Completed</value>
+</data>
+	<data name="SessionID" xml:space="preserve">
+  <value>Session ID</value>
+</data>
+	<data name="DeviceInformation" xml:space="preserve">
+  <value>Device Information</value>
+</data>
+	<data name="Type" xml:space="preserve">
+  <value>Type</value>
+</data>
+	<data name="CustomerInformation" xml:space="preserve">
+  <value>Customer Information</value>
+</data>
+	<data name="Name" xml:space="preserve">
+  <value>Name</value>
+</data>
+	<data name="SessionTimeline" xml:space="preserve">
+  <value>Session Timeline</value>
+</data>
+	<data name="SessionStarted" xml:space="preserve">
+  <value>Session Started</value>
+</data>
+	<data name="SessionEnded" xml:space="preserve">
+  <value>Session Ended</value>
+</data>
+	<data name="hours" xml:space="preserve">
+  <value>hours</value>
+</data>
+	<data name="minutes" xml:space="preserve">
+  <value>minutes</value>
+</data>
+	<data name="PaymentSummary" xml:space="preserve">
+  <value>Payment Summary</value>
+</data>
+	<data name="TotalCost" xml:space="preserve">
+  <value>Total Cost</value>
+</data>
+
+	<!-- Additional Common Terms -->
+	<data name="StartSessionToSee" xml:space="preserve">
+  <value>Start a session to see it here</value>
+</data>
+	<data name="End" xml:space="preserve">
+  <value>End</value>
+</data>
+	<data name="hr" xml:space="preserve">
+  <value>hr</value>
+</data>
+
+	<!-- Reports Page - Missing Keys -->
+	<data name="SummaryStatistics" xml:space="preserve">
+  <value>Summary Statistics</value>
+</data>
+	<data name="FinancialReport" xml:space="preserve">
+  <value>Financial Report</value>
+</data>
+	<data name="Period" xml:space="preserve">
+  <value>Period</value>
+</data>
+	<data name="ReportGenerated" xml:space="preserve">
+  <value>Report Generated</value>
+</data>
+	<data name="ReportPeriod" xml:space="preserve">
+  <value>Report Period</value>
+</data>
+	<data name="TOTAL" xml:space="preserve">
+  <value>TOTAL</value>
+</data>
+	<data name="PrintReportButton" xml:space="preserve">
+  <value>Print Report</value>
+</data>
+	<data name="CloseWindow" xml:space="preserve">
+  <value>Close</value>
+</data>
+	<data name="ComputerGeneratedReport" xml:space="preserve">
+  <value>This is a computer-generated report from Station Pro</value>
+</data>
+	<data name="CopyrightNotice" xml:space="preserve">
+  <value>Station Pro - Gaming Station Management System</value>
+</data>
+
+	<!-- Rooms Page - Missing Keys -->
+	<data name="RoomsManagement" xml:space="preserve">
+  <value>Rooms Management</value>
+</data>
+	<data name="ManageVIPRooms" xml:space="preserve">
+  <value>Manage VIP rooms, gaming pods, and lounges</value>
+</data>
+	<data name="AddRoom" xml:space="preserve">
+  <value>Add Room</value>
+</data>
+	<data name="TotalRooms" xml:space="preserve">
+  <value>Total Rooms</value>
+</data>
+	<data name="Occupied" xml:space="preserve">
+  <value>Occupied</value>
+</data>
+	<data name="TotalCapacity" xml:space="preserve">
+  <value>Total Capacity</value>
+</data>
+	<data name="SearchRooms" xml:space="preserve">
+  <value>Search rooms...</value>
+</data>
+	<data name="All" xml:space="preserve">
+  <value>All</value>
+</data>
+	<data name="Reserved" xml:space="preserve">
+  <value>Reserved</value>
+</data>
+	<data name="NoRoomsYet" xml:space="preserve">
+  <value>No rooms yet</value>
+</data>
+	<data name="AddFirstRoom" xml:space="preserve">
+  <value>Add your first room to get started</value>
+</data>
+	<data name="AddFirstRoomButton" xml:space="preserve">
+  <value>Add First Room</value>
+</data>
+	<data name="AddNewRoom" xml:space="preserve">
+  <value>Add New Room</value>
+</data>
+	<data name="RoomName" xml:space="preserve">
+  <value>Room Name</value>
+</data>
+	<data name="RoomNamePlaceholder" xml:space="preserve">
+  <value>VIP Room 1</value>
+</data>
+	<data name="HourlyRateEGP" xml:space="preserve">
+  <value>Hourly Rate (EGP)</value>
+</data>
+	<data name="Capacity" xml:space="preserve">
+  <value>Capacity</value>
+</data>
+	<data name="CapacityPlaceholder" xml:space="preserve">
+  <value>4</value>
+</data>
+	<data name="NumberOfDevices" xml:space="preserve">
+  <value>Number of Devices</value>
+</data>
+	<data name="DeviceCountPlaceholder" xml:space="preserve">
+  <value>2</value>
+</data>
+	<data name="HowManyDevices" xml:space="preserve">
+  <value>How many gaming devices are in this room?</value>
+</data>
+	<data name="RoomHasAC" xml:space="preserve">
+  <value>Room has Air Conditioning</value>
+</data>
+	<data name="AddRoomButton" xml:space="preserve">
+  <value>Add Room</value>
+</data>
+	<data name="EditRoom" xml:space="preserve">
+  <value>Edit Room</value>
+</data>
+	<data name="RoomIsActive" xml:space="preserve">
+  <value>Room is active</value>
+</data>
+	<data name="SaveChanges" xml:space="preserve">
+  <value>Save Changes</value>
+</data>
+	<data name="BookNow" xml:space="preserve">
+  <value>Book Now</value>
+</data>
+	<data name="People" xml:space="preserve">
+  <value>people</value>
+</data>
+	<data name="CurrentOccupancy" xml:space="preserve">
+  <value>Current Occupancy</value>
+</data>
+	<data name="AC" xml:space="preserve">
+  <value>AC</value>
+</data>
+	<data name="DevicesSingular" xml:space="preserve">
+  <value>Device</value>
+</data>
+	<data name="DevicesPlural" xml:space="preserve">
+  <value>Devices</value>
+</data>
+
+	<!-- Devices Page - Missing Keys -->
+	<data name="MyDevices" xml:space="preserve">
+  <value>My Devices</value>
+</data>
+	<data name="ManageAllDevices" xml:space="preserve">
+  <value>Manage all your gaming devices</value>
+</data>
+	<data name="TotalDevices" xml:space="preserve">
+  <value>Total Devices</value>
+</data>
+	<data name="AvgRate" xml:space="preserve">
+  <value>Avg. Rate</value>
+</data>
+	<data name="SearchDevices" xml:space="preserve">
+  <value>Search devices...</value>
+</data>
+	<data name="NoDevicesYet" xml:space="preserve">
+  <value>No devices yet</value>
+</data>
+	<data name="AddFirstDevice" xml:space="preserve">
+  <value>Add your first device to get started</value>
+</data>
+	<data name="AddFirstDeviceButton" xml:space="preserve">
+  <value>Add First Device</value>
+</data>
+	<data name="AddNewDevice" xml:space="preserve">
+  <value>Add New Device</value>
+</data>
+	<data name="DeviceName" xml:space="preserve">
+  <value>Device Name</value>
+</data>
+	<data name="DeviceNamePlaceholder" xml:space="preserve">
+  <value>PS5 - 1</value>
+</data>
+	<data name="GiveDeviceUniqueName" xml:space="preserve">
+  <value>Give your device a unique name</value>
+</data>
+	<data name="DeviceType" xml:space="preserve">
+  <value>Device Type</value>
+</data>
+	<data name="ChooseDeviceType" xml:space="preserve">
+  <value>Choose device type...</value>
+</data>
+	<data name="PlayStation5" xml:space="preserve">
+  <value>🎮 PlayStation 5</value>
+</data>
+	<data name="PlayStation4" xml:space="preserve">
+  <value>🎮 PlayStation 4</value>
+</data>
+	<data name="PlayStation3" xml:space="preserve">
+  <value>🎮 PlayStation 3</value>
+</data>
+	<data name="XboxDevice" xml:space="preserve">
+  <value>🎮 Xbox</value>
+</data>
+	<data name="PCGaming" xml:space="preserve">
+  <value>💻 PC Gaming</value>
+</data>
+	<data name="PingPongTable" xml:space="preserve">
+  <value>🏓 Ping Pong</value>
+</data>
+	<data name="PoolTable" xml:space="preserve">
+  <value>🎱 Pool Table</value>
+</data>
+	<data name="BilliardsTable" xml:space="preserve">
+  <value>🎱 Billiards</value>
+</data>
+	<data name="OtherDevice" xml:space="preserve">
+  <value>🎯 Other</value>
+</data>
+	<data name="RatePlaceholder" xml:space="preserve">
+  <value>50</value>
+</data>
+	<data name="EGPPerHour" xml:space="preserve">
+  <value>EGP/hour</value>
+</data>
+	<data name="AddDeviceButton" xml:space="preserve">
+  <value>Add Device</value>
+</data>
+	<data name="EditDevice" xml:space="preserve">
+  <value>Edit Device</value>
+</data>
+	<data name="DeviceIsActive" xml:space="preserve">
+  <value>Device is active</value>
+</data>
+	<data name="Start" xml:space="preserve">
+  <value>Start</value>
+</data>
+	<data name="ActiveSession" xml:space="preserve">
+  <value>Active Session</value>
+</data>
+	<data name="UsageTime" xml:space="preserve">
+  <value>Usage Time</value>
+</data>
+
+	<!-- Common Missing Terms -->
+	<data name="CustomPeriod" xml:space="preserve">
+  <value>Custom Period</value>
+</data>
+	<data name="Tools" xml:space="preserve">
+  <value>Tools</value>
+</data>
 	
 </root>

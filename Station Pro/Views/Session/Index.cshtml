@@ -1,0 +1,553 @@
+﻿@model SessionPageViewModel
+@using Microsoft.Extensions.Localization
+@using StationPro.Controllers
+@using StationPro
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = Localizer["Sessions"];
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/sessions.css">
+}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Page Header -->
+        <div class="mb-8 fade-in flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-clock text-blue-600 mr-2"></i>
+                    @Localizer["Sessions"]
+                </h1>
+                <p class="text-gray-600">@Localizer["ManageAllSessions"]</p>
+            </div>
+            <button onclick="openModal('start-session-modal')"
+                    class="btn btn-primary flex items-center gap-2">
+                <i class="fas fa-play"></i>
+                @Localizer["StartNewSession"]
+            </button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Sessions -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["TotalSessions"]</p>
+                        <p class="text-3xl font-bold text-gray-900">@Model.Statistics.TotalSessions</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded-full">
+                        <i class="fas fa-list text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Revenue -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["Revenue"]</p>
+                        <p class="text-3xl font-bold text-green-600">@Model.Statistics.TotalRevenue.ToString("C")</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-full">
+                        <i class="fas fa-dollar-sign text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Duration -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["AvgDuration"]</p>
+                        <p class="text-3xl font-bold text-purple-600">
+                            @((int)Model.Statistics.AverageDuration.TotalHours)h @Model.Statistics.AverageDuration.Minutes m
+                        </p>
+                    </div>
+                    <div class="bg-purple-100 p-4 rounded-full">
+                        <i class="fas fa-hourglass-half text-purple-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Most Popular Device -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["PopularDevice"]</p>
+                        <p class="text-lg font-bold text-orange-600">@Model.Statistics.MostPopularDevice</p>
+                    </div>
+                    <div class="bg-orange-100 p-4 rounded-full">
+                        <i class="fas fa-gamepad text-orange-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="card p-6 mb-8 fade-in">
+            <form method="get" asp-action="Index" id="filters-form">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                    <!-- Date Filter -->
+                    <div>
+                        <label class="form-label">@Localizer["DateRange"]</label>
+                        <select name="dateFilter" class="form-input" onchange="document.getElementById('filters-form').submit()">
+                            <option value="today" selected="@(Model.DateFilter == "today")">@Localizer["Today"]</option>
+                            <option value="yesterday" selected="@(Model.DateFilter == "yesterday")">@Localizer["Yesterday"]</option>
+                            <option value="week" selected="@(Model.DateFilter == "week")">@Localizer["ThisWeek"]</option>
+                            <option value="month" selected="@(Model.DateFilter == "month")">@Localizer["ThisMonth"]</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="form-label">@Localizer["Status"]</label>
+                        <select name="status" class="form-input" onchange="document.getElementById('filters-form').submit()">
+                            <option value="all" selected="@(Model.StatusFilter == "all")">@Localizer["AllSessions"]</option>
+                            <option value="active" selected="@(Model.StatusFilter == "active")">@Localizer["Active"]</option>
+                            <option value="completed" selected="@(Model.StatusFilter == "completed")">@Localizer["Completed"]</option>
+                        </select>
+                    </div>
+
+                    <!-- Device Filter -->
+                    <div>
+                        <label class="form-label">@Localizer["Device"]</label>
+                        <select name="deviceId" class="form-input" onchange="document.getElementById('filters-form').submit()">
+                            <option value="">@Localizer["AllDevices"]</option>
+                            @foreach (var device in Model.AvailableDevices)
+                            {
+                                <option value="@device.Id" selected="@(Model.DeviceFilter == device.Id)">@device.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div>
+                        <label class="form-label">@Localizer["Search"]</label>
+                        <div class="relative">
+                            <input type="text"
+                                   name="search"
+                                   value="@Model.SearchQuery"
+                                   class="form-input pr-10"
+                                   placeholder="@Localizer["SearchCustomer"]">
+                            <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Clear Filters Button -->
+                <div class="mt-4 flex justify-end">
+                    <a href="@Html.TenantUrl("Session", "Index")" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times mr-2"></i>
+                        @Localizer["ClearFilters"]
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sessions Table -->
+        <div class="card fade-in">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">
+                    @Localizer["SessionsList"]
+                    <span class="text-sm text-gray-500 font-normal ml-2">
+                        (@Model.Sessions.Count @Localizer["Results"])
+                    </span>
+                </h2>
+            </div>
+
+            @if (!Model.Sessions.Any())
+            {
+                <div class="p-12 text-center">
+                    <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
+                    <p class="text-gray-500 font-medium">@Localizer["NoSessionsFound"]</p>
+                    <p class="text-gray-400 text-sm mt-2">@Localizer["TryDifferentFilters"]</p>
+                </div>
+            }
+            else
+            {
+                <!-- Desktop Table View -->
+                <div class="hidden lg:block overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">@Localizer["Device"]</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">@Localizer["Customer"]</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">@Localizer["StartTime"]</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">@Localizer["Duration"]</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">@Localizer["Cost"]</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">@Localizer["Status"]</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">@Localizer["Actions"]</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach (var session in Model.Sessions)
+                            {
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="bg-blue-100 p-2 rounded-lg">
+                                                <i class="fas fa-gamepad text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-gray-900">@session.DeviceName</p>
+                                                <p class="text-xs text-gray-500">@session.DeviceType</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @if (!string.IsNullOrEmpty(session.CustomerName))
+                                        {
+                                            <div class="flex items-center gap-2">
+                                                <i class="fas fa-user text-gray-400 text-xs"></i>
+                                                <span class="text-gray-900">@session.CustomerName</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="flex items-center gap-2">
+                                                <i class="fas fa-user-secret text-gray-400 text-xs"></i>
+                                                <span class="text-gray-500 italic">@Localizer["Guest"]</span>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-700">
+                                        <div>
+                                            <p class="font-medium">@session.StartTime.ToString("MMM dd, yyyy")</p>
+                                            <p class="text-xs text-gray-500">@session.StartTime.ToString("h:mm tt")</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="font-mono font-semibold text-blue-600">@session.DurationFormatted</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="font-bold text-green-600">@session.TotalCost.ToString("C")</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @if (session.Status == "Active")
+                                        {
+                                            <span class="status-badge status-active">
+                                                <i class="fas fa-circle text-xs mr-1"></i>
+                                                @Localizer["Active"]
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-completed">
+                                                <i class="fas fa-check-circle text-xs mr-1"></i>
+                                                @Localizer["Completed"]
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="viewSessionDetails(@session.Id)"
+                                                    class="btn btn-sm btn-outline"
+                                                    title="@Localizer["ViewDetails"]">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            @if (session.Status == "Completed")
+                                            {
+                                                <button onclick="printReceipt(@session.Id)"
+                                                        class="btn btn-sm btn-secondary"
+                                                        title="@Localizer["PrintReceipt"]">
+                                                    <i class="fas fa-print"></i>
+                                                </button>
+                                            }
+                                            else if (session.Status == "Active")
+                                            {
+                                                <button onclick="endSessionFromList(@session.Id, '@session.DeviceName', '@session.DurationFormatted', '@session.TotalCost.ToString("C")')"
+                                                        class="btn btn-sm btn-danger"
+                                                        title="@Localizer["EndSession"]">
+                                                    <i class="fas fa-stop"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="lg:hidden divide-y divide-gray-200">
+                    @foreach (var session in Model.Sessions)
+                    {
+                        <div class="p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-blue-100 p-2 rounded-lg">
+                                        <i class="fas fa-gamepad text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">@session.DeviceName</p>
+                                        <p class="text-xs text-gray-500">@session.StartTime.ToString("MMM dd, h:mm tt")</p>
+                                    </div>
+                                </div>
+                                @if (session.Status == "Active")
+                                {
+                                    <span class="status-badge status-active">@Localizer["Active"]</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-completed">@Localizer["Completed"]</span>
+                                }
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 text-sm mb-3">
+                                <div>
+                                    <p class="text-gray-500">@Localizer["Customer"]</p>
+                                    <p class="font-medium text-gray-900">@(session.CustomerName ?? Localizer["Guest"])</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500">@Localizer["Duration"]</p>
+                                    <p class="font-mono font-semibold text-blue-600">@session.DurationFormatted</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500">@Localizer["Cost"]</p>
+                                    <p class="font-bold text-green-600">@session.TotalCost.ToString("C")</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500">@Localizer["Payment"]</p>
+                                    <p class="font-medium text-gray-900">@session.PaymentMethod</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <button onclick="viewSessionDetails(@session.Id)"
+                                        class="btn btn-sm btn-outline flex-1">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    @Localizer["ViewDetails"]
+                                </button>
+                                @if (session.Status == "Completed")
+                                {
+                                    <button onclick="printReceipt(@session.Id)"
+                                            class="btn btn-sm btn-secondary">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                }
+                                else if (session.Status == "Active")
+                                {
+                                    <button onclick="endSessionFromList(@session.Id, '@session.DeviceName', '@session.DurationFormatted', '@session.TotalCost.ToString("C")')"
+                                            class="btn btn-sm btn-danger">
+                                        <i class="fas fa-stop mr-1"></i>
+                                        @Localizer["End"]
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="p-6 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-600">
+                                @Localizer["Page"] @Model.CurrentPage @Localizer["Of"] @Model.TotalPages
+                            </p>
+                            <div class="flex gap-2">
+                                @if (Model.CurrentPage > 1)
+                                {
+                                    <a href="@Html.TenantUrl("Session", "Index", new {
+                                        page = Model.CurrentPage - 1,
+                                        dateFilter = Model.DateFilter,
+                                        status = Model.StatusFilter,
+                                        deviceId = Model.DeviceFilter,
+                                        search = Model.SearchQuery
+                                    })" class="btn btn-outline btn-sm">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                }
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    if (i == Model.CurrentPage)
+                                    {
+                                        <span class="btn btn-primary btn-sm">@i</span>
+                                    }
+                                    else if (i == 1 || i == Model.TotalPages || (i >= Model.CurrentPage - 2 && i <= Model.CurrentPage + 2))
+                                    {
+                                        <a href="@Html.TenantUrl("Session", "Index", new {
+                                            page = i,
+                                            dateFilter = Model.DateFilter,
+                                            status = Model.StatusFilter,
+                                            deviceId = Model.DeviceFilter,
+                                            search = Model.SearchQuery
+                                        })" class="btn btn-outline btn-sm">@i</a>
+                                    }
+                                    else if (i == Model.CurrentPage - 3 || i == Model.CurrentPage + 3)
+                                    {
+                                        <span class="px-2 text-gray-500">...</span>
+                                    }
+                                }
+                                @if (Model.CurrentPage < Model.TotalPages)
+                                {
+                                    <a href="@Html.TenantUrl("Session", "Index", new {
+                                        page = Model.CurrentPage + 1,
+                                        dateFilter = Model.DateFilter,
+                                        status = Model.StatusFilter,
+                                        deviceId = Model.DeviceFilter,
+                                        search = Model.SearchQuery
+                                    })" class="btn btn-outline btn-sm">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+    </div>
+</div>
+
+<!-- Session Details Modal -->
+<div id="session-details-modal" class="modal-overlay hidden">
+    <div class="modal-content max-w-2xl">
+        <div id="session-details-content">
+            <!-- Content loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- Start Session Modal (Same as Dashboard) -->
+<div id="start-session-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="text-xl font-bold text-gray-900">@Localizer["StartNewSession"]</h3>
+            <button onclick="closeModal('start-session-modal')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form hx-post="@Html.TenantUrl("Session", "Start")" hx-on::after-request="window.location.reload()">
+            <div class="modal-body space-y-4">
+                <div>
+                    <label class="form-label">@Localizer["SelectDevice"]</label>
+                    <select name="DeviceId" class="form-input" required>
+                        <option value="">@Localizer["ChooseDevice"]</option>
+                        @foreach (var device in Model.AvailableDevices)
+                        {
+                            <option value="@device.Id">@device.Name</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">@Localizer["CustomerNameOptional"]</label>
+                    <input type="text" name="CustomerName" class="form-input" placeholder="@Localizer["EnterCustomerName"]">
+                </div>
+                <div>
+                    <label class="form-label">@Localizer["CustomerPhoneOptional"]</label>
+                    <input type="tel" name="CustomerPhone" class="form-input" placeholder="01234567890">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeModal('start-session-modal')" class="btn btn-secondary">
+                    @Localizer["Cancel"]
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-play mr-2"></i>
+                    @Localizer["StartSession"]
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div id="receipt-modal" class="modal-overlay hidden" style="z-index: 9999;">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div id="receipt-content" class="animate-scale-in">
+            <!-- Receipt will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- End Session Confirmation Modal -->
+<div id="end-session-confirm-modal" class="modal-overlay hidden" style="z-index: 9998;">
+    <div class="modal-content max-w-md">
+        <div class="text-center p-6">
+            <!-- Warning Icon -->
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                @Localizer["EndSession"]
+            </h3>
+
+            <!-- Message -->
+            <p class="text-gray-600 mb-2">
+                @Localizer["EndSessionConfirmation"]
+            </p>
+
+            <!-- Session Details -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-gray-600">@Localizer["Device"]:</span>
+                    <span class="font-semibold text-gray-900" id="confirm-device-name">-</span>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-gray-600">@Localizer["Duration"]:</span>
+                    <span class="font-mono font-semibold text-blue-600" id="confirm-duration">-</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">@Localizer["EstimatedCost"]:</span>
+                    <span class="font-bold text-green-600 text-lg" id="confirm-cost">-</span>
+                </div>
+            </div>
+
+            <!-- Payment Method Selection -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">@Localizer["PaymentMethod"]</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button"
+                            onclick="selectPaymentMethod(1)"
+                            id="payment-cash"
+                            class="payment-method-btn active">
+                        <i class="fas fa-money-bill-wave text-xl mb-1"></i>
+                        <span class="block text-sm font-semibold">@Localizer["Cash"]</span>
+                    </button>
+                    <button type="button"
+                            onclick="selectPaymentMethod(2)"
+                            id="payment-card"
+                            class="payment-method-btn">
+                        <i class="fas fa-credit-card text-xl mb-1"></i>
+                        <span class="block text-sm font-semibold">@Localizer["Card"]</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button type="button"
+                        onclick="closeEndSessionModal()"
+                        class="flex-1 btn btn-secondary">
+                    <i class="fas fa-times mr-2"></i>
+                    @Localizer["Cancel"]
+                </button>
+                <button type="button"
+                        onclick="confirmEndSession()"
+                        class="flex-1 btn btn-danger">
+                    <i class="fas fa-stop mr-2"></i>
+                    @Localizer["EndSession"]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="@Url.Content("~/js/sessions.js")"></script>
+}

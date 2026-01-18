@@ -1,7 +1,11 @@
 ﻿@model IEnumerable<RoomDto>
+@using Microsoft.Extensions.Localization
+@using StationPro
+
+@inject IStringLocalizer<SharedResources> Localizer
 
 @{
-    ViewData["Title"] = "Rooms";
+    ViewData["Title"] = Localizer["Rooms"];
 }
 
 @section Styles {
@@ -16,14 +20,14 @@
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">
                     <i class="fas fa-door-open text-blue-600 mr-2"></i>
-                    Rooms Management
+                    @Localizer["RoomsManagement"]
                 </h1>
-                <p class="text-gray-600">Manage VIP rooms, gaming pods, and lounges</p>
+                <p class="text-gray-600">@Localizer["ManageVIPRooms"]</p>
             </div>
             <button onclick="openModal('add-room-modal')"
                     class="btn btn-primary mt-4 md:mt-0">
                 <i class="fas fa-plus mr-2"></i>
-                Add Room
+                @Localizer["AddRoom"]
             </button>
         </div>
 
@@ -32,7 +36,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Total Rooms</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["TotalRooms"]</p>
                         <p class="text-2xl font-bold text-gray-900">@Model.Count()</p>
                     </div>
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -44,7 +48,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Available</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["Available"]</p>
                         <p class="text-2xl font-bold text-green-600">@Model.Count(r => r.Status == "Available")</p>
                     </div>
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -56,7 +60,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Occupied</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["Occupied"]</p>
                         <p class="text-2xl font-bold text-red-600">@Model.Count(r => r.Status == "Occupied")</p>
                     </div>
                     <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -68,7 +72,7 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">Total Capacity</p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["TotalCapacity"]</p>
                         <p class="text-2xl font-bold text-purple-600">@Model.Sum(r => r.Capacity)</p>
                     </div>
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -86,7 +90,7 @@
                     <div class="relative">
                         <input type="text"
                                id="search-input"
-                               placeholder="Search rooms..."
+                               placeholder="@Localizer["SearchRooms"]"
                                class="form-input pl-10"
                                onkeyup="filterRooms()">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -98,22 +102,22 @@
                     <button onclick="filterByStatus('all')"
                             class="filter-btn active"
                             data-filter="all">
-                        All
+                        @Localizer["All"]
                     </button>
                     <button onclick="filterByStatus('available')"
                             class="filter-btn"
                             data-filter="available">
-                        Available
+                        @Localizer["Available"]
                     </button>
                     <button onclick="filterByStatus('occupied')"
                             class="filter-btn"
                             data-filter="occupied">
-                        Occupied
+                        @Localizer["Occupied"]
                     </button>
                     <button onclick="filterByStatus('reserved')"
                             class="filter-btn"
                             data-filter="reserved">
-                        Reserved
+                        @Localizer["Reserved"]
                     </button>
                 </div>
             </div>
@@ -131,11 +135,11 @@
         {
             <div class="card p-12 text-center">
                 <i class="fas fa-door-open text-gray-300 text-6xl mb-4"></i>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">No rooms yet</h3>
-                <p class="text-gray-600 mb-6">Add your first room to get started</p>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">@Localizer["NoRoomsYet"]</h3>
+                <p class="text-gray-600 mb-6">@Localizer["AddFirstRoom"]</p>
                 <button onclick="openModal('add-room-modal')" class="btn btn-primary">
                     <i class="fas fa-plus mr-2"></i>
-                    Add First Room
+                    @Localizer["AddFirstRoomButton"]
                 </button>
             </div>
         }
@@ -146,7 +150,7 @@
 <div id="add-room-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="text-xl font-bold text-gray-900">Add New Room</h3>
+            <h3 class="text-xl font-bold text-gray-900">@Localizer["AddNewRoom"]</h3>
         </div>
         <form id="add-room-form" hx-post="/Room/Create"
               hx-target="#rooms-grid"
@@ -156,12 +160,12 @@
                 <div>
                     <label class="form-label">
                         <i class="fas fa-tag text-blue-600 mr-2"></i>
-                        Room Name
+                        @Localizer["RoomName"]
                     </label>
                     <input type="text"
                            name="Name"
                            class="form-input"
-                           placeholder="VIP Room 1"
+                           placeholder="@Localizer["RoomNamePlaceholder"]"
                            required>
                 </div>
 
@@ -169,7 +173,7 @@
                     <div>
                         <label class="form-label">
                             <i class="fas fa-coins text-blue-600 mr-2"></i>
-                            Hourly Rate (EGP)
+                            @Localizer["HourlyRateEGP"]
                         </label>
                         <input type="number"
                                name="HourlyRate"
@@ -183,12 +187,12 @@
                     <div>
                         <label class="form-label">
                             <i class="fas fa-users text-blue-600 mr-2"></i>
-                            Capacity
+                            @Localizer["Capacity"]
                         </label>
                         <input type="number"
                                name="Capacity"
                                class="form-input"
-                               placeholder="4"
+                               placeholder="@Localizer["CapacityPlaceholder"]"
                                min="1"
                                required>
                     </div>
@@ -197,15 +201,15 @@
                 <div>
                     <label class="form-label">
                         <i class="fas fa-gamepad text-blue-600 mr-2"></i>
-                        Number of Devices
+                        @Localizer["NumberOfDevices"]
                     </label>
                     <input type="number"
                            name="DeviceCount"
                            class="form-input"
-                           placeholder="2"
+                           placeholder="@Localizer["DeviceCountPlaceholder"]"
                            min="0"
                            value="0">
-                    <p class="text-xs text-gray-500 mt-1">How many gaming devices are in this room?</p>
+                    <p class="text-xs text-gray-500 mt-1">@Localizer["HowManyDevices"]</p>
                 </div>
 
                 <div>
@@ -215,7 +219,7 @@
                                class="w-5 h-5 text-blue-600 border-gray-300 rounded">
                         <span class="text-sm font-medium text-gray-700">
                             <i class="fas fa-wind text-blue-600 mr-1"></i>
-                            Room has Air Conditioning
+                            @Localizer["RoomHasAC"]
                         </span>
                     </label>
                 </div>
@@ -225,11 +229,11 @@
                         onclick="closeModal('add-room-modal')"
                         class="btn btn-secondary">
                     <i class="fas fa-times mr-2"></i>
-                    Cancel
+                    @Localizer["Cancel"]
                 </button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-plus mr-2"></i>
-                    Add Room
+                    @Localizer["AddRoomButton"]
                 </button>
             </div>
         </form>
@@ -240,13 +244,13 @@
 <div id="edit-room-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="text-xl font-bold text-gray-900">Edit Room</h3>
+            <h3 class="text-xl font-bold text-gray-900">@Localizer["EditRoom"]</h3>
         </div>
         <form id="edit-room-form">
             <input type="hidden" id="edit-room-id" name="Id">
             <div class="modal-body space-y-4">
                 <div>
-                    <label class="form-label">Room Name</label>
+                    <label class="form-label">@Localizer["RoomName"]</label>
                     <input type="text"
                            id="edit-room-name"
                            name="Name"
@@ -256,7 +260,7 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="form-label">Hourly Rate (EGP)</label>
+                        <label class="form-label">@Localizer["HourlyRateEGP"]</label>
                         <input type="number"
                                id="edit-room-rate"
                                name="HourlyRate"
@@ -267,7 +271,7 @@
                     </div>
 
                     <div>
-                        <label class="form-label">Capacity</label>
+                        <label class="form-label">@Localizer["Capacity"]</label>
                         <input type="number"
                                id="edit-room-capacity"
                                name="Capacity"
@@ -280,7 +284,7 @@
                 <div>
                     <label class="form-label">
                         <i class="fas fa-gamepad text-blue-600 mr-2"></i>
-                        Number of Devices
+                        @Localizer["NumberOfDevices"]
                     </label>
                     <input type="number"
                            id="edit-room-devices"
@@ -296,7 +300,7 @@
                                name="HasAC"
                                class="w-5 h-5 text-blue-600 border-gray-300 rounded">
                         <span class="text-sm font-medium text-gray-700">
-                            Has Air Conditioning
+                            @Localizer["RoomHasAC"]
                         </span>
                     </label>
                 </div>
@@ -308,7 +312,7 @@
                                name="IsActive"
                                class="w-5 h-5 text-blue-600 border-gray-300 rounded">
                         <span class="text-sm font-medium text-gray-700">
-                            Room is active
+                            @Localizer["RoomIsActive"]
                         </span>
                     </label>
                 </div>
@@ -317,11 +321,11 @@
                 <button type="button"
                         onclick="closeModal('edit-room-modal')"
                         class="btn btn-secondary">
-                    Cancel
+                    @Localizer["Cancel"]
                 </button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-2"></i>
-                    Save Changes
+                    @Localizer["SaveChanges"]
                 </button>
             </div>
         </form>

@@ -208,6 +208,11 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             return _completedSessions;
         }
 
+        public static List<SessionDto> GetActiveSessions()
+        {
+            return _activeSessions;
+        }
+
         // ============================================
         // HELPER METHODS
         // ============================================
