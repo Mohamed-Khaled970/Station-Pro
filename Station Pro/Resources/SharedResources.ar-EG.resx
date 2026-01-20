@@ -327,6 +327,9 @@
   <data name="UpdatesEvery15s" xml:space="preserve">
     <value>يتم التحديث كل 15 ثانية</value>
   </data>
+	<data name="UpdatesEvery60s" xml:space="preserve">
+    <value>يتم التحديث كل 60 ثانية</value>
+  </data>
   <data name="LoadingSessions" xml:space="preserve">
     <value>جاري تحميل الجلسات...</value>
   </data>
