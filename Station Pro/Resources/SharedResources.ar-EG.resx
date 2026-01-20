@@ -154,7 +154,7 @@
     <value>الأجهزة النشطة</value>
   </data>
   <data name="InUse" xml:space="preserve">
-    <value>قيد الاستخدام</value>
+    <value>مستخدم</value>
   </data>
   <data name="Available" xml:space="preserve">
     <value>متاح</value>
@@ -1181,6 +1181,10 @@
 </data>
 	<data name="UsageTime" xml:space="preserve">
   <value>وقت الاستخدام</value>
+</data>
+
+	<data name="In Use" xml:space="preserve">
+  <value>مستخدم</value>
 </data>
 
 </root>

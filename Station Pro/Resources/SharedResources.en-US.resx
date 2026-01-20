@@ -1164,5 +1164,8 @@
 	<data name="Tools" xml:space="preserve">
   <value>Tools</value>
 </data>
-	
+
+	<data name="In Use" xml:space="preserve">
+  <value>In Use</value>
+</data>
 </root>

@@ -749,3 +749,130 @@ input[type="number"] {
         page-break-inside: avoid;
     }
 }
+
+
+
+/* ============================================ */
+/* FIX FOR RTL PLACEHOLDER VISIBILITY */
+/* ============================================ */
+
+/* Ensure native placeholder works properly in RTL */
+input[type="text"]::placeholder,
+input[type="number"]::placeholder,
+.form-input::placeholder {
+    opacity: 0.5;
+    color: #9ca3af;
+    transition: opacity 0.2s ease;
+}
+
+/* Fix search input padding in RTL to prevent placeholder overlap */
+[dir="rtl"] #search-input {
+    padding-right: 2.5rem !important;
+    padding-left: 1rem !important;
+    text-align: right;
+}
+
+[dir="ltr"] #search-input {
+    padding-left: 2.5rem !important;
+    padding-right: 1rem !important;
+    text-align: left;
+}
+
+/* Fix search icon position in RTL */
+[dir="rtl"] #search-input + i.fa-search,
+[dir="rtl"] .fa-search.absolute {
+    left: auto !important;
+    right: 0.75rem !important;
+}
+
+[dir="ltr"] #search-input + i.fa-search,
+[dir="ltr"] .fa-search.absolute {
+    right: auto !important;
+    left: 0.75rem !important;
+}
+
+/* Fix for general input fields in RTL */
+[dir="rtl"] .form-input.pl-10 {
+    padding-left: 1rem !important;
+    padding-right: 2.5rem !important;
+}
+
+[dir="ltr"] .form-input.pl-10 {
+    padding-left: 2.5rem !important;
+    padding-right: 1rem !important;
+}
+
+/* Hide placeholder when input has focus or value */
+input[type="text"]:focus::placeholder,
+input[type="number"]:focus::placeholder,
+.form-input:focus::placeholder {
+    opacity: 0;
+}
+
+/* RTL specific placeholder fixes */
+[dir="rtl"] input[type="text"]::placeholder,
+[dir="rtl"] input[type="number"]::placeholder,
+[dir="rtl"] .form-input::placeholder {
+    text-align: right;
+    opacity: 0.5;
+}
+
+[dir="rtl"] input[type="text"]:focus::placeholder,
+[dir="rtl"] input[type="number"]:focus::placeholder,
+[dir="rtl"] .form-input:focus::placeholder {
+    opacity: 0;
+}
+
+/* Ensure input text direction is correct */
+[dir="rtl"] input[type="text"],
+[dir="rtl"] input[type="number"],
+[dir="rtl"] .form-input {
+    text-align: right;
+    direction: rtl;
+}
+
+[dir="ltr"] input[type="text"],
+[dir="ltr"] input[type="number"],
+[dir="ltr"] .form-input {
+    text-align: left;
+    direction: ltr;
+}
+
+/* Fix for absolute positioned placeholder (if using custom placeholder) */
+[dir="rtl"] .absolute.right-3 {
+    right: auto !important;
+    left: 0.75rem !important;
+}
+
+[dir="rtl"] .absolute.left-3 {
+    left: auto !important;
+    right: 0.75rem !important;
+}
+
+/* Ensure placeholder disappears when input is not empty */
+input:not(:placeholder-shown) + .custom-placeholder,
+input:focus + .custom-placeholder {
+    display: none !important;
+    opacity: 0 !important;
+}
+
+/* Additional fix for number inputs in RTL */
+[dir="rtl"] input[type="number"] {
+    text-align: right;
+}
+
+/* Fix for span text positioning in RTL (like "EGP/hour") */
+[dir="rtl"] .absolute.right-3.top-1\/2 {
+    right: auto !important;
+    left: 0.75rem !important;
+}
+
+[dir="rtl"] input[type="number"] {
+    padding-left: 4rem !important;
+    padding-right: 1rem !important;
+}
+
+[dir="ltr"] input[type="number"] {
+    padding-right: 4rem !important;
+    padding-left: 1rem !important;
+}
