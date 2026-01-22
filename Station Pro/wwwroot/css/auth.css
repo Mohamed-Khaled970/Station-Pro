@@ -4,11 +4,11 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
-/* Animated Gaming Background */
+/* Simplified Gaming Background */
 .gaming-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 20s ease infinite;
     position: relative;
     overflow-x: hidden;
     overflow-y: auto;
@@ -21,8 +21,7 @@ body {
         left: 0;
         right: 0;
         bottom: 0;
-        background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-        animation: float 20s ease-in-out infinite;
+        background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
         pointer-events: none;
     }
 
@@ -33,42 +32,24 @@ body {
         left: 0;
         right: 0;
         bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        opacity: 0.4;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.3;
         pointer-events: none;
     }
 
 @keyframes gradientShift {
-    0% {
+    0%, 100% {
         background-position: 0% 50%;
     }
 
     50% {
         background-position: 100% 50%;
     }
-
-    100% {
-        background-position: 0% 50%;
-    }
 }
 
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0) rotate(0deg);
-    }
-
-    33% {
-        transform: translateY(-20px) rotate(5deg);
-    }
-
-    66% {
-        transform: translateY(10px) rotate(-5deg);
-    }
-}
-
-/* Animations */
+/* Simplified Animations */
 .fade-in {
-    animation: fadeIn 0.8s ease-out forwards;
+    animation: fadeIn 0.4s ease-out forwards;
     opacity: 0;
 }
 
@@ -79,9 +60,9 @@ body {
 }
 
 .slide-up {
-    animation: slideUp 0.8s ease-out forwards;
+    animation: slideUp 0.4s ease-out forwards;
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
 }
 
 @keyframes slideUp {
@@ -93,12 +74,11 @@ body {
 
 /* Form Elements */
 .form-input {
-    transition: all 0.3s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
     .form-input:focus {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
     }
 
     .form-input.error {
@@ -108,7 +88,7 @@ body {
 /* Glass Card Effect */
 .glass-card {
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     position: relative;
     z-index: 10;
@@ -117,29 +97,17 @@ body {
 /* Buttons */
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
-    overflow: hidden;
 }
-
-    .btn-primary::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s;
-    }
-
-    .btn-primary:hover::before {
-        left: 100%;
-    }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
     }
 
     .btn-primary:disabled {
@@ -151,16 +119,16 @@ body {
 /* Icon Box */
 .icon-box {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
 }
 
 /* Feature Cards */
 .feature-card {
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease;
 }
 
     .feature-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
     }
 
 /* Password Strength Indicator */
@@ -204,36 +172,52 @@ body {
     }
 
 /* Toast Notifications */
+.toast-notification {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: slideInRight 0.3s ease;
+    max-width: 400px;
+}
+
+    .toast-notification.hide {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
 .success-message {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
-    transition: all 0.3s ease;
 }
 
 .error-message {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
-    transition: all 0.3s ease;
-}
-
-@keyframes shake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-
-    25% {
-        transform: translateX(-10px);
-    }
-
-    75% {
-        transform: translateX(10px);
-    }
-}
-
-/* Form Container */
-.auth-container {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
 }
 
 /* Social Login Buttons */
@@ -255,16 +239,16 @@ body {
         transform: translateY(-2px);
     }
 
-/* Floating Labels */
-.floating-label {
-    position: relative;
+/* Loading Spinner */
+.spinner {
+    animation: spin 1s linear infinite;
 }
 
-    .floating-label input:focus ~ label,
-    .floating-label input:not(:placeholder-shown) ~ label {
-        transform: translateY(-1.5rem) scale(0.85);
-        color: #3b82f6;
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
+}
 
 /* Responsive */
 @media (max-width: 1024px) {
@@ -276,14 +260,93 @@ body {
     .glass-card {
         max-height: none;
     }
+
+    /* Reduce animations on tablets */
+    .fade-in,
+    .slide-up {
+        animation-duration: 0.3s;
+    }
 }
 
 @media (max-width: 640px) {
-    .auth-container {
-        padding: 1.5rem;
+    .gaming-bg {
+        padding: 1rem;
+        /* Disable gradient animation on mobile for performance */
+        animation: none;
+        background-position: 0% 50%;
+    }
+
+    .glass-card {
+        backdrop-filter: blur(5px);
+    }
+
+    /* Disable most animations on mobile */
+    .fade-in,
+    .slide-up,
+    .feature-card {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+        .btn-primary:hover,
+        .feature-card:hover,
+        .social-btn:hover {
+            transform: none;
+        }
+
+    .form-input:focus {
+        box-shadow: none;
+    }
+
+    .toast-notification {
+        right: 0.5rem;
+        left: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 
     .gaming-bg {
-        padding: 1rem;
+        animation: none;
     }
+}
+
+/* RTL Support */
+[dir="rtl"] .toast-notification {
+    right: auto;
+    left: 1rem;
+}
+
+    [dir="rtl"] .toast-notification.hide {
+        animation: slideOutLeft 0.3s ease forwards;
+    }
+
+@keyframes slideOutLeft {
+    to {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+}
+
+@media (max-width: 640px) {
+    [dir="rtl"] .toast-notification {
+        left: 0.5rem;
+        right: 0.5rem;
+    }
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
 }

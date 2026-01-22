@@ -1,4 +1,4 @@
-﻿// wwwroot/js/auth.js
+﻿// wwwroot/js/auth.js - Optimized for Performance
 
 // ============================================
 // FORM VALIDATION
@@ -16,10 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeLoginForm(loginForm);
     }
 
-    // Add animation delays for feature cards
+    // Simple fade-in for feature cards without animation delays
     const cards = document.querySelectorAll('.feature-card');
-    cards.forEach((card, index) => {
-        card.style.animationDelay = `${0.4 + (index * 0.1)}s`;
+    cards.forEach(card => {
         card.classList.add('fade-in');
     });
 });
@@ -32,18 +31,18 @@ function initializeRegisterForm(form) {
     const passwordInput = form.querySelector('#password');
     const confirmPasswordInput = form.querySelector('#confirm-password');
 
-    // Password strength indicator
+    // Password strength indicator with debounce
     if (passwordInput) {
-        passwordInput.addEventListener('input', () => {
+        passwordInput.addEventListener('input', debounce(() => {
             checkPasswordStrength(passwordInput.value);
-        });
+        }, 200));
     }
 
     // Confirm password validation
     if (confirmPasswordInput) {
-        confirmPasswordInput.addEventListener('input', () => {
+        confirmPasswordInput.addEventListener('input', debounce(() => {
             validatePasswordMatch(passwordInput.value, confirmPasswordInput.value);
-        });
+        }, 200));
     }
 
     // Form submission
@@ -75,7 +74,6 @@ function initializeLoginForm(form) {
 function checkPasswordStrength(password) {
     const strengthIndicator = document.getElementById('password-strength');
     if (!strengthIndicator) {
-        // Create strength indicator if it doesn't exist
         const passwordInput = document.getElementById('password');
         if (passwordInput && passwordInput.parentElement) {
             const indicator = document.createElement('div');
@@ -199,7 +197,7 @@ async function submitRegisterForm(form) {
 
     // Show loading state
     submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating your store...';
+    submitButton.innerHTML = '<i class="fas fa-spinner spinner mr-2"></i>Creating your store...';
 
     try {
         const formData = new FormData(form);
@@ -211,10 +209,8 @@ async function submitRegisterForm(form) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // Show success message
             showSuccess('Account created! Check your email to verify.');
 
-            // Redirect after 2 seconds
             setTimeout(() => {
                 window.location.href = '/verify-email-sent';
             }, 2000);
@@ -241,7 +237,7 @@ async function submitLoginForm(form) {
 
     // Show loading state
     submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging in...';
+    submitButton.innerHTML = '<i class="fas fa-spinner spinner mr-2"></i>Logging in...';
 
     try {
         const formData = new FormData(form);
@@ -253,7 +249,6 @@ async function submitLoginForm(form) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // Show success and redirect
             showSuccess('Login successful! Redirecting...');
 
             setTimeout(() => {
@@ -302,36 +297,36 @@ function isValidEmail(email) {
 }
 
 function showError(message) {
-    // Create toast notification
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 error-message z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-2xl';
-    toast.innerHTML = `
-        <i class="fas fa-exclamation-circle text-2xl"></i>
-        <span>${message}</span>
-    `;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300);
-    }, 5000);
+    showToast(message, 'error');
 }
 
 function showSuccess(message) {
+    showToast(message, 'success');
+}
+
+function showToast(message, type = 'success') {
+    // Remove existing toast
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // Create new toast
     const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 success-message z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-2xl';
+    toast.className = `toast-notification ${type}-message`;
+
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
     toast.innerHTML = `
-        <i class="fas fa-check-circle text-2xl"></i>
+        <i class="fas ${icon} text-xl"></i>
         <span>${message}</span>
     `;
 
     document.body.appendChild(toast);
 
+    // Auto-remove after 5 seconds
     setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
+        toast.classList.add('hide');
         setTimeout(() => toast.remove(), 300);
     }, 5000);
 }
@@ -339,12 +334,8 @@ function showSuccess(message) {
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(() => func(...args), wait);
     };
 }
 
