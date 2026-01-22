@@ -1,4 +1,4 @@
-﻿// wwwroot/js/device.js - Updated with Multi-Session Support
+﻿// wwwroot/js/device.js - Updated with Delete Modal
 
 // ============================================
 // MODAL FUNCTIONS
@@ -22,6 +22,90 @@ function closeModal(modalId) {
         if (form) {
             form.reset();
         }
+    }
+}
+
+// ============================================
+// DELETE MODAL FUNCTIONS
+// ============================================
+
+let deviceToDelete = null;
+
+function deleteDevice(deviceId, deviceName) {
+    // Store device info for deletion
+    deviceToDelete = { id: deviceId, name: deviceName };
+
+    // Update modal with device name
+    document.getElementById('delete-device-name').textContent = deviceName;
+
+    // Open delete confirmation modal
+    openModal('delete-device-modal');
+}
+
+function closeDeleteModal() {
+    closeModal('delete-device-modal');
+    deviceToDelete = null;
+}
+
+async function confirmDeleteDevice() {
+    if (!deviceToDelete) return;
+
+    const { id, name } = deviceToDelete;
+
+    // Disable confirm button to prevent double-clicks
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    const originalHtml = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>جاري الحذف...';
+
+    try {
+        const currentPath = window.location.pathname;
+        const basePath = currentPath.replace(/\/(device|Device).*/, '');
+
+        const response = await fetch(`${basePath}/device/delete/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            // Close modal
+            closeDeleteModal();
+
+            // Remove device card with animation
+            const deviceCard = document.querySelector(`[data-device-id="${id}"]`);
+            if (deviceCard) {
+                deviceCard.style.opacity = '0';
+                deviceCard.style.transform = 'scale(0.9)';
+
+                setTimeout(() => {
+                    deviceCard.remove();
+                    updateDeviceStats();
+
+                    // Show success notification
+                    const successMsg = document.getElementById('device-deleted-success')?.value || 'Device deleted successfully!';
+                    showSuccessNotification(
+                        '✅ ' + successMsg,
+                        `"${name}" تم حذف الجهاز`,
+                        'fa-trash-alt'
+                    );
+                }, 300);
+            }
+        } else {
+            const errorData = await response.json();
+            const failedMsg = document.getElementById('failed-delete-device')?.value || 'Failed to delete device';
+            showToast(errorData.message || failedMsg, 'error');
+
+            // Re-enable button
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalHtml;
+        }
+    } catch (error) {
+        console.error('Error deleting device:', error);
+        const errorMsg = document.getElementById('error-deleting')?.value || 'An error occurred while deleting';
+        showToast(errorMsg, 'error');
+
+        // Re-enable button
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalHtml;
     }
 }
 
@@ -169,6 +253,8 @@ function filterByStatus(status) {
 
 function updateNoResultsMessage(visibleCount) {
     let noResultsDiv = document.getElementById('no-results-message');
+    const noResultsText = document.getElementById('no-results-text')?.value || 'No devices found';
+    const adjustFiltersText = document.getElementById('adjust-filters-text')?.value || 'Try adjusting your search or filters';
 
     if (visibleCount === 0) {
         if (!noResultsDiv) {
@@ -177,8 +263,8 @@ function updateNoResultsMessage(visibleCount) {
             noResultsDiv.className = 'col-span-full text-center py-12';
             noResultsDiv.innerHTML = `
                 <i class="fas fa-search text-gray-300 text-5xl mb-4"></i>
-                <p class="text-gray-600 font-medium">No devices found</p>
-                <p class="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>
+                <p class="text-gray-600 font-medium">${noResultsText}</p>
+                <p class="text-gray-400 text-sm mt-2">${adjustFiltersText}</p>
             `;
             document.getElementById('devices-grid').appendChild(noResultsDiv);
         }
@@ -204,6 +290,8 @@ function updateFilterStats(status, count) {
 function showSuccessNotification(title, message, icon = 'fa-check-circle') {
     const existing = document.getElementById('success-notification');
     if (existing) existing.remove();
+
+    const awesomeText = document.getElementById('awesome-text')?.value || 'Awesome!';
 
     const notification = document.createElement('div');
     notification.id = 'success-notification';
@@ -239,7 +327,7 @@ function showSuccessNotification(title, message, icon = 'fa-check-circle') {
             <div class="success-notification-actions">
                 <button onclick="closeSuccessNotification()" class="success-notification-btn-primary">
                     <i class="fas fa-check mr-2"></i>
-                    <span>Awesome!</span>
+                    <span>${awesomeText}</span>
                 </button>
             </div>
         </div>
@@ -299,9 +387,13 @@ function closeSuccessNotification() {
 function handleDeviceAdded() {
     closeModal('add-device-modal');
 
+    // Get localized messages from hidden inputs
+    const successTitle = document.getElementById('device-added-title')?.value || 'Device Added Successfully! 🎉';
+    const successMessage = document.getElementById('device-added-message')?.value || 'Your new device has been created and is ready to use.';
+
     showSuccessNotification(
-        'Device Added Successfully! 🎉',
-        'Your new device has been created and is ready to use. You can now start sessions on this device.',
+        successTitle,
+        successMessage,
         'fa-gamepad'
     );
 
@@ -341,7 +433,8 @@ async function editDevice(deviceId) {
         openModal('edit-device-modal');
     } catch (error) {
         console.error('Error loading device:', error);
-        showToast('Failed to load device details', 'error');
+        const errorMsg = document.getElementById('failed-load-device')?.value || 'Failed to load device details';
+        showToast(errorMsg, 'error');
     }
 }
 
@@ -382,61 +475,26 @@ function setupEditDeviceForm() {
 
             if (response.ok) {
                 closeModal('edit-device-modal');
+
+                const updateTitle = document.getElementById('device-updated-title')?.value || 'Device Updated! ✨';
+                const updateMessage = document.getElementById('device-updated-message')?.value || 'Your device has been updated successfully.';
+
                 showSuccessNotification(
-                    'Device Updated! ✨',
-                    'Your device has been updated successfully with the new information.',
+                    updateTitle,
+                    updateMessage,
                     'fa-edit'
                 );
             } else {
                 const errorData = await response.json();
-                showToast(errorData.message || 'Failed to update device', 'error');
+                const failedMsg = document.getElementById('failed-update-device')?.value || 'Failed to update device';
+                showToast(errorData.message || failedMsg, 'error');
             }
         } catch (error) {
             console.error('Error updating device:', error);
-            showToast('An error occurred while updating', 'error');
+            const errorMsg = document.getElementById('error-updating')?.value || 'An error occurred while updating';
+            showToast(errorMsg, 'error');
         }
     });
-}
-
-// ============================================
-// DELETE DEVICE
-// ============================================
-
-async function deleteDevice(deviceId, deviceName) {
-    const confirmed = confirm(
-        `⚠️ Delete Device\n\nAre you sure you want to delete "${deviceName}"?\n\nThis action cannot be undone.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-        const currentPath = window.location.pathname;
-        const basePath = currentPath.replace(/\/(device|Device).*/, '');
-
-        const response = await fetch(`${basePath}/device/delete/${deviceId}`, {
-            method: 'DELETE'
-        });
-
-        if (response.ok) {
-            const deviceCard = document.querySelector(`[data-device-id="${deviceId}"]`);
-            if (deviceCard) {
-                deviceCard.style.opacity = '0';
-                deviceCard.style.transform = 'scale(0.9)';
-
-                setTimeout(() => {
-                    deviceCard.remove();
-                    updateDeviceStats();
-                    showToast('Device deleted successfully!', 'success');
-                }, 300);
-            }
-        } else {
-            const errorData = await response.json();
-            showToast(errorData.message || 'Failed to delete device', 'error');
-        }
-    } catch (error) {
-        console.error('Error deleting device:', error);
-        showToast('An error occurred while deleting', 'error');
-    }
 }
 
 // ============================================
@@ -496,6 +554,7 @@ function setupKeyboardShortcuts() {
 
         if (e.key === 'Escape') {
             closeSuccessNotification();
+            closeDeleteModal();
 
             const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
             modals.forEach(modal => closeModal(modal.id));
@@ -508,8 +567,13 @@ function setupKeyboardShortcuts() {
 // ============================================
 
 function quickStartDeviceSession(deviceId, deviceName, isMultiSession) {
-    const sessionType = isMultiSession ? 'multi-player' : 'single-player';
-    const message = `Start a ${sessionType} session on "${deviceName}"?`;
+    const singleText = document.getElementById('single-player-text')?.value || 'single-player';
+    const multiText = document.getElementById('multi-player-text')?.value || 'multi-player';
+    const startSessionText = document.getElementById('start-session-text')?.value || 'Start a';
+    const onText = document.getElementById('on-text')?.value || 'on';
+
+    const sessionType = isMultiSession ? multiText : singleText;
+    const message = `${startSessionText} ${sessionType} ${onText} "${deviceName}"?`;
 
     if (confirm(message)) {
         console.log(`Starting ${sessionType} session on device ${deviceId}`);

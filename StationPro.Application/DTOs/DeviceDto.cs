@@ -24,7 +24,6 @@ namespace StationPro.Application.DTOs
 
         public bool IsAvailable { get; set; }
         public string Status { get; set; } = string.Empty;
-        public string StatusName => IsAvailable ? "Available" : "In Use";
         public SessionDto? CurrentSession { get; set; }
 
         public string RateDisplay

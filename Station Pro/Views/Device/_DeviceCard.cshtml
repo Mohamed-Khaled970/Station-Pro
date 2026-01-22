@@ -25,7 +25,7 @@
                          (int)Model.Type == 5 ? "fas fa-desktop" :
                          (int)Model.Type == 6 ? "fas fa-table-tennis" :
                          ((int)Model.Type == 7 || (int)Model.Type == 8) ? "fas fa-circle" : "fas fa-gamepad";
-    
+
     var multiSessionFilter = Model.SupportsMultiSession ? "multi-session" : "";
 }
 
@@ -49,7 +49,7 @@
 
         <!-- Status Badge -->
         <span class="status-badge @statusBadgeClass">
-             @Localizer[Model.StatusName]
+            @Localizer[Model.Status]
         </span>
     </div>
 
@@ -64,7 +64,7 @@
                 </span>
                 <span class="text-lg font-bold text-blue-600">@Model.SingleSessionRate.ToString("C")</span>
             </div>
-            
+
             @if (Model.SupportsMultiSession && Model.MultiSessionRate.HasValue)
             {
                 <div class="flex justify-between items-center p-2 bg-purple-50 rounded-lg border border-purple-200">
@@ -145,11 +145,19 @@
                 @Localizer["InUse"]
             </button>
         }
-        else
+        else if (Model.Status == "Maintenance")
         {
             <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
                 <i class="fas fa-tools mr-2"></i>
-                @Model.StatusName
+                @Localizer["Maintenance"]
+            </button>
+        }
+        else
+        {
+            <!-- Offline or other status -->
+            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
+                <i class="fas fa-power-off mr-2"></i>
+                @Localizer[Model.Status]
             </button>
         }
 

@@ -58,24 +58,11 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             return PartialView("_ActiveSessions", _activeSessions);
         }
 
-        // Device Cards (for HTMX auto-refresh)
+        // Device Cards (for HTMX auto-refresh) - UPDATED WITH MULTI-SESSION SUPPORT
         public IActionResult DeviceCards()
         {
             var devices = new List<DeviceDto>();
 
-
-            /*
-             * 
-             *                 Id = 8,
-                Name = "Gaming PC - 1",
-                Type = DeviceType.PC,
-                SingleSessionRate = 40,
-                MultiSessionRate = null,
-                SupportsMultiSession = false,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-             */
             // Add devices that are in use
             foreach (var session in _activeSessions)
             {
@@ -85,16 +72,17 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Name = session.DeviceName,
                     Type = GetDeviceType(session.DeviceName),
                     SingleSessionRate = session.HourlyRate,
-                    MultiSessionRate = null,
-                    SupportsMultiSession = false,
+                    MultiSessionRate = GetMultiSessionRate(session.DeviceName), // NEW
+                    SupportsMultiSession = SupportsMultiSession(session.DeviceName), // NEW
                     IsAvailable = false,
                     Status = "In Use",
                     CurrentSession = session
                 });
             }
 
-            // Add available devices
+            // Add available devices with multi-session support
             var usedDeviceIds = _activeSessions.Select(s => s.DeviceId).ToList();
+
             if (!usedDeviceIds.Contains(3))
             {
                 devices.Add(new DeviceDto
@@ -103,13 +91,14 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Name = "PS4 - Station 1",
                     Type = DeviceType.PS4,
                     SingleSessionRate = 40,
-                    MultiSessionRate = null,
-                    SupportsMultiSession = false,
+                    MultiSessionRate = 60, // Multi-session rate
+                    SupportsMultiSession = true, // Enable multi-session
                     IsAvailable = true,
                     Status = "Available",
                     CurrentSession = null
                 });
             }
+
             if (!usedDeviceIds.Contains(6))
             {
                 devices.Add(new DeviceDto
@@ -118,13 +107,14 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Name = "Xbox One",
                     Type = DeviceType.Xbox,
                     SingleSessionRate = 40,
-                    MultiSessionRate = null,
-                    SupportsMultiSession = false,
+                    MultiSessionRate = 70, // Multi-session rate
+                    SupportsMultiSession = true, // Enable multi-session
                     IsAvailable = true,
                     Status = "Available",
                     CurrentSession = null
                 });
             }
+
             if (!usedDeviceIds.Contains(8))
             {
                 devices.Add(new DeviceDto
@@ -133,7 +123,7 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Name = "Gaming PC - Standard",
                     Type = DeviceType.PC,
                     SingleSessionRate = 40,
-                    MultiSessionRate = null,
+                    MultiSessionRate = null, // No multi-session for this device
                     SupportsMultiSession = false,
                     IsAvailable = true,
                     Status = "Available",
@@ -152,8 +142,8 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                         Name = $"Device {i}",
                         Type = DeviceType.PS4,
                         SingleSessionRate = 40,
-                        MultiSessionRate = null,
-                        SupportsMultiSession = false,
+                        MultiSessionRate = 60, // Add multi-session support
+                        SupportsMultiSession = true,
                         IsAvailable = true,
                         Status = "Available",
                         CurrentSession = null
@@ -162,6 +152,30 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             }
 
             return PartialView("_DeviceCards", devices);
+        }
+
+        // NEW: Helper method to determine if device supports multi-session
+        private bool SupportsMultiSession(string deviceName)
+        {
+            // You can customize this logic based on your business rules
+            // For example, only PlayStation and Xbox devices support multi-session
+            return deviceName.Contains("PS5") ||
+                   deviceName.Contains("PS4") ||
+                   deviceName.Contains("Xbox");
+        }
+
+        // NEW: Helper method to get multi-session rate
+        private decimal? GetMultiSessionRate(string deviceName)
+        {
+            if (!SupportsMultiSession(deviceName))
+                return null;
+
+            // Define multi-session rates based on device type
+            if (deviceName.Contains("PS5")) return 75m;
+            if (deviceName.Contains("PS4")) return 60m;
+            if (deviceName.Contains("Xbox")) return 70m;
+
+            return null;
         }
 
         // ============================================

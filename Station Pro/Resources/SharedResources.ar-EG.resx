@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
+	<!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -59,608 +59,617 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="Login" xml:space="preserve">
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<data name="Login" xml:space="preserve">
     <value>تسجيل الدخول</value>
   </data>
-  <data name="StartFreeTrial" xml:space="preserve">
+	<data name="StartFreeTrial" xml:space="preserve">
     <value>ابدأ النسخة التجريبية</value>
   </data>
-  <data name="TryFree" xml:space="preserve">
+	<data name="TryFree" xml:space="preserve">
     <value>جرب مجاناً</value>
   </data>
-  <data name="ManageYourGamingStore" xml:space="preserve">
+	<data name="ManageYourGamingStore" xml:space="preserve">
     <value>أدر متجر الألعاب الخاص بك كالمحترفين</value>
   </data>
-  <data name="HeroDescription" xml:space="preserve">
+	<data name="HeroDescription" xml:space="preserve">
     <value>تتبع الأجهزة، وإدارة الجلسات، وزيادة إيراداتك مع ستيشن برو - نظام الإدارة الكامل لمتاجر البلايستيشن في مصر.</value>
   </data>
-  <data name="SeeHowItWorks" xml:space="preserve">
+	<data name="SeeHowItWorks" xml:space="preserve">
     <value>شاهد كيف يعمل</value>
   </data>
-  <data name="ActiveStores" xml:space="preserve">
+	<data name="ActiveStores" xml:space="preserve">
     <value>متجر نشط</value>
   </data>
-  <data name="SessionsTracked" xml:space="preserve">
+	<data name="SessionsTracked" xml:space="preserve">
     <value>جلسة مسجلة</value>
   </data>
-  <data name="UserRating" xml:space="preserve">
+	<data name="UserRating" xml:space="preserve">
     <value>تقييم المستخدمين</value>
   </data>
-  <data name="DashboardPreview" xml:space="preserve">
+	<data name="DashboardPreview" xml:space="preserve">
     <value>معاينة لوحة التحكم</value>
   </data>
-  <data name="TodayRevenue" xml:space="preserve">
+	<data name="TodayRevenue" xml:space="preserve">
     <value>إيرادات اليوم</value>
   </data>
-  <data name="ActiveDevices" xml:space="preserve">
+	<data name="ActiveDevices" xml:space="preserve">
     <value>الأجهزة النشطة</value>
   </data>
-  <data name="InUse" xml:space="preserve">
+	<data name="InUse" xml:space="preserve">
     <value>مستخدم</value>
   </data>
-  <data name="Available" xml:space="preserve">
+	<data name="Available" xml:space="preserve">
     <value>متاح</value>
   </data>
-  <data name="EverythingYouNeed" xml:space="preserve">
+	<data name="EverythingYouNeed" xml:space="preserve">
     <value>كل ما تحتاجه</value>
   </data>
-  <data name="PowerfulFeatures" xml:space="preserve">
+	<data name="PowerfulFeatures" xml:space="preserve">
     <value>ميزات قوية لإدارة متجرك بكفاءة</value>
   </data>
-  <data name="RealTimeTracking" xml:space="preserve">
+	<data name="RealTimeTracking" xml:space="preserve">
     <value>التتبع في الوقت الفعلي</value>
   </data>
-  <data name="RealTimeTrackingDesc" xml:space="preserve">
+	<data name="RealTimeTrackingDesc" xml:space="preserve">
     <value>تتبع الجلسات النشطة مع مؤقتات مباشرة وحساب التكلفة التلقائي.</value>
   </data>
-  <data name="RevenueReports" xml:space="preserve">
+	<data name="RevenueReports" xml:space="preserve">
     <value>تقارير الإيرادات</value>
   </data>
-  <data name="RevenueReportsDesc" xml:space="preserve">
+	<data name="RevenueReportsDesc" xml:space="preserve">
     <value>احصل على تحليلات تفصيلية يومية وأسبوعية وشهرية للإيرادات.</value>
   </data>
-  <data name="DeviceManagement" xml:space="preserve">
+	<data name="DeviceManagement" xml:space="preserve">
     <value>إدارة الأجهزة</value>
   </data>
-  <data name="DeviceManagementDesc" xml:space="preserve">
+	<data name="DeviceManagementDesc" xml:space="preserve">
     <value>إدارة أجهزة PS5 و PS4 وأجهزة الألعاب الأخرى بسهولة.</value>
   </data>
-  <data name="MobileFriendly" xml:space="preserve">
+	<data name="MobileFriendly" xml:space="preserve">
     <value>متوافق مع الجوال</value>
   </data>
-  <data name="MobileFriendlyDesc" xml:space="preserve">
+	<data name="MobileFriendlyDesc" xml:space="preserve">
     <value>الوصول من أي مكان على أي جهاز - سطح المكتب أو الجهاز اللوحي أو الهاتف.</value>
   </data>
-  <data name="SecureReliable" xml:space="preserve">
+	<data name="SecureReliable" xml:space="preserve">
     <value>آمن وموثوق</value>
   </data>
-  <data name="SecureReliableDesc" xml:space="preserve">
+	<data name="SecureReliableDesc" xml:space="preserve">
     <value>بياناتك مشفرة ويتم نسخها احتياطياً تلقائياً كل يوم.</value>
   </data>
-  <data name="Support247" xml:space="preserve">
+	<data name="Support247" xml:space="preserve">
     <value>دعم على مدار الساعة</value>
   </data>
-  <data name="Support247Desc" xml:space="preserve">
+	<data name="Support247Desc" xml:space="preserve">
     <value>احصل على المساعدة كلما احتجت إليها مع فريق الدعم المخصص لدينا.</value>
   </data>
-  <data name="SimplePricing" xml:space="preserve">
+	<data name="SimplePricing" xml:space="preserve">
     <value>أسعار بسيطة</value>
   </data>
-  <data name="ChoosePerfectPlan" xml:space="preserve">
+	<data name="ChoosePerfectPlan" xml:space="preserve">
     <value>اختر الخطة المثالية لمتجرك</value>
   </data>
-  <data name="Free" xml:space="preserve">
+	<data name="Free" xml:space="preserve">
     <value>مجاني</value>
   </data>
-  <data name="PerfectToStart" xml:space="preserve">
+	<data name="PerfectToStart" xml:space="preserve">
     <value>مثالي للبدء</value>
   </data>
-  <data name="UpTo5Devices" xml:space="preserve">
+	<data name="UpTo5Devices" xml:space="preserve">
     <value>حتى 5 أجهزة</value>
   </data>
-  <data name="BasicReports" xml:space="preserve">
+	<data name="BasicReports" xml:space="preserve">
     <value>تقارير أساسية</value>
   </data>
-  <data name="EmailSupport" xml:space="preserve">
+	<data name="EmailSupport" xml:space="preserve">
     <value>دعم عبر البريد الإلكتروني</value>
   </data>
-  <data name="GetStarted" xml:space="preserve">
+	<data name="GetStarted" xml:space="preserve">
     <value>ابدأ الآن</value>
   </data>
-  <data name="Pro" xml:space="preserve">
+	<data name="Pro" xml:space="preserve">
     <value>احترافي</value>
   </data>
-  <data name="MostPopular" xml:space="preserve">
+	<data name="MostPopular" xml:space="preserve">
     <value>الأكثر شعبية</value>
   </data>
-  <data name="ForGrowingStores" xml:space="preserve">
+	<data name="ForGrowingStores" xml:space="preserve">
     <value>للمتاجر المتنامية</value>
   </data>
-  <data name="UpTo50Devices" xml:space="preserve">
+	<data name="UpTo50Devices" xml:space="preserve">
     <value>حتى 50 جهاز</value>
   </data>
-  <data name="AdvancedAnalytics" xml:space="preserve">
+	<data name="AdvancedAnalytics" xml:space="preserve">
     <value>تحليلات متقدمة</value>
   </data>
-  <data name="PrioritySupport" xml:space="preserve">
+	<data name="PrioritySupport" xml:space="preserve">
     <value>دعم ذو أولوية</value>
   </data>
-  <data name="CustomBranding" xml:space="preserve">
+	<data name="CustomBranding" xml:space="preserve">
     <value>علامة تجارية مخصصة</value>
   </data>
-  <data name="Enterprise" xml:space="preserve">
+	<data name="Enterprise" xml:space="preserve">
     <value>للشركات</value>
   </data>
-  <data name="ForLargeOperations" xml:space="preserve">
+	<data name="ForLargeOperations" xml:space="preserve">
     <value>للعمليات الكبيرة</value>
   </data>
-  <data name="Custom" xml:space="preserve">
+	<data name="Custom" xml:space="preserve">
     <value>مخصص</value>
   </data>
-  <data name="UnlimitedDevices" xml:space="preserve">
+	<data name="UnlimitedDevices" xml:space="preserve">
     <value>أجهزة غير محدودة</value>
   </data>
-  <data name="AllProFeatures" xml:space="preserve">
+	<data name="AllProFeatures" xml:space="preserve">
     <value>جميع ميزات الاحترافي</value>
   </data>
-  <data name="DedicatedSupport" xml:space="preserve">
+	<data name="DedicatedSupport" xml:space="preserve">
     <value>دعم مخصص</value>
   </data>
-  <data name="CustomIntegrations" xml:space="preserve">
+	<data name="CustomIntegrations" xml:space="preserve">
     <value>تكاملات مخصصة</value>
   </data>
-  <data name="ContactUs" xml:space="preserve">
+	<data name="ContactUs" xml:space="preserve">
     <value>اتصل بنا</value>
   </data>
-  <data name="ReadyToGrow" xml:space="preserve">
+	<data name="ReadyToGrow" xml:space="preserve">
     <value>هل أنت مستعد لتنمية متجرك؟</value>
   </data>
-  <data name="Join500Stores" xml:space="preserve">
+	<data name="Join500Stores" xml:space="preserve">
     <value>انضم إلى أكثر من 500 صاحب متجر ألعاب يثقون في ستيشن برو لإدارة أعمالهم.</value>
   </data>
-  <data name="StartFreeTrialNow" xml:space="preserve">
+	<data name="StartFreeTrialNow" xml:space="preserve">
     <value>ابدأ النسخة التجريبية المجانية الآن</value>
   </data>
-  <data name="NoCreditCard" xml:space="preserve">
+	<data name="NoCreditCard" xml:space="preserve">
     <value>لا حاجة لبطاقة ائتمان • تجربة مجانية لمدة 14 يوم</value>
   </data>
-  <data name="MadeBy" xml:space="preserve">
+	<data name="MadeBy" xml:space="preserve">
     <value>صنع بواسطة بيتا لحلول البرمجيات</value>
   </data>
-  <data name="Terms" xml:space="preserve">
+	<data name="Terms" xml:space="preserve">
     <value>الشروط</value>
   </data>
-  <data name="Privacy" xml:space="preserve">
+	<data name="Privacy" xml:space="preserve">
     <value>الخصوصية</value>
   </data>
-  <data name="Contact" xml:space="preserve">
+	<data name="Contact" xml:space="preserve">
     <value>اتصل</value>
   </data>
-  <data name="Support" xml:space="preserve">
+	<data name="Support" xml:space="preserve">
     <value>الدعم</value>
   </data>
-  <data name="AllRightsReserved" xml:space="preserve">
+	<data name="AllRightsReserved" xml:space="preserve">
     <value>© 2024 ستيشن برو. جميع الحقوق محفوظة.</value>
   </data>
-  <data name="WelcomeBack" xml:space="preserve">
+	<data name="WelcomeBack" xml:space="preserve">
     <value>مرحباً بعودتك! 👋</value>
   </data>
-  <data name="DashboardSubtitle" xml:space="preserve">
+	<data name="DashboardSubtitle" xml:space="preserve">
     <value>إليك ما يحدث في متجرك اليوم</value>
   </data>
-  <data name="Refresh" xml:space="preserve">
+	<data name="Refresh" xml:space="preserve">
     <value>تحديث</value>
   </data>
-  <data name="ActiveSessions" xml:space="preserve">
+	<data name="ActiveSessions" xml:space="preserve">
     <value>الجلسات النشطة</value>
   </data>
-  <data name="TotalRevenue" xml:space="preserve">
+	<data name="TotalRevenue" xml:space="preserve">
     <value>الإيرادات الكلية</value>
   </data>
-  <data name="TotalSessions" xml:space="preserve">
+	<data name="TotalSessions" xml:space="preserve">
     <value>إجمالي الجلسات</value>
   </data>
-  <data name="AvailableDevices" xml:space="preserve">
+	<data name="AvailableDevices" xml:space="preserve">
     <value>الأجهزة المتاحة</value>
   </data>
-  <data name="ActiveSessionsTitle" xml:space="preserve">
+	<data name="ActiveSessionsTitle" xml:space="preserve">
     <value>الجلسات النشطة</value>
   </data>
-  <data name="UpdatesEvery15s" xml:space="preserve">
+	<data name="UpdatesEvery15s" xml:space="preserve">
     <value>يتم التحديث كل 15 ثانية</value>
   </data>
 	<data name="UpdatesEvery60s" xml:space="preserve">
     <value>يتم التحديث كل 60 ثانية</value>
   </data>
-  <data name="LoadingSessions" xml:space="preserve">
+	<data name="LoadingSessions" xml:space="preserve">
     <value>جاري تحميل الجلسات...</value>
   </data>
-  <data name="NoActiveSessions" xml:space="preserve">
+	<data name="NoActiveSessions" xml:space="preserve">
     <value>لا توجد جلسات نشطة</value>
   </data>
-  <data name="NoActiveSessionsDesc" xml:space="preserve">
+	<data name="NoActiveSessionsDesc" xml:space="preserve">
     <value>ابدأ جلسة جديدة لرؤيتها هنا</value>
   </data>
-  <data name="QuickActions" xml:space="preserve">
+	<data name="QuickActions" xml:space="preserve">
     <value>الإجراءات السريعة</value>
   </data>
-  <data name="StartNewSession" xml:space="preserve">
+	<data name="StartNewSession" xml:space="preserve">
     <value>بدء جلسة جديدة</value>
   </data>
-  <data name="AddDevice" xml:space="preserve">
+	<data name="AddDevice" xml:space="preserve">
     <value>إضافة جهاز</value>
   </data>
-  <data name="ViewReports" xml:space="preserve">
+	<data name="ViewReports" xml:space="preserve">
     <value>عرض التقارير</value>
   </data>
-  <data name="TodaysSummary" xml:space="preserve">
+	<data name="TodaysSummary" xml:space="preserve">
     <value>ملخص اليوم</value>
   </data>
-  <data name="Revenue" xml:space="preserve">
+	<data name="Revenue" xml:space="preserve">
     <value>الإيرادات</value>
   </data>
-  <data name="Sessions" xml:space="preserve">
+	<data name="Sessions" xml:space="preserve">
     <value>الجلسات</value>
   </data>
-  <data name="AvgSession" xml:space="preserve">
+	<data name="AvgSession" xml:space="preserve">
     <value>متوسط الجلسة</value>
   </data>
-  <data name="DeviceUsage" xml:space="preserve">
+	<data name="DeviceUsage" xml:space="preserve">
     <value>استخدام الأجهزة</value>
   </data>
-  <data name="NeedHelp" xml:space="preserve">
+	<data name="NeedHelp" xml:space="preserve">
     <value>تحتاج مساعدة؟</value>
   </data>
-  <data name="NeedHelpDesc" xml:space="preserve">
+	<data name="NeedHelpDesc" xml:space="preserve">
     <value>تحقق من دليلنا أو اتصل بالدعم</value>
   </data>
-  <data name="ViewGuide" xml:space="preserve">
+	<data name="ViewGuide" xml:space="preserve">
     <value>عرض الدليل ←</value>
   </data>
-  <data name="AllDevices" xml:space="preserve">
+	<data name="AllDevices" xml:space="preserve">
     <value>جميع الأجهزة</value>
   </data>
-  <data name="ViewAll" xml:space="preserve">
+	<data name="ViewAll" xml:space="preserve">
     <value>عرض الكل ←</value>
   </data>
-  <data name="StartSessionTitle" xml:space="preserve">
+	<data name="StartSessionTitle" xml:space="preserve">
     <value>بدء جلسة جديدة</value>
   </data>
-  <data name="SelectDevice" xml:space="preserve">
+	<data name="SelectDevice" xml:space="preserve">
     <value>اختر الجهاز</value>
   </data>
-  <data name="ChooseDevice" xml:space="preserve">
+	<data name="ChooseDevice" xml:space="preserve">
     <value>اختر جهازاً...</value>
   </data>
-  <data name="CustomerName" xml:space="preserve">
+	<data name="CustomerName" xml:space="preserve">
     <value>اسم العميل (اختياري)</value>
   </data>
-  <data name="EnterCustomerName" xml:space="preserve">
+	<data name="EnterCustomerName" xml:space="preserve">
     <value>أدخل اسم العميل</value>
   </data>
-  <data name="CustomerPhone" xml:space="preserve">
+	<data name="CustomerPhone" xml:space="preserve">
     <value>رقم هاتف العميل (اختياري)</value>
   </data>
-  <data name="Cancel" xml:space="preserve">
+	<data name="Cancel" xml:space="preserve">
     <value>إلغاء</value>
   </data>
-  <data name="StartSession" xml:space="preserve">
+	<data name="StartSession" xml:space="preserve">
     <value>بدء الجلسة</value>
   </data>
-  <data name="EndSession" xml:space="preserve">
+	<data name="EndSession" xml:space="preserve">
     <value>إنهاء الجلسة ؟</value>
   </data>
-  <data name="EndSessionConfirm" xml:space="preserve">
+	<data name="EndSessionConfirm" xml:space="preserve">
     <value>هل أنت متأكد من رغبتك في إنهاء هذه الجلسة؟</value>
   </data>
-  <data name="Device" xml:space="preserve">
+	<data name="Device" xml:space="preserve">
     <value>الجهاز</value>
   </data>
-  <data name="Duration" xml:space="preserve">
+	<data name="Duration" xml:space="preserve">
     <value>المدة</value>
   </data>
-  <data name="EstimatedCost" xml:space="preserve">
+	<data name="EstimatedCost" xml:space="preserve">
     <value>التكلفة المقدرة</value>
   </data>
-  <data name="PaymentMethod" xml:space="preserve">
+	<data name="PaymentMethod" xml:space="preserve">
     <value>طريقة الدفع</value>
   </data>
-  <data name="Cash" xml:space="preserve">
+	<data name="Cash" xml:space="preserve">
     <value>نقداً</value>
   </data>
-  <data name="Card" xml:space="preserve">
+	<data name="Card" xml:space="preserve">
     <value>بطاقة</value>
   </data>
-  <data name="EndSessionButton" xml:space="preserve">
+	<data name="EndSessionButton" xml:space="preserve">
     <value>إنهاء الجلسة</value>
   </data>
-  <data name="Maintenance" xml:space="preserve">
+	<data name="Maintenance" xml:space="preserve">
     <value>صيانة</value>
   </data>
-  <data name="Offline" xml:space="preserve">
+	<data name="maintenance" xml:space="preserve">
+    <value>صيانة</value>
+  </data>
+	<data name="status-maintenance" xml:space="preserve">
+    <value>صيانة</value>
+  </data>
+	<data name="Multi-Session" xml:space="preserve">
+    <value>الأجهزة الزوجية</value>
+  </data>
+	<data name="Offline" xml:space="preserve">
     <value>غير متصل</value>
   </data>
-  <data name="CurrentSession" xml:space="preserve">
+	<data name="CurrentSession" xml:space="preserve">
     <value>الجلسة الحالية</value>
   </data>
-  <data name="Guest" xml:space="preserve">
+	<data name="Guest" xml:space="preserve">
     <value>ضيف</value>
   </data>
-  <data name="HourlyRate" xml:space="preserve">
+	<data name="HourlyRate" xml:space="preserve">
     <value>السعر بالساعة</value>
   </data>
-  <data name="StartSessionBtn" xml:space="preserve">
+	<data name="StartSessionBtn" xml:space="preserve">
     <value>بدء جلسة</value>
   </data>
-  <data name="PlayStation" xml:space="preserve">
+	<data name="PlayStation" xml:space="preserve">
     <value>بلايستيشن</value>
   </data>
-  <data name="Xbox" xml:space="preserve">
+	<data name="Xbox" xml:space="preserve">
     <value>إكس بوكس</value>
   </data>
-  <data name="PC" xml:space="preserve">
+	<data name="PC" xml:space="preserve">
     <value>كمبيوتر</value>
   </data>
-  <data name="PingPong" xml:space="preserve">
+	<data name="PingPong" xml:space="preserve">
     <value>تنس طاولة</value>
   </data>
-  <data name="Pool" xml:space="preserve">
+	<data name="Pool" xml:space="preserve">
     <value>بلياردو</value>
   </data>
-  <data name="Billiards" xml:space="preserve">
+	<data name="Billiards" xml:space="preserve">
     <value>بلياردو</value>
   </data>
-  <data name="StationPro" xml:space="preserve">
+	<data name="StationPro" xml:space="preserve">
     <value>ستيشن برو</value>
   </data>
-  <data name="Dashboard" xml:space="preserve">
+	<data name="Dashboard" xml:space="preserve">
     <value>لوحة التحكم</value>
   </data>
-  <data name="Devices" xml:space="preserve">
+	<data name="Devices" xml:space="preserve">
     <value>الأجهزة</value>
   </data>
-  <data name="Rooms" xml:space="preserve">
+	<data name="Rooms" xml:space="preserve">
     <value>الغرف</value>
   </data>
-  <data name="Reports" xml:space="preserve">
+	<data name="Reports" xml:space="preserve">
     <value>التقارير</value>
   </data>
-  <data name="Logout" xml:space="preserve">
+	<data name="Logout" xml:space="preserve">
     <value>تسجيل الخروج</value>
   </data>
-  <data name="ReportsAnalytics" xml:space="preserve">
+	<data name="ReportsAnalytics" xml:space="preserve">
     <value>التقارير والتحليلات</value>
   </data>
-  <data name="ReportsSubtitle" xml:space="preserve">
+	<data name="ReportsSubtitle" xml:space="preserve">
     <value>رؤى تفصيلية ومقاييس الأداء لمتجرك</value>
   </data>
-  <data name="ExportCSV" xml:space="preserve">
+	<data name="ExportCSV" xml:space="preserve">
     <value>تصدير CSV</value>
   </data>
-  <data name="PrintReport" xml:space="preserve">
+	<data name="PrintReport" xml:space="preserve">
     <value>طباعة التقرير</value>
   </data>
-  <data name="Today" xml:space="preserve">
+	<data name="Today" xml:space="preserve">
     <value>اليوم</value>
   </data>
-  <data name="Yesterday" xml:space="preserve">
+	<data name="Yesterday" xml:space="preserve">
     <value>أمس</value>
   </data>
-  <data name="Last7Days" xml:space="preserve">
+	<data name="Last7Days" xml:space="preserve">
     <value>آخر 7 أيام</value>
   </data>
-  <data name="Last30Days" xml:space="preserve">
+	<data name="Last30Days" xml:space="preserve">
     <value>آخر 30 يوماً</value>
   </data>
-  <data name="AvgSessionRevenue" xml:space="preserve">
+	<data name="AvgSessionRevenue" xml:space="preserve">
     <value>متوسط إيرادات الجلسة</value>
   </data>
-  <data name="MostUsedDevice" xml:space="preserve">
+	<data name="MostUsedDevice" xml:space="preserve">
     <value>الجهاز الأكثر استخداماً</value>
   </data>
-  <data name="CompletedSessions" xml:space="preserve">
+	<data name="CompletedSessions" xml:space="preserve">
     <value>الجلسات المكتملة</value>
   </data>
-  <data name="DevicePerformance" xml:space="preserve">
+	<data name="DevicePerformance" xml:space="preserve">
     <value>أداء الأجهزة</value>
   </data>
-  <data name="SessionCount" xml:space="preserve">
+	<data name="SessionCount" xml:space="preserve">
     <value>عدد الجلسات</value>
   </data>
-  <data name="UsageTime" xml:space="preserve">
+	<data name="UsageTime" xml:space="preserve">
     <value>وقت الاستخدام</value>
   </data>
-  <data name="Utilization" xml:space="preserve">
+	<data name="Utilization" xml:space="preserve">
     <value>نسبة الاستخدام</value>
   </data>
-  <data name="NoDeviceData" xml:space="preserve">
+	<data name="NoDeviceData" xml:space="preserve">
     <value>لا توجد بيانات أجهزة متاحة</value>
   </data>
-  <data name="SessionDetails" xml:space="preserve">
+	<data name="SessionDetails" xml:space="preserve">
     <value>تفاصيل الجلسات</value>
   </data>
-  <data name="SessionsInPeriod" xml:space="preserve">
+	<data name="SessionsInPeriod" xml:space="preserve">
     <value>جلسة في هذه الفترة</value>
   </data>
-  <data name="DateTime" xml:space="preserve">
+	<data name="DateTime" xml:space="preserve">
     <value>التاريخ والوقت</value>
   </data>
-  <data name="Customer" xml:space="preserve">
+	<data name="Customer" xml:space="preserve">
     <value>العميل</value>
   </data>
-  <data name="Rate" xml:space="preserve">
+	<data name="Rate" xml:space="preserve">
     <value>السعر</value>
   </data>
-  <data name="Total" xml:space="preserve">
+	<data name="Total" xml:space="preserve">
     <value>المجموع</value>
   </data>
-  <data name="Status" xml:space="preserve">
+	<data name="Status" xml:space="preserve">
     <value>الحالة</value>
   </data>
-  <data name="Payment" xml:space="preserve">
+	<data name="Payment" xml:space="preserve">
     <value>الدفع</value>
   </data>
-  <data name="Completed" xml:space="preserve">
+	<data name="Completed" xml:space="preserve">
     <value>مكتملة</value>
   </data>
-  <data name="Cancelled" xml:space="preserve">
+	<data name="Cancelled" xml:space="preserve">
     <value>ملغاة</value>
   </data>
-  <data name="Online" xml:space="preserve">
+	<data name="Online" xml:space="preserve">
     <value>أونلاين</value>
   </data>
-  <data name="NoSessionsFound" xml:space="preserve">
+	<data name="NoSessionsFound" xml:space="preserve">
     <value>لم يتم العثور على جلسات</value>
   </data>
-  <data name="NoSessionsInPeriod" xml:space="preserve">
+	<data name="NoSessionsInPeriod" xml:space="preserve">
     <value>لا توجد جلسات في الفترة الزمنية المحددة</value>
   </data>
-  <data name="Loading" xml:space="preserve">
+	<data name="Loading" xml:space="preserve">
     <value>جاري التحميل...</value>
   </data>
-  <data name="Save" xml:space="preserve">
+	<data name="Save" xml:space="preserve">
     <value>حفظ</value>
   </data>
-  <data name="Delete" xml:space="preserve">
+	<data name="Delete" xml:space="preserve">
     <value>حذف</value>
   </data>
-  <data name="Edit" xml:space="preserve">
+	<data name="Edit" xml:space="preserve">
     <value>تعديل</value>
   </data>
-  <data name="Add" xml:space="preserve">
+	<data name="Add" xml:space="preserve">
     <value>إضافة</value>
   </data>
-  <data name="Close" xml:space="preserve">
+	<data name="Close" xml:space="preserve">
     <value>إغلاق</value>
   </data>
-  <data name="Confirm" xml:space="preserve">
+	<data name="Confirm" xml:space="preserve">
     <value>تأكيد</value>
   </data>
-  <data name="Search" xml:space="preserve">
+	<data name="Search" xml:space="preserve">
     <value>بحث</value>
   </data>
-  <data name="Filter" xml:space="preserve">
+	<data name="Filter" xml:space="preserve">
     <value>تصفية</value>
   </data>
-  <data name="Actions" xml:space="preserve">
+	<data name="Actions" xml:space="preserve">
     <value>الإجراءات</value>
   </data>
-  <data name="Yes" xml:space="preserve">
+	<data name="Yes" xml:space="preserve">
     <value>نعم</value>
   </data>
-  <data name="No" xml:space="preserve">
+	<data name="No" xml:space="preserve">
     <value>لا</value>
   </data>
-  <data name="Hour" xml:space="preserve">
+	<data name="Hour" xml:space="preserve">
     <value>ساعة</value>
   </data>
-  <data name="Hours" xml:space="preserve">
+	<data name="Hours" xml:space="preserve">
     <value>ساعات</value>
   </data>
-  <data name="Minute" xml:space="preserve">
+	<data name="Minute" xml:space="preserve">
     <value>دقيقة</value>
   </data>
-  <data name="Minutes" xml:space="preserve">
+	<data name="Minutes" xml:space="preserve">
     <value>دقائق</value>
   </data>
-  <data name="Second" xml:space="preserve">
+	<data name="Second" xml:space="preserve">
     <value>ثانية</value>
   </data>
-  <data name="Seconds" xml:space="preserve">
+	<data name="Seconds" xml:space="preserve">
     <value>ثواني</value>
   </data>
-  <data name="CheckGuideOrSupport" xml:space="preserve">
+	<data name="CheckGuideOrSupport" xml:space="preserve">
     <value>راجع الدليل أو الدعم</value>
   </data>
-  <data name="End" xml:space="preserve">
+	<data name="End" xml:space="preserve">
     <value>إنهاء</value>
   </data>
-  <data name="EndSessionConfirmation" xml:space="preserve">
+	<data name="EndSessionConfirmation" xml:space="preserve">
     <value>تأكيد إنهاء الجلسة ✅</value>
   </data>
-  <data name="PerSession" xml:space="preserve">
+	<data name="PerSession" xml:space="preserve">
     <value>لكل جلسة</value>
   </data>
-  <data name="RunningNow" xml:space="preserve">
+	<data name="RunningNow" xml:space="preserve">
     <value>قيد التشغيل الآن</value>
   </data>
-  <data name="SessionCompleted" xml:space="preserve">
+	<data name="SessionCompleted" xml:space="preserve">
     <value>الجلسة انتهت</value>
   </data>
-  <data name="SessionNumber" xml:space="preserve">
+	<data name="SessionNumber" xml:space="preserve">
     <value>الجلسة رقم</value>
   </data>
-  <data name="ThankYouForUsing" xml:space="preserve">
+	<data name="ThankYouForUsing" xml:space="preserve">
     <value>شكرًا لاستخدامك</value>
   </data>
-  <data name="TodayStatus" xml:space="preserve">
+	<data name="TodayStatus" xml:space="preserve">
     <value>احصائيات اليوم</value>
   </data>
-  <data name="TodaySummary" xml:space="preserve">
+	<data name="TodaySummary" xml:space="preserve">
     <value>إجمالي اليوم</value>
   </data>
-  <data name="TotalAmount" xml:space="preserve">
+	<data name="TotalAmount" xml:space="preserve">
     <value>إجمالي الدفع</value>
   </data>
-  <data name="TotalDuration" xml:space="preserve">
+	<data name="TotalDuration" xml:space="preserve">
     <value>إجمالي المدة</value>
   </data>
 
@@ -1197,7 +1206,7 @@
 	<data name="EnableMultiSession" xml:space="preserve">
   <value>تفعيل الزوجي</value>
 </data>
-	
+
 	<data name="MultiSessionRate" xml:space="preserve">
   <value>سعر الساعه الزوجي</value>
 </data>
@@ -1213,4 +1222,90 @@
 	<data name="MultiSessionDevices" xml:space="preserve">
   <value>الأجهزة الزوجية</value>
 </data>
+
+		<!-- Device Success Messages -->
+		<data name="DeviceAddedSuccessTitle" xml:space="preserve">
+    <value>تمت إضافة الجهاز بنجاح! 🎉</value>
+  </data>
+		<data name="DeviceAddedSuccessMessage" xml:space="preserve">
+    <value>تم إنشاء الجهاز الجديد وهو جاهز للاستخدام.</value>
+  </data>
+		<data name="DeviceUpdatedTitle" xml:space="preserve">
+    <value>تم تحديث الجهاز! ✨</value>
+  </data>
+		<data name="DeviceUpdatedMessage" xml:space="preserve">
+    <value>تم تحديث الجهاز بنجاح.</value>
+  </data>
+		<data name="DeviceDeletedSuccess" xml:space="preserve">
+    <value>تم حذف الجهاز بنجاح!</value>
+  </data>
+		<data name="Awesome" xml:space="preserve">
+    <value>رائع!</value>
+  </data>
+
+		<!-- Search & Filter Messages -->
+		<data name="NoDevicesFound" xml:space="preserve">
+    <value>لم يتم العثور على أجهزة</value>
+  </data>
+		<data name="AdjustFilters" xml:space="preserve">
+    <value>حاول تعديل البحث أو الفلاتر</value>
+  </data>
+
+		<!-- Delete Confirmation Messages -->
+		<data name="DeleteWarning" xml:space="preserve">
+    <value>⚠️ حذف الجهاز</value>
+  </data>
+		<data name="DeleteConfirm" xml:space="preserve">
+    <value>هل أنت متأكد من حذف</value>
+  </data>
+		<data name="DeleteUndone" xml:space="preserve">
+    <value>لا يمكن التراجع عن هذا الإجراء.</value>
+  </data>
+		<data name="ConfirmDelete" xml:space="preserve">
+    <value>تأكيد الحذف</value>
+  </data>
+		<data name="CancelDelete" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+		<data name="DeleteDevice" xml:space="preserve">
+    <value>حذف الجهاز</value>
+  </data>
+		<data name="AreYouSure" xml:space="preserve">
+    <value>هل أنت متأكد؟</value>
+  </data>
+		<data name="DeleteDeviceWarning" xml:space="preserve">
+    <value>سيتم حذف هذا الجهاز نهائياً ولن تتمكن من استرجاعه.</value>
+  </data>
+
+		<!-- Error Messages -->
+		<data name="FailedLoadDevice" xml:space="preserve">
+    <value>فشل تحميل تفاصيل الجهاز</value>
+  </data>
+		<data name="FailedUpdateDevice" xml:space="preserve">
+    <value>فشل تحديث الجهاز</value>
+  </data>
+		<data name="FailedDeleteDevice" xml:space="preserve">
+    <value>فشل حذف الجهاز</value>
+  </data>
+		<data name="ErrorUpdating" xml:space="preserve">
+    <value>حدث خطأ أثناء التحديث</value>
+  </data>
+		<data name="ErrorDeleting" xml:space="preserve">
+    <value>حدث خطأ أثناء الحذف</value>
+  </data>
+
+		<!-- Session Type Messages -->
+		<data name="SinglePlayer" xml:space="preserve">
+    <value>لاعب واحد</value>
+  </data>
+		<data name="MultiPlayer" xml:space="preserve">
+    <value>متعدد اللاعبين</value>
+  </data>
+		<data name="StartSession" xml:space="preserve">
+    <value>بدء جلسة</value>
+  </data>
+		<data name="On" xml:space="preserve">
+    <value>على</value>
+  </data>
+	
 </root>

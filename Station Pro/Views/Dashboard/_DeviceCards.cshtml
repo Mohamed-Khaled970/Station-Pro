@@ -12,83 +12,134 @@
                          device.Type == DeviceType.PingPong ? "fas fa-table-tennis" :
                          (device.Type == DeviceType.Pool || device.Type == DeviceType.Billiards) ? "fas fa-circle" : "fas fa-gamepad";
 
-    <div class="device-card @(device.IsAvailable ? "available" : "in-use") fade-in">
-        <!-- Device Header -->
-        <div class="flex justify-between items-start mb-3">
-            <div class="flex items-center space-x-3">
-                <div class="@(device.IsAvailable ? "bg-green-100" : "bg-red-100") p-3 rounded-lg">
-                    <i class="@deviceIconClass @(device.IsAvailable ? "text-green-600" : "text-red-600") text-xl"></i>
+    var statusClass = device.IsAvailable ? "available" : "in-use";
+    var statusFilter = device.IsAvailable ? "available" : "in-use";
+    var iconBgClass = device.IsAvailable ? "bg-green-100" : "bg-red-100";
+    var iconColorClass = device.IsAvailable ? "text-green-600" : "text-red-600";
+    var statusBadgeClass = device.IsAvailable ? "status-available" : "status-in-use";
+    var multiSessionFilter = device.SupportsMultiSession ? "multi-session" : "";
+
+
+<div class="device-card @statusClass fade-in"
+     data-device-name="@device.Name.ToLower()"
+     data-device-status="@statusFilter"
+     data-device-id="@device.Id"
+     data-multi-session="@multiSessionFilter">
+
+    <!-- Device Header -->
+    <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center space-x-3">
+            <div class="@iconBgClass p-3 rounded-xl">
+                <i class="@deviceIconClass @iconColorClass text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg text-gray-900">@device.Name</h3>
+                <p class="text-sm text-gray-500">@device.TypeName</p>
+            </div>
+        </div>
+
+        <!-- Status Badge -->
+        <span class="status-badge @statusBadgeClass">
+            @(device.IsAvailable ? Localizer["Available"] : Localizer["InUse"])
+        </span>
+    </div>
+
+    <!-- Device Details -->
+    <div class="border-t border-gray-100 pt-4 mb-4 space-y-3">
+        <!-- Rates Display -->
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 flex items-center">
+                    <i class="fas fa-user text-blue-600 mr-2"></i>
+                    @Localizer["Single"]
+                </span>
+                <span class="text-lg font-bold text-blue-600">@device.SingleSessionRate.ToString("C")</span>
+            </div>
+
+            @if (device.SupportsMultiSession && device.MultiSessionRate.HasValue)
+            {
+                <div class="flex justify-between items-center p-2 bg-purple-50 rounded-lg border border-purple-200">
+                    <span class="text-sm text-gray-600 flex items-center">
+                        <i class="fas fa-users text-purple-600 mr-2"></i>
+                        @Localizer["Multi"]
+                    </span>
+                    <span class="text-lg font-bold text-purple-600">@device.MultiSessionRate.Value.ToString("C")</span>
                 </div>
-                <div>
-                    <h4 class="font-bold text-gray-900">@device.Name</h4>
-                    <p class="text-sm text-gray-500">@device.TypeName</p>
+            }
+        </div>
+
+        @if (device.CurrentSession != null)
+        {
+            <!-- Active Session Info -->
+            <div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500">
+                <p class="text-xs text-gray-600 mb-1">@Localizer["ActiveSession"]</p>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium">
+                        @(string.IsNullOrEmpty(device.CurrentSession.CustomerName) ? Localizer["Guest"] : device.CurrentSession.CustomerName)
+                    </span>
+                    <!-- DYNAMIC COST - Updated by timer -->
+                    <span class="text-sm font-bold text-green-600" id="cost-@device.CurrentSession.Id">
+                        @device.CurrentSession.TotalCost.ToString("C")
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-gray-500">
+                    <!-- TIMER ELEMENT - Critical for session-timer.js -->
+                    <span>
+                        <i class="fas fa-clock mr-1"></i>
+                        <span class="font-mono font-bold text-blue-600"
+                              id="timer-@device.CurrentSession.Id"
+                              data-start-time="@device.CurrentSession.StartTime.ToString("o")"
+                              data-hourly-rate="@device.CurrentSession.HourlyRate">
+                            @device.CurrentSession.DurationFormatted
+                        </span>
+                    </span>
+                    <span>@device.CurrentSession.HourlyRate.ToString("C")/@Localizer["hr"]</span>
                 </div>
             </div>
-            <!-- Status Badge - Redesigned -->
-            <span class="status-badge @(device.IsAvailable ? "status-available" : "status-in-use")">
-                @(device.IsAvailable ? Localizer["Available"] : Localizer["InUse"])
-            </span>
-        </div>
-
-        <!-- Device Body -->
-        <div class="border-t border-gray-100 pt-3 mt-3">
-            @if (device.CurrentSession != null)
-            {
-                <!-- Active Session Info WITH TIMER -->
-                <div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500 mb-3">
-                    <p class="text-xs text-gray-500 mb-2">@Localizer["CurrentSession"]</p>
-
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-gray-700">
-                            @(string.IsNullOrEmpty(device.CurrentSession.CustomerName) ? Localizer["Guest"] : device.CurrentSession.CustomerName)
-                        </span>
-                        <!-- DYNAMIC COST - Updated by timer -->
-                        <span class="text-sm font-bold text-green-600" id="cost-@device.CurrentSession.Id">
-                            @device.CurrentSession.TotalCost.ToString("C")
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between items-center text-xs text-gray-500">
-                        <!-- TIMER ELEMENT - Critical for session-timer.js -->
-                        <span>
-                            <i class="fas fa-clock mr-1"></i>
-                            <span class="font-mono font-bold text-blue-600"
-                                  id="timer-@device.CurrentSession.Id"
-                                  data-start-time="@device.CurrentSession.StartTime.ToString("o")"
-                                  data-hourly-rate="@device.CurrentSession.HourlyRate">
-                                @device.CurrentSession.DurationFormatted
-                            </span>
-                        </span>
-                        <span>@device.CurrentSession.HourlyRate.ToString("C")/@Localizer["hr"]</span>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <!-- Rate Info (when available) -->
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-sm text-gray-600">@Localizer["HourlyRate"]</span>
-                    <span class="text-lg font-bold text-blue-600">@device.HourlyRate.ToString("C")</span>
-                </div>
-            }
-
-            <!-- Action Button -->
-            @if (device.IsAvailable)
-            {
-                <button hx-post="@Html.TenantUrl("Session", "QuickStart")?deviceId=@device.Id"
-                        hx-target="#active-sessions-container"
-                        class="btn btn-success w-full">
-                    <i class="fas fa-play mr-2"></i>
-                    @Localizer["StartSession"]
-                </button>
-            }
-            else
-            {
-                <button class="btn btn-secondary w-full opacity-50 cursor-not-allowed" disabled>
-                    <i class="fas fa-spinner fa-spin mr-2"></i>
-                    @Localizer["InUse"]
-                </button>
-            }
-        </div>
+        }
     </div>
+
+    <!-- Actions -->
+    <div class="flex space-x-2">
+        @if (device.IsAvailable)
+        {
+            @if (device.SupportsMultiSession)
+            {
+                <!-- Split button for single/multi session -->
+                <div class="flex-1 flex space-x-1">
+                    <button hx-post="@Html.TenantUrl("Session", "QuickStart")?deviceId=@device.Id&isMultiSession=false"
+                            hx-target="#active-sessions-container"
+                            class="btn btn-success flex-1"
+                            title="@Localizer["StartSingleSession"]">
+                        <i class="fas fa-user mr-1"></i>
+                        <span class="hidden sm:inline">@Localizer["Single"]</span>
+                    </button>
+                    <button hx-post="@Html.TenantUrl("Session", "QuickStart")?deviceId=@device.Id&isMultiSession=true"
+                            hx-target="#active-sessions-container"
+                            class="btn btn-success"
+                            style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);"
+                            title="@Localizer["StartMultiSession"]">
+                        <i class="fas fa-users"></i>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <button hx-post="@Html.TenantUrl("Session", "QuickStart")?deviceId=@device.Id&isMultiSession=false"
+                        hx-target="#active-sessions-container"
+                        class="btn btn-success flex-1">
+                    <i class="fas fa-play mr-2"></i>
+                    @Localizer["Start"]
+                </button>
+            }
+        }
+        else
+        {
+            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
+                <i class="fas fa-spinner fa-pulse mr-2"></i>
+                @Localizer["InUse"]
+            </button>
+        }
+    </div>
+</div>
 }

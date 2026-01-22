@@ -1191,4 +1191,90 @@
 	<data name="MultiSessionDevices" xml:space="preserve">
   <value>Multi Session Devices</value>
 </data>
+
+	<!-- Device Success Messages -->
+	<data name="DeviceAddedSuccessTitle" xml:space="preserve">
+  <value>Device added successfully! 🎉</value>
+</data>
+	<data name="DeviceAddedSuccessMessage" xml:space="preserve">
+  <value>The new device has been created and is ready to use.</value>
+</data>
+	<data name="DeviceUpdatedTitle" xml:space="preserve">
+  <value>Device updated! ✨</value>
+</data>
+	<data name="DeviceUpdatedMessage" xml:space="preserve">
+  <value>The device has been updated successfully.</value>
+</data>
+	<data name="DeviceDeletedSuccess" xml:space="preserve">
+  <value>Device deleted successfully!</value>
+</data>
+	<data name="Awesome" xml:space="preserve">
+  <value>Awesome!</value>
+</data>
+
+	<!-- Search & Filter Messages -->
+	<data name="NoDevicesFound" xml:space="preserve">
+  <value>No devices found</value>
+</data>
+	<data name="AdjustFilters" xml:space="preserve">
+  <value>Try adjusting your search or filters</value>
+</data>
+
+	<!-- Delete Confirmation Messages -->
+	<data name="DeleteWarning" xml:space="preserve">
+  <value>⚠️ Delete Device</value>
+</data>
+	<data name="DeleteConfirm" xml:space="preserve">
+  <value>Are you sure you want to delete</value>
+</data>
+	<data name="DeleteUndone" xml:space="preserve">
+  <value>This action cannot be undone.</value>
+</data>
+	<data name="ConfirmDelete" xml:space="preserve">
+  <value>Confirm Delete</value>
+</data>
+	<data name="CancelDelete" xml:space="preserve">
+  <value>Cancel</value>
+</data>
+	<data name="DeleteDevice" xml:space="preserve">
+  <value>Delete Device</value>
+</data>
+	<data name="AreYouSure" xml:space="preserve">
+  <value>Are you sure?</value>
+</data>
+	<data name="DeleteDeviceWarning" xml:space="preserve">
+  <value>This device will be permanently deleted and cannot be recovered.</value>
+</data>
+
+	<!-- Error Messages -->
+	<data name="FailedLoadDevice" xml:space="preserve">
+  <value>Failed to load device details</value>
+</data>
+	<data name="FailedUpdateDevice" xml:space="preserve">
+  <value>Failed to update device</value>
+</data>
+	<data name="FailedDeleteDevice" xml:space="preserve">
+  <value>Failed to delete device</value>
+</data>
+	<data name="ErrorUpdating" xml:space="preserve">
+  <value>An error occurred while updating</value>
+</data>
+	<data name="ErrorDeleting" xml:space="preserve">
+  <value>An error occurred while deleting</value>
+</data>
+
+	<!-- Session Type Messages -->
+	<data name="SinglePlayer" xml:space="preserve">
+  <value>Single Player</value>
+</data>
+	<data name="MultiPlayer" xml:space="preserve">
+  <value>Multiplayer</value>
+</data>
+	<data name="StartSession" xml:space="preserve">
+  <value>Start Session</value>
+</data>
+	<data name="On" xml:space="preserve">
+  <value>On</value>
+</data>
+
 </root>

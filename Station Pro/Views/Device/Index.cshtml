@@ -118,7 +118,7 @@
                             class="filter-btn"
                             data-filter="multi-session">
                         <i class="fas fa-users mr-1"></i>
-                        Multi-Session
+                        @Localizer["Multi-Session"]
                     </button>
                 </div>
             </div>
@@ -355,7 +355,72 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="delete-device-modal" class="modal-overlay hidden">
+    <div class="modal-content delete-modal-content">
+        <div class="delete-modal-icon">
+            <div class="delete-icon-circle">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+
+        <div class="modal-header">
+            <h3 class="text-2xl font-bold text-gray-900">@Localizer["AreYouSure"]</h3>
+        </div>
+
+        <div class="modal-body">
+            <p class="text-gray-600 text-center mb-4">
+                @Localizer["DeleteConfirm"] "<strong id="delete-device-name" class="text-gray-900"></strong>"?
+            </p>
+            <div class="bg-red-50 border-2 border-red-200 rounded-lg p-4 flex items-start space-x-3">
+                <i class="fas fa-info-circle text-red-500 mt-1"></i>
+                <p class="text-sm text-red-700">
+                    @Localizer["DeleteDeviceWarning"]
+                </p>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button"
+                    onclick="closeDeleteModal()"
+                    class="btn btn-secondary">
+                <i class="fas fa-times mr-2"></i>
+                @Localizer["CancelDelete"]
+            </button>
+            <button type="button"
+                    id="confirm-delete-btn"
+                    onclick="confirmDeleteDevice()"
+                    class="btn btn-danger">
+                <i class="fas fa-trash-alt mr-2"></i>
+                @Localizer["ConfirmDelete"]
+            </button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <!-- Hidden inputs for localized JavaScript messages -->
+    <input type="hidden" id="device-added-title" value="@Localizer["DeviceAddedSuccessTitle"]" />
+    <input type="hidden" id="device-added-message" value="@Localizer["DeviceAddedSuccessMessage"]" />
+    <input type="hidden" id="device-updated-title" value="@Localizer["DeviceUpdatedTitle"]" />
+    <input type="hidden" id="device-updated-message" value="@Localizer["DeviceUpdatedMessage"]" />
+    <input type="hidden" id="device-deleted-success" value="@Localizer["DeviceDeletedSuccess"]" />
+    <input type="hidden" id="awesome-text" value="@Localizer["Awesome"]" />
+    <input type="hidden" id="no-results-text" value="@Localizer["NoDevicesFound"]" />
+    <input type="hidden" id="adjust-filters-text" value="@Localizer["AdjustFilters"]" />
+    <input type="hidden" id="delete-warning" value="@Localizer["DeleteWarning"]" />
+    <input type="hidden" id="delete-confirm" value="@Localizer["DeleteConfirm"]" />
+    <input type="hidden" id="delete-undone" value="@Localizer["DeleteUndone"]" />
+    <input type="hidden" id="failed-load-device" value="@Localizer["FailedLoadDevice"]" />
+    <input type="hidden" id="failed-update-device" value="@Localizer["FailedUpdateDevice"]" />
+    <input type="hidden" id="failed-delete-device" value="@Localizer["FailedDeleteDevice"]" />
+    <input type="hidden" id="error-updating" value="@Localizer["ErrorUpdating"]" />
+    <input type="hidden" id="error-deleting" value="@Localizer["ErrorDeleting"]" />
+    <input type="hidden" id="single-player-text" value="@Localizer["SinglePlayer"]" />
+    <input type="hidden" id="multi-player-text" value="@Localizer["MultiPlayer"]" />
+    <input type="hidden" id="start-session-text" value="@Localizer["StartSession"]" />
+    <input type="hidden" id="on-text" value="@Localizer["On"]" />
+
     <script src="~/js/session-timer.js"></script>
     <script src="~/js/device.js"></script>
 }

@@ -753,6 +753,194 @@ input[type="number"] {
 
 
 /* ============================================ */
+/* DELETE CONFIRMATION MODAL STYLES */
+/* ============================================ */
+
+.delete-modal-content {
+    max-width: 500px;
+    background: white;
+    border-radius: 24px;
+    overflow: visible;
+    position: relative;
+}
+
+.delete-modal-icon {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.delete-icon-circle {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 15px 40px rgba(239, 68, 68, 0.4);
+    border: 6px solid white;
+    animation: deleteIconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+    .delete-icon-circle i {
+        font-size: 3rem;
+        color: white;
+        animation: deleteIconShake 0.5s ease 0.2s;
+    }
+
+@keyframes deleteIconBounce {
+    0% {
+        transform: scale(0) rotate(-180deg);
+    }
+
+    60% {
+        transform: scale(1.2) rotate(10deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes deleteIconShake {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+
+    10%, 30%, 50%, 70%, 90% {
+        transform: rotate(-10deg);
+    }
+
+    20%, 40%, 60%, 80% {
+        transform: rotate(10deg);
+    }
+}
+
+.delete-modal-content .modal-header {
+    padding-top: 4rem;
+    text-align: center;
+    border-bottom: none;
+}
+
+.delete-modal-content .modal-body {
+    padding: 1.5rem 2rem;
+}
+
+.delete-modal-content .modal-footer {
+    padding: 1.5rem 2rem 2rem;
+    border-top: none;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Danger Button Style */
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    }
+
+    .btn-danger:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+/* Warning Box inside Delete Modal */
+.delete-modal-content .bg-red-50 {
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+}
+
+/* RTL Support for Delete Modal */
+[dir="rtl"] .delete-modal-content .bg-red-50 {
+    text-align: right;
+}
+
+[dir="rtl"] .delete-modal-content .modal-footer {
+    flex-direction: row-reverse;
+}
+
+/* Responsive Delete Modal */
+@media (max-width: 640px) {
+    .delete-modal-content {
+        max-width: 90%;
+        margin: 1rem;
+    }
+
+    .delete-icon-circle {
+        width: 80px;
+        height: 80px;
+        border-width: 4px;
+    }
+
+        .delete-icon-circle i {
+            font-size: 2.5rem;
+        }
+
+    .delete-modal-icon {
+        top: -40px;
+    }
+
+    .delete-modal-content .modal-header {
+        padding-top: 3rem;
+    }
+
+        .delete-modal-content .modal-header h3 {
+            font-size: 1.5rem;
+        }
+
+    .delete-modal-content .modal-body {
+        padding: 1rem 1.5rem;
+    }
+
+    .delete-modal-content .modal-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-danger,
+    .btn-secondary {
+        width: 100%;
+    }
+}
+
+
+/* ============================================ */
 /* FIX FOR RTL PLACEHOLDER VISIBILITY */
 /* ============================================ */
 
