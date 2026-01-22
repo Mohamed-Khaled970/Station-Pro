@@ -1,4 +1,4 @@
-﻿// wwwroot/js/device.js
+﻿// wwwroot/js/device.js - Updated with Multi-Session Support
 
 // ============================================
 // MODAL FUNCTIONS
@@ -18,11 +18,61 @@ function closeModal(modalId) {
         modal.classList.add('hidden');
         document.body.style.overflow = 'auto';
 
-        // Reset form if it exists
         const form = modal.querySelector('form');
         if (form) {
             form.reset();
         }
+    }
+}
+
+// ============================================
+// MULTI-SESSION FIELD TOGGLE
+// ============================================
+
+function toggleMultiSessionFields() {
+    const deviceType = document.getElementById('device-type-select').value;
+    const multiSessionContainer = document.getElementById('multi-session-container');
+    const supportsMultiCheckbox = document.getElementById('supports-multi-session');
+
+    // Device types that support multi-session: PS5(1), PS4(2), PS3(3), Xbox(4), PingPong(6), Pool(7), Billiards(8)
+    const multiSessionTypes = ['1', '2', '3', '4', '6', '7', '8'];
+
+    if (multiSessionTypes.includes(deviceType)) {
+        multiSessionContainer.classList.remove('hidden');
+    } else {
+        multiSessionContainer.classList.add('hidden');
+        supportsMultiCheckbox.checked = false;
+        toggleMultiRateField();
+    }
+}
+
+function toggleMultiRateField() {
+    const supportsMulti = document.getElementById('supports-multi-session').checked;
+    const multiRateField = document.getElementById('multi-rate-field');
+    const multiRateInput = document.getElementById('multi-session-rate-input');
+
+    if (supportsMulti) {
+        multiRateField.classList.remove('hidden');
+        multiRateInput.required = true;
+    } else {
+        multiRateField.classList.add('hidden');
+        multiRateInput.required = false;
+        multiRateInput.value = '';
+    }
+}
+
+function toggleEditMultiRate() {
+    const supportsMulti = document.getElementById('edit-supports-multi').checked;
+    const multiRateField = document.getElementById('edit-multi-rate-field');
+    const multiRateInput = document.getElementById('edit-multi-rate');
+
+    if (supportsMulti) {
+        multiRateField.classList.remove('hidden');
+        multiRateInput.required = true;
+    } else {
+        multiRateField.classList.add('hidden');
+        multiRateInput.required = false;
+        multiRateInput.value = '';
     }
 }
 
@@ -36,12 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeDevicePage() {
-    // Setup form handlers
     setupAddDeviceForm();
     setupEditDeviceForm();
-
-    // Setup keyboard shortcuts
     setupKeyboardShortcuts();
+
+    // Setup multi-session toggle listener
+    const supportsMultiCheckbox = document.getElementById('supports-multi-session');
+    if (supportsMultiCheckbox) {
+        supportsMultiCheckbox.addEventListener('change', toggleMultiRateField);
+    }
 }
 
 // ============================================
@@ -65,7 +118,6 @@ function filterDevices() {
         }
     });
 
-    // Show no results message if needed
     updateNoResultsMessage(visibleCount);
 }
 
@@ -89,7 +141,16 @@ function filterByStatus(status) {
     // Filter devices
     devices.forEach(device => {
         const deviceStatus = device.dataset.deviceStatus || '';
-        const isMatch = status === 'all' || deviceStatus === status;
+        const multiSession = device.dataset.multiSession || '';
+        let isMatch = false;
+
+        if (status === 'all') {
+            isMatch = true;
+        } else if (status === 'multi-session') {
+            isMatch = multiSession === 'multi-session';
+        } else {
+            isMatch = deviceStatus === status;
+        }
 
         if (isMatch) {
             device.classList.remove('hidden');
@@ -99,7 +160,6 @@ function filterByStatus(status) {
         }
     });
 
-    // Update stats
     updateFilterStats(status, visibleCount);
 }
 
@@ -142,21 +202,17 @@ function updateFilterStats(status, count) {
 // ============================================
 
 function showSuccessNotification(title, message, icon = 'fa-check-circle') {
-    // Remove any existing notification
     const existing = document.getElementById('success-notification');
     if (existing) existing.remove();
 
-    // Create notification overlay
     const notification = document.createElement('div');
     notification.id = 'success-notification';
     notification.className = 'success-notification-overlay';
 
     notification.innerHTML = `
         <div class="success-notification-content">
-            <!-- Confetti Container -->
             <div class="confetti-container" id="confetti-container"></div>
             
-            <!-- Success Icon with animated circle -->
             <div class="success-notification-icon-wrapper">
                 <div class="success-notification-icon-circle">
                     <i class="fas ${icon} success-notification-icon"></i>
@@ -167,7 +223,6 @@ function showSuccessNotification(title, message, icon = 'fa-check-circle') {
                         <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                     </svg>
                 </div>
-                <!-- Sparkle effects -->
                 <div class="sparkle sparkle-1">✨</div>
                 <div class="sparkle sparkle-2">⭐</div>
                 <div class="sparkle sparkle-3">✨</div>
@@ -177,7 +232,6 @@ function showSuccessNotification(title, message, icon = 'fa-check-circle') {
             <h3 class="success-notification-title">${title}</h3>
             <p class="success-notification-message">${message}</p>
             
-            <!-- Progress bar -->
             <div class="success-progress-bar">
                 <div class="success-progress-fill"></div>
             </div>
@@ -193,13 +247,11 @@ function showSuccessNotification(title, message, icon = 'fa-check-circle') {
 
     document.body.appendChild(notification);
 
-    // Trigger animation
     setTimeout(() => {
         notification.classList.add('show');
         createConfetti();
     }, 10);
 
-    // Auto close after 5 seconds
     setTimeout(() => {
         closeSuccessNotification();
     }, 5000);
@@ -223,7 +275,6 @@ function createConfetti() {
 
             container.appendChild(confetti);
 
-            // Remove after animation
             setTimeout(() => confetti.remove(), 4000);
         }, i * 30);
     }
@@ -248,7 +299,6 @@ function closeSuccessNotification() {
 function handleDeviceAdded() {
     closeModal('add-device-modal');
 
-    // Show beautiful success notification
     showSuccessNotification(
         'Device Added Successfully! 🎉',
         'Your new device has been created and is ready to use. You can now start sessions on this device.',
@@ -265,11 +315,9 @@ function handleDeviceAdded() {
 
 async function editDevice(deviceId) {
     try {
-        // Get current path (handle tenant URLs)
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/(device|Device).*/, '');
 
-        // Fetch device data
         const response = await fetch(`${basePath}/device/get/${deviceId}`);
 
         if (!response.ok) {
@@ -281,11 +329,15 @@ async function editDevice(deviceId) {
         // Populate form
         document.getElementById('edit-device-id').value = device.id;
         document.getElementById('edit-device-name').value = device.name;
-        document.getElementById('edit-device-rate').value = device.hourlyRate;
+        document.getElementById('edit-single-rate').value = device.singleSessionRate;
+        document.getElementById('edit-multi-rate').value = device.multiSessionRate || '';
+        document.getElementById('edit-supports-multi').checked = device.supportsMultiSession;
         document.getElementById('edit-device-status').value = device.status;
         document.getElementById('edit-device-active').checked = device.isActive;
 
-        // Open modal
+        // Show/hide multi rate field
+        toggleEditMultiRate();
+
         openModal('edit-device-modal');
     } catch (error) {
         console.error('Error loading device:', error);
@@ -307,13 +359,14 @@ function setupEditDeviceForm() {
         const formData = new FormData(e.target);
         const deviceId = formData.get('Id');
 
-        // Get current path
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/(device|Device).*/, '');
 
         const data = {
             name: formData.get('Name'),
-            hourlyRate: parseFloat(formData.get('HourlyRate')),
+            singleSessionRate: parseFloat(formData.get('SingleSessionRate')),
+            multiSessionRate: formData.get('MultiSessionRate') ? parseFloat(formData.get('MultiSessionRate')) : null,
+            supportsMultiSession: formData.get('SupportsMultiSession') === 'on',
             status: parseInt(formData.get('Status')),
             isActive: formData.get('IsActive') === 'on'
         };
@@ -350,7 +403,6 @@ function setupEditDeviceForm() {
 // ============================================
 
 async function deleteDevice(deviceId, deviceName) {
-    // Confirm deletion
     const confirmed = confirm(
         `⚠️ Delete Device\n\nAre you sure you want to delete "${deviceName}"?\n\nThis action cannot be undone.`
     );
@@ -358,7 +410,6 @@ async function deleteDevice(deviceId, deviceName) {
     if (!confirmed) return;
 
     try {
-        // Get current path
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/(device|Device).*/, '');
 
@@ -367,7 +418,6 @@ async function deleteDevice(deviceId, deviceName) {
         });
 
         if (response.ok) {
-            // Remove device card with animation
             const deviceCard = document.querySelector(`[data-device-id="${deviceId}"]`);
             if (deviceCard) {
                 deviceCard.style.opacity = '0';
@@ -397,10 +447,7 @@ function setupAddDeviceForm() {
     const form = document.getElementById('add-device-form');
     if (!form) return;
 
-    // You can add custom validation or handling here
     form.addEventListener('submit', (e) => {
-        // HTMX will handle the actual submission
-        // This is just for additional client-side logic if needed
         console.log('Adding new device...');
     });
 }
@@ -425,37 +472,31 @@ function updateDeviceStats() {
 
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Don't trigger shortcuts if user is typing in an input, textarea, or select
         const activeElement = document.activeElement;
         const isTyping = activeElement.tagName === 'INPUT' ||
             activeElement.tagName === 'TEXTAREA' ||
             activeElement.tagName === 'SELECT';
 
-        // Ctrl/Cmd + K: Focus search
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             document.getElementById('search-input')?.focus();
         }
 
-        // Ctrl/Cmd + N: Add new device
         if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
             e.preventDefault();
             openModal('add-device-modal');
         }
 
-        // Number keys 1-4: Quick filter (only when NOT typing)
         if (!e.ctrlKey && !e.metaKey && !e.altKey && !isTyping) {
             if (e.key === '1') filterByStatus('all');
             if (e.key === '2') filterByStatus('available');
             if (e.key === '3') filterByStatus('in-use');
-            if (e.key === '4') filterByStatus('maintenance');
+            if (e.key === '4') filterByStatus('multi-session');
         }
 
-        // Escape: Close success notification or modals
         if (e.key === 'Escape') {
             closeSuccessNotification();
 
-            // Close any open modal
             const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
             modals.forEach(modal => closeModal(modal.id));
         }
@@ -466,9 +507,23 @@ function setupKeyboardShortcuts() {
 // QUICK START SESSION FROM DEVICE CARD
 // ============================================
 
-function quickStartSession(deviceId, deviceName) {
-    if (confirm(`Start a new session on "${deviceName}"?`)) {
-        // HTMX will handle this via the button
-        console.log(`Starting session on device ${deviceId}`);
+function quickStartDeviceSession(deviceId, deviceName, isMultiSession) {
+    const sessionType = isMultiSession ? 'multi-player' : 'single-player';
+    const message = `Start a ${sessionType} session on "${deviceName}"?`;
+
+    if (confirm(message)) {
+        console.log(`Starting ${sessionType} session on device ${deviceId}`);
+        // This will be handled by your session creation logic
+        // You can pass isMultiSession parameter to determine which rate to use
     }
+}
+
+// ============================================
+// TOAST NOTIFICATION (Simple)
+// ============================================
+
+function showToast(message, type = 'info') {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    // You can implement a proper toast notification system here
+    alert(message);
 }

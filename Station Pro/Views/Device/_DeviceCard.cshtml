@@ -25,12 +25,15 @@
                          (int)Model.Type == 5 ? "fas fa-desktop" :
                          (int)Model.Type == 6 ? "fas fa-table-tennis" :
                          ((int)Model.Type == 7 || (int)Model.Type == 8) ? "fas fa-circle" : "fas fa-gamepad";
+    
+    var multiSessionFilter = Model.SupportsMultiSession ? "multi-session" : "";
 }
 
 <div class="device-card @statusClass fade-in"
      data-device-name="@Model.Name.ToLower()"
      data-device-status="@statusFilter"
-     data-device-id="@Model.Id">
+     data-device-id="@Model.Id"
+     data-multi-session="@multiSessionFilter">
 
     <!-- Device Header -->
     <div class="flex justify-between items-start mb-4">
@@ -52,9 +55,26 @@
 
     <!-- Device Details -->
     <div class="border-t border-gray-100 pt-4 mb-4 space-y-3">
-        <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600">@Localizer["HourlyRate"]</span>
-            <span class="text-lg font-bold text-blue-600">@Model.HourlyRate.ToString("C")</span>
+        <!-- Rates Display -->
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600 flex items-center">
+                    <i class="fas fa-user text-blue-600 mr-2"></i>
+                    @Localizer["Single"]
+                </span>
+                <span class="text-lg font-bold text-blue-600">@Model.SingleSessionRate.ToString("C")</span>
+            </div>
+            
+            @if (Model.SupportsMultiSession && Model.MultiSessionRate.HasValue)
+            {
+                <div class="flex justify-between items-center p-2 bg-purple-50 rounded-lg border border-purple-200">
+                    <span class="text-sm text-gray-600 flex items-center">
+                        <i class="fas fa-users text-purple-600 mr-2"></i>
+                        @Localizer["Multi"]
+                    </span>
+                    <span class="text-lg font-bold text-purple-600">@Model.MultiSessionRate.Value.ToString("C")</span>
+                </div>
+            }
         </div>
 
         @if (Model.CurrentSession != null)
@@ -91,11 +111,32 @@
     <div class="flex space-x-2">
         @if (Model.Status == "Available")
         {
-            <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name')"
-                    class="btn btn-success flex-1">
-                <i class="fas fa-play mr-2"></i>
-                @Localizer["Start"]
-            </button>
+            @if (Model.SupportsMultiSession)
+            {
+                <!-- Split button for single/multi session -->
+                <div class="flex-1 flex space-x-1">
+                    <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name', false)"
+                            class="btn btn-success flex-1"
+                            title="@Localizer["StartSingleSession"]">
+                        <i class="fas fa-user mr-1"></i>
+                        <span class="hidden sm:inline">@Localizer["Single"]</span>
+                    </button>
+                    <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name', true)"
+                            class="btn btn-success"
+                            style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);"
+                            title="@Localizer["StartMultiSession"]">
+                        <i class="fas fa-users"></i>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name', false)"
+                        class="btn btn-success flex-1">
+                    <i class="fas fa-play mr-2"></i>
+                    @Localizer["Start"]
+                </button>
+            }
         }
         else if (Model.Status == "In Use")
         {

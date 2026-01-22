@@ -1190,4 +1190,27 @@
   <value>مستخدم</value>
 </data>
 
+	<data name="SingleSessionRate" xml:space="preserve">
+  <value>سعر الساعة الفردي</value>
+</data>
+
+	<data name="EnableMultiSession" xml:space="preserve">
+  <value>تفعيل الزوجي</value>
+</data>
+	
+	<data name="MultiSessionRate" xml:space="preserve">
+  <value>سعر الساعه الزوجي</value>
+</data>
+
+	<data name="Single" xml:space="preserve">
+  <value>فردي</value>
+</data>
+
+	<data name="Multi" xml:space="preserve">
+  <value>زوجي</value>
+</data>
+
+	<data name="MultiSessionDevices" xml:space="preserve">
+  <value>الأجهزة الزوجية</value>
+</data>
 </root>

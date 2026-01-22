@@ -1,6 +1,5 @@
 ﻿// StationPro.Web/Controllers/DeviceController.cs
-// TEMPORARY VERSION - Uses dummy data for UI testing
-// Replace with real service implementation later
+// UPDATED VERSION with Single/Multi Session Support
 
 using Microsoft.AspNetCore.Mvc;
 using StationPro.Application.DTOs;
@@ -20,7 +19,6 @@ public class DeviceController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        // Return all dummy devices
         return View(_devices);
     }
 
@@ -48,13 +46,20 @@ public class DeviceController : Controller
     [HttpPost]
     public IActionResult Create([FromForm] CreateDeviceDto dto)
     {
-        // Create new device with dummy data
+        // Validate multi-session rate if enabled
+        if (dto.SupportsMultiSession && !dto.MultiSessionRate.HasValue)
+        {
+            return BadRequest(new { message = "Multi-session rate is required when multi-session is enabled" });
+        }
+
         var newDevice = new DeviceDto
         {
-            Id = _devices.Max(d => d.Id) + 1,
+            Id = _devices.Any() ? _devices.Max(d => d.Id) + 1 : 1,
             Name = dto.Name,
             Type = dto.Type,
-            HourlyRate = dto.HourlyRate,
+            SingleSessionRate = dto.SingleSessionRate,
+            MultiSessionRate = dto.MultiSessionRate,
+            SupportsMultiSession = dto.SupportsMultiSession,
             IsAvailable = true,
             Status = "Available",
             CurrentSession = null
@@ -62,7 +67,6 @@ public class DeviceController : Controller
 
         _devices.Add(newDevice);
 
-        // Return partial view for HTMX
         return PartialView("_DeviceCard", newDevice);
     }
 
@@ -80,11 +84,18 @@ public class DeviceController : Controller
             return NotFound(new { message = "Device not found" });
         }
 
-        // Update device (Status is string in DTO)
+        // Validate multi-session
+        if (dto.SupportsMultiSession && !dto.MultiSessionRate.HasValue)
+        {
+            return BadRequest(new { message = "Multi-session rate is required when multi-session is enabled" });
+        }
+
         device.Name = dto.Name;
-        device.HourlyRate = dto.HourlyRate;
+        device.SingleSessionRate = dto.SingleSessionRate;
+        device.MultiSessionRate = dto.MultiSessionRate;
+        device.SupportsMultiSession = dto.SupportsMultiSession;
         device.IsAvailable = dto.IsActive;
-        device.Status = dto.Status.ToString(); // Convert enum to string
+        device.Status = dto.Status.ToString();
 
         return Ok(new { message = "Device updated successfully" });
     }
@@ -109,20 +120,22 @@ public class DeviceController : Controller
     }
 
     // ============================================
-    // GENERATE DUMMY DATA
+    // GENERATE DUMMY DATA with Single/Multi Rates
     // ============================================
 
     private static List<DeviceDto> GenerateDummyDevices()
     {
         return new List<DeviceDto>
         {
-            // Available PS5 Devices
+            // PS5 Devices with Multi-Session Support
             new DeviceDto
             {
                 Id = 1,
                 Name = "PS5 - 1",
                 Type = DeviceType.PS5,
-                HourlyRate = 50,
+                SingleSessionRate = 50,
+                MultiSessionRate = 80,
+                SupportsMultiSession = true,
                 IsAvailable = true,
                 Status = "Available",
                 CurrentSession = null
@@ -132,19 +145,23 @@ public class DeviceController : Controller
                 Id = 2,
                 Name = "PS5 - 2",
                 Type = DeviceType.PS5,
-                HourlyRate = 50,
+                SingleSessionRate = 50,
+                MultiSessionRate = 80,
+                SupportsMultiSession = true,
                 IsAvailable = true,
                 Status = "Available",
                 CurrentSession = null
             },
             
-            // In Use PS5
+            // In Use PS5 with Multi-Session
             new DeviceDto
             {
                 Id = 3,
                 Name = "PS5 - 3",
                 Type = DeviceType.PS5,
-                HourlyRate = 50,
+                SingleSessionRate = 50,
+                MultiSessionRate = 80,
+                SupportsMultiSession = true,
                 IsAvailable = false,
                 Status = "In Use",
                 CurrentSession = new SessionDto
@@ -154,20 +171,22 @@ public class DeviceController : Controller
                     DeviceName = "PS5 - 3",
                     CustomerName = "Ahmed Mohamed",
                     StartTime = DateTime.Now.AddMinutes(-45),
-                    HourlyRate = 50,
-                    TotalCost = 37.50m,
+                    HourlyRate = 80, // Using multi-session rate
+                    TotalCost = 60m,
                     Status = "Active",
                     Duration = TimeSpan.FromMinutes(45)
                 }
             },
             
-            // Available PS4 Devices
+            // PS4 Devices with Multi-Session
             new DeviceDto
             {
                 Id = 4,
                 Name = "PS4 - 1",
                 Type = DeviceType.PS4,
-                HourlyRate = 30,
+                SingleSessionRate = 30,
+                MultiSessionRate = 50,
+                SupportsMultiSession = true,
                 IsAvailable = true,
                 Status = "Available",
                 CurrentSession = null
@@ -177,19 +196,23 @@ public class DeviceController : Controller
                 Id = 5,
                 Name = "PS4 - 2",
                 Type = DeviceType.PS4,
-                HourlyRate = 30,
+                SingleSessionRate = 30,
+                MultiSessionRate = 50,
+                SupportsMultiSession = true,
                 IsAvailable = true,
                 Status = "Available",
                 CurrentSession = null
             },
             
-            // In Use PS4
+            // In Use PS4 with Single Session
             new DeviceDto
             {
                 Id = 6,
                 Name = "PS4 - 3",
                 Type = DeviceType.PS4,
-                HourlyRate = 30,
+                SingleSessionRate = 30,
+                MultiSessionRate = 50,
+                SupportsMultiSession = true,
                 IsAvailable = false,
                 Status = "In Use",
                 CurrentSession = new SessionDto
@@ -199,32 +222,36 @@ public class DeviceController : Controller
                     DeviceName = "PS4 - 3",
                     CustomerName = "Ali Hassan",
                     StartTime = DateTime.Now.AddMinutes(-120),
-                    HourlyRate = 30,
+                    HourlyRate = 30, // Using single session rate
                     TotalCost = 60m,
                     Status = "Active",
                     Duration = TimeSpan.FromMinutes(120)
                 }
             },
             
-            // Xbox Available
+            // Xbox with Multi-Session
             new DeviceDto
             {
                 Id = 7,
                 Name = "Xbox One",
                 Type = DeviceType.Xbox,
-                HourlyRate = 35,
+                SingleSessionRate = 35,
+                MultiSessionRate = 60,
+                SupportsMultiSession = true,
                 IsAvailable = true,
                 Status = "Available",
                 CurrentSession = null
             },
             
-            // PC Gaming
+            // PC Gaming (Single Session Only)
             new DeviceDto
             {
                 Id = 8,
                 Name = "Gaming PC - 1",
                 Type = DeviceType.PC,
-                HourlyRate = 40,
+                SingleSessionRate = 40,
+                MultiSessionRate = null,
+                SupportsMultiSession = false,
                 IsAvailable = true,
                 Status = "Available",
                 CurrentSession = null
@@ -236,31 +263,37 @@ public class DeviceController : Controller
                 Id = 9,
                 Name = "PS4 - 4",
                 Type = DeviceType.PS4,
-                HourlyRate = 30,
+                SingleSessionRate = 30,
+                MultiSessionRate = 50,
+                SupportsMultiSession = true,
                 IsAvailable = false,
                 Status = "Maintenance",
                 CurrentSession = null
             },
             
-            // Ping Pong Table
+            // Ping Pong with Multi-Session
             new DeviceDto
             {
                 Id = 10,
                 Name = "Ping Pong Table",
                 Type = DeviceType.PingPong,
-                HourlyRate = 20,
+                SingleSessionRate = 20,
+                MultiSessionRate = 35,
+                SupportsMultiSession = true,
                 IsAvailable = true,
                 Status = "Available",
                 CurrentSession = null
             },
             
-            // Pool Table - In Use
+            // Pool Table with Multi-Session - In Use
             new DeviceDto
             {
                 Id = 11,
                 Name = "Pool Table",
                 Type = DeviceType.Pool,
-                HourlyRate = 25,
+                SingleSessionRate = 25,
+                MultiSessionRate = 40,
+                SupportsMultiSession = true,
                 IsAvailable = false,
                 Status = "In Use",
                 CurrentSession = new SessionDto
@@ -268,24 +301,26 @@ public class DeviceController : Controller
                     Id = 3,
                     DeviceId = 11,
                     DeviceName = "Pool Table",
-                    CustomerName = null, // Guest
+                    CustomerName = null,
                     StartTime = DateTime.Now.AddMinutes(-30),
-                    HourlyRate = 25,
-                    TotalCost = 12.50m,
+                    HourlyRate = 40, // Using multi-session rate
+                    TotalCost = 20m,
                     Status = "Active",
                     Duration = TimeSpan.FromMinutes(30)
                 }
             },
             
-            // Offline Device
+            // Billiards with Multi-Session
             new DeviceDto
             {
                 Id = 12,
-                Name = "PS3 - 1",
-                Type = DeviceType.PS3,
-                HourlyRate = 20,
-                IsAvailable = false,
-                Status = "Offline",
+                Name = "Billiards Table",
+                Type = DeviceType.Billiards,
+                SingleSessionRate = 30,
+                MultiSessionRate = 50,
+                SupportsMultiSession = true,
+                IsAvailable = true,
+                Status = "Available",
                 CurrentSession = null
             }
         };

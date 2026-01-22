@@ -11,7 +11,14 @@ namespace StationPro.Application.DTOs
     {
         public string Name { get; set; } = string.Empty;
         public DeviceType Type { get; set; }
-        public decimal HourlyRate { get; set; }
-        // Remove RoomId - not needed
+
+        // Single session rate (required)
+        public decimal SingleSessionRate { get; set; }
+
+        // Multi session rate (optional)
+        public decimal? MultiSessionRate { get; set; }
+
+        // Whether multi-session is enabled
+        public bool SupportsMultiSession { get; set; } = false;
     }
 }

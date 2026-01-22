@@ -1168,4 +1168,27 @@
 	<data name="In Use" xml:space="preserve">
   <value>In Use</value>
 </data>
+
+	<data name="SingleSessionRate" xml:space="preserve">
+  <value>Single Session Rate</value>
+</data>
+
+	<data name="EnableMultiSession" xml:space="preserve">
+  <value>Enable Multi Session</value>
+</data>
+
+	<data name="MultiSessionRate" xml:space="preserve">
+  <value>Multi Session Rate</value>
+</data>
+
+	<data name="Single" xml:space="preserve">
+  <value>Single</value>
+</data>
+
+	<data name="Multi" xml:space="preserve">
+  <value>Multi</value>
+</data>
+	<data name="MultiSessionDevices" xml:space="preserve">
+  <value>Multi Session Devices</value>
+</data>
 </root>

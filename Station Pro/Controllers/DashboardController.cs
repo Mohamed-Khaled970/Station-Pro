@@ -63,6 +63,19 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
         {
             var devices = new List<DeviceDto>();
 
+
+            /*
+             * 
+             *                 Id = 8,
+                Name = "Gaming PC - 1",
+                Type = DeviceType.PC,
+                SingleSessionRate = 40,
+                MultiSessionRate = null,
+                SupportsMultiSession = false,
+                IsAvailable = true,
+                Status = "Available",
+                CurrentSession = null
+             */
             // Add devices that are in use
             foreach (var session in _activeSessions)
             {
@@ -71,7 +84,9 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Id = session.DeviceId,
                     Name = session.DeviceName,
                     Type = GetDeviceType(session.DeviceName),
-                    HourlyRate = session.HourlyRate,
+                    SingleSessionRate = session.HourlyRate,
+                    MultiSessionRate = null,
+                    SupportsMultiSession = false,
                     IsAvailable = false,
                     Status = "In Use",
                     CurrentSession = session
@@ -87,7 +102,9 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Id = 3,
                     Name = "PS4 - Station 1",
                     Type = DeviceType.PS4,
-                    HourlyRate = 40.00m,
+                    SingleSessionRate = 40,
+                    MultiSessionRate = null,
+                    SupportsMultiSession = false,
                     IsAvailable = true,
                     Status = "Available",
                     CurrentSession = null
@@ -100,7 +117,9 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Id = 6,
                     Name = "Xbox One",
                     Type = DeviceType.Xbox,
-                    HourlyRate = 35.00m,
+                    SingleSessionRate = 40,
+                    MultiSessionRate = null,
+                    SupportsMultiSession = false,
                     IsAvailable = true,
                     Status = "Available",
                     CurrentSession = null
@@ -113,7 +132,9 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                     Id = 8,
                     Name = "Gaming PC - Standard",
                     Type = DeviceType.PC,
-                    HourlyRate = 55.00m,
+                    SingleSessionRate = 40,
+                    MultiSessionRate = null,
+                    SupportsMultiSession = false,
                     IsAvailable = true,
                     Status = "Available",
                     CurrentSession = null
@@ -130,7 +151,9 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
                         Id = i,
                         Name = $"Device {i}",
                         Type = DeviceType.PS4,
-                        HourlyRate = 40.00m,
+                        SingleSessionRate = 40,
+                        MultiSessionRate = null,
+                        SupportsMultiSession = false,
                         IsAvailable = true,
                         Status = "Available",
                         CurrentSession = null

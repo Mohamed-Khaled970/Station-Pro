@@ -72,13 +72,11 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">@Localizer["AvgRate"]</p>
-                        <p class="text-2xl font-bold text-purple-600">
-                            @(Model.Any() ? Model.Average(d => d.HourlyRate).ToString("C") : "0 EGP")
-                        </p>
+                        <p class="text-sm text-gray-600 mb-1">@Localizer["MultiSessionDevices"]</p>
+                        <p class="text-2xl font-bold text-purple-600">@Model.Count(d => d.SupportsMultiSession)</p>
                     </div>
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-coins text-purple-600 text-xl"></i>
+                        <i class="fas fa-users text-purple-600 text-xl"></i>
                     </div>
                 </div>
             </div>
@@ -116,10 +114,11 @@
                             data-filter="in-use">
                         @Localizer["InUse"]
                     </button>
-                    <button onclick="filterByStatus('maintenance')"
+                    <button onclick="filterByStatus('multi-session')"
                             class="filter-btn"
-                            data-filter="maintenance">
-                        @Localizer["Maintenance"]
+                            data-filter="multi-session">
+                        <i class="fas fa-users mr-1"></i>
+                        Multi-Session
                     </button>
                 </div>
             </div>
@@ -169,7 +168,6 @@
                            class="form-input"
                            placeholder="@Localizer["DeviceNamePlaceholder"]"
                            required>
-                    <p class="text-xs text-gray-500 mt-1">@Localizer["GiveDeviceUniqueName"]</p>
                 </div>
 
                 <div>
@@ -177,7 +175,7 @@
                         <i class="fas fa-gamepad text-blue-600 mr-2"></i>
                         @Localizer["DeviceType"]
                     </label>
-                    <select name="Type" class="form-input" required>
+                    <select name="Type" id="device-type-select" class="form-input" required onchange="toggleMultiSessionFields()">
                         <option value="">@Localizer["ChooseDeviceType"]</option>
                         <option value="1">@Localizer["PlayStation5"]</option>
                         <option value="2">@Localizer["PlayStation4"]</option>
@@ -191,14 +189,15 @@
                     </select>
                 </div>
 
+                <!-- Single Session Rate -->
                 <div>
                     <label class="form-label">
-                        <i class="fas fa-coins text-blue-600 mr-2"></i>
-                        @Localizer["HourlyRateEGP"]
+                        <i class="fas fa-user text-blue-600 mr-2"></i>
+                        @Localizer["SingleSessionRate"]
                     </label>
                     <div class="relative">
                         <input type="number"
-                               name="HourlyRate"
+                               name="SingleSessionRate"
                                class="form-input"
                                placeholder="@Localizer["RatePlaceholder"]"
                                step="0.01"
@@ -207,6 +206,42 @@
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                             @Localizer["EGPPerHour"]
                         </span>
+                    </div>
+                </div>
+
+                <!-- Multi Session Toggle & Rate -->
+                <div id="multi-session-container" class="hidden">
+                    <div class="flex items-center space-x-3 mb-3 p-3 bg-purple-50 rounded-lg border-2 border-purple-200">
+
+                        <!-- Checkbox with value="true" to properly bind to boolean -->
+                        <input type="checkbox"
+                               id="supports-multi-session"
+                               name="SupportsMultiSession"
+                               value="true"
+                               class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                        <label for="supports-multi-session" class="text-sm font-semibold text-gray-900 flex items-center">
+                            <i class="fas fa-users text-purple-600 mr-2"></i>
+                            @Localizer["EnableMultiSession"]
+                        </label>
+                    </div>
+
+                    <div id="multi-rate-field" class="hidden">
+                        <label class="form-label">
+                            <i class="fas fa-users text-purple-600 mr-2"></i>
+                            @Localizer["MultiSessionRate"]
+                        </label>
+                        <div class="relative">
+                            <input type="number"
+                                   name="MultiSessionRate"
+                                   id="multi-session-rate-input"
+                                   class="form-input"
+                                   placeholder="@Localizer["MultiRatePlaceholder"]"
+                                   step="0.01"
+                                   min="0">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                                @Localizer["EGPPerHour"]
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -244,15 +279,45 @@
                            required>
                 </div>
 
+                <!-- Single Session Rate -->
                 <div>
-                    <label class="form-label">@Localizer["HourlyRateEGP"]</label>
+                    <label class="form-label">
+                        <i class="fas fa-user text-blue-600 mr-2"></i>
+                        @Localizer["SingleSessionRate"]
+                    </label>
                     <input type="number"
-                           id="edit-device-rate"
-                           name="HourlyRate"
+                           id="edit-single-rate"
+                           name="SingleSessionRate"
                            class="form-input"
                            step="0.01"
                            min="0"
                            required>
+                </div>
+
+                <!-- Multi Session Toggle & Rate -->
+                <div class="flex items-center space-x-3 mb-3 p-3 bg-purple-50 rounded-lg border-2 border-purple-200">
+                    <input type="checkbox"
+                           id="edit-supports-multi"
+                           name="SupportsMultiSession"
+                           class="w-5 h-5 text-purple-600 border-gray-300 rounded"
+                           onchange="toggleEditMultiRate()">
+                    <label for="edit-supports-multi" class="text-sm font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-users text-purple-600 mr-2"></i>
+                        @Localizer["EnableMultiSession"]
+                    </label>
+                </div>
+
+                <div id="edit-multi-rate-field" class="hidden">
+                    <label class="form-label">
+                        <i class="fas fa-users text-purple-600 mr-2"></i>
+                        @Localizer["MultiSessionRate"]
+                    </label>
+                    <input type="number"
+                           id="edit-multi-rate"
+                           name="MultiSessionRate"
+                           class="form-input"
+                           step="0.01"
+                           min="0">
                 </div>
 
                 <div>
@@ -291,6 +356,6 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/session-timer.js"></script>  <!-- Load timer FIRST -->
+    <script src="~/js/session-timer.js"></script>
     <script src="~/js/device.js"></script>
 }
