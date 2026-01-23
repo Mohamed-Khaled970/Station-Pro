@@ -316,6 +316,128 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             };
         }
 
+
+        [HttpPost]
+        public IActionResult QuickStart(int deviceId, bool isMultiSession = false)
+        {
+            try
+            {
+                // Find the device from available devices
+                var device = GetAvailableDevice(deviceId);
+
+                if (device == null)
+                {
+                    return BadRequest(new { success = false, message = "Device not found" });
+                }
+
+                if (!device.IsAvailable)
+                {
+                    return BadRequest(new { success = false, message = "Device is already in use" });
+                }
+
+                // Validate multi-session request
+                if (isMultiSession && (!device.SupportsMultiSession || !device.MultiSessionRate.HasValue))
+                {
+                    return BadRequest(new { success = false, message = "Device does not support multi-session" });
+                }
+
+                // Determine hourly rate
+                decimal hourlyRate = isMultiSession && device.MultiSessionRate.HasValue
+                    ? device.MultiSessionRate.Value
+                    : device.SingleSessionRate;
+
+                // Generate new session ID
+                int newSessionId = _activeSessions.Any()
+                    ? _activeSessions.Max(s => s.Id) + 1
+                    : 1;
+
+                // Create new session
+                var newSession = new SessionDto
+                {
+                    Id = newSessionId,
+                    DeviceId = deviceId,
+                    DeviceName = device.Name,
+                    CustomerName = null, // Guest session
+                    CustomerPhone = null,
+                    StartTime = DateTime.Now,
+                    HourlyRate = hourlyRate,
+                    Status = "Active",
+                    Duration = TimeSpan.Zero,
+                    TotalCost = 0,
+                    SessionType = isMultiSession ? "multi" : "single"
+                };
+
+                // Add to active sessions
+                _activeSessions.Add(newSession);
+
+                // Create trigger data for JavaScript
+                var triggerData = new
+                {
+                    sessionStarted = new
+                    {
+                        deviceName = device.Name,
+                        sessionType = isMultiSession ? "multi" : "single",
+                        rate = hourlyRate
+                    }
+                };
+
+                // Set HTMX trigger header
+                Response.Headers.Append("HX-Trigger", System.Text.Json.JsonSerializer.Serialize(triggerData));
+
+                // Return updated active sessions view
+                return PartialView("_ActiveSessions", _activeSessions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+        // Helper method to get device information
+        private DeviceDto? GetAvailableDevice(int deviceId)
+        {
+            // Check if device is currently in use
+            var activeSession = _activeSessions.FirstOrDefault(s => s.DeviceId == deviceId);
+            if (activeSession != null)
+            {
+                return null; // Device is in use
+            }
+
+            // Define available devices with their properties
+            var availableDevices = new Dictionary<int, DeviceDto>
+    {
+        { 1, new DeviceDto { Id = 1, Name = "PS5 - Station 1", Type = DeviceType.PS5, SingleSessionRate = 50, MultiSessionRate = 75, SupportsMultiSession = true, IsAvailable = true } },
+        { 2, new DeviceDto { Id = 2, Name = "PS5 - Station 2", Type = DeviceType.PS5, SingleSessionRate = 50, MultiSessionRate = 75, SupportsMultiSession = true, IsAvailable = true } },
+        { 3, new DeviceDto { Id = 3, Name = "PS4 - Station 1", Type = DeviceType.PS4, SingleSessionRate = 40, MultiSessionRate = 60, SupportsMultiSession = true, IsAvailable = true } },
+        { 4, new DeviceDto { Id = 4, Name = "PS4 - Station 2", Type = DeviceType.PS4, SingleSessionRate = 40, MultiSessionRate = 60, SupportsMultiSession = true, IsAvailable = true } },
+        { 5, new DeviceDto { Id = 5, Name = "Xbox Series X", Type = DeviceType.Xbox, SingleSessionRate = 45, MultiSessionRate = 70, SupportsMultiSession = true, IsAvailable = true } },
+        { 6, new DeviceDto { Id = 6, Name = "Xbox One", Type = DeviceType.Xbox, SingleSessionRate = 40, MultiSessionRate = 70, SupportsMultiSession = true, IsAvailable = true } },
+        { 7, new DeviceDto { Id = 7, Name = "Gaming PC - Ultimate", Type = DeviceType.PC, SingleSessionRate = 60, MultiSessionRate = null, SupportsMultiSession = false, IsAvailable = true } },
+        { 8, new DeviceDto { Id = 8, Name = "Gaming PC - Standard", Type = DeviceType.PC, SingleSessionRate = 55, MultiSessionRate = null, SupportsMultiSession = false, IsAvailable = true } },
+    };
+
+            // Add more devices (9-12)
+            for (int i = 9; i <= 12; i++)
+            {
+                availableDevices.Add(i, new DeviceDto
+                {
+                    Id = i,
+                    Name = $"Device {i}",
+                    Type = DeviceType.PS4,
+                    SingleSessionRate = 40,
+                    MultiSessionRate = 60,
+                    SupportsMultiSession = true,
+                    IsAvailable = true
+                });
+            }
+
+            return availableDevices.ContainsKey(deviceId) ? availableDevices[deviceId] : null;
+        }
+
+        public static void AddActiveSession(SessionDto session)
+        {
+            _activeSessions.Add(session);
+        }
+
         private decimal CalculateTodayRevenue()
         {
             // Calculate current active sessions value

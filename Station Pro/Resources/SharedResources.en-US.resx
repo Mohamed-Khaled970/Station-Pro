@@ -1277,4 +1277,22 @@
   <value>On</value>
 </data>
 
+
+	<data name="SessionType" xml:space="preserve">
+    <value>Session Type</value>
+  </data>
+
+	<data name="SingleSession" xml:space="preserve">
+    <value>Single</value>
+  </data>
+
+	<data name="MultiSession" xml:space="preserve">
+    <value>Multi</value>
+  </data>
+
+	<data name="SessionStartedSuccessfully" xml:space="preserve">
+    <value>Session Started Successfully</value>
+  </data>
+
+
 </root>

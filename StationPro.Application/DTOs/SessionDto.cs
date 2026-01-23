@@ -20,5 +20,8 @@ namespace StationPro.Application.DTOs
         public TimeSpan Duration { get; set; }
         public string DurationFormatted => $"{(int)Duration.TotalHours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
         public string Status { get; set; } = "Active";
+        // Add to both classes
+        public string SessionType { get; set; } = "single"; // "single" or "multi"
+        public string SessionTypeDisplay => SessionType == "multi" ? "Multi-Session" : "Single Session";
     }
 }

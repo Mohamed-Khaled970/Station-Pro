@@ -23,6 +23,9 @@ namespace StationPro.Application.DTOs
         public decimal TotalCost { get; set; }
         public string Status { get; set; } = string.Empty; // Completed, Cancelled
         public string PaymentMethod { get; set; } = string.Empty;
+        // Add to both classes
+        public string SessionType { get; set; } = "single"; // "single" or "multi"
+        public string SessionTypeDisplay => SessionType == "multi" ? "Multi-Session" : "Single Session";
     }
 
 }

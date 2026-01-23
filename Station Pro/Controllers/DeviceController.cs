@@ -10,7 +10,7 @@ namespace StationPro.Web.Controllers;
 public class DeviceController : Controller
 {
     // Static list to simulate database (temporary)
-    private static List<DeviceDto> _devices = GenerateDummyDevices();
+    public static List<DeviceDto> _devices = GenerateDummyDevices();
 
     // ============================================
     // INDEX - List All Devices

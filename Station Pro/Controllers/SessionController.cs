@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Station_Pro.Controllers.Station_Pro.Controllers;
 using StationPro.Application.DTOs;
+using StationPro.Web.Controllers;
 
 namespace StationPro.Controllers
 {
@@ -148,6 +149,69 @@ namespace StationPro.Controllers
             return PartialView("_SessionReceipt", receipt);
         }
 
+        [HttpPost]
+        public IActionResult Start(int deviceId, string? customerName, string? customerPhone, string sessionType = "single")
+        {
+            try
+            {
+                var device = DeviceController._devices.FirstOrDefault(d => d.Id == deviceId);
+
+                if (device == null)
+                    return BadRequest(new { success = false, message = "Device not found" });
+
+                if (!device.IsAvailable)
+                    return BadRequest(new { success = false, message = "Device is not available" });
+
+                // Determine hourly rate based on session type
+                decimal hourlyRate = sessionType == "multi" && device.MultiSessionRate.HasValue
+                    ? device.MultiSessionRate.Value
+                    : device.SingleSessionRate;
+
+                // Generate new session ID
+                int newSessionId = DashboardController.GetActiveSessions().Any()
+                    ? DashboardController.GetActiveSessions().Max(s => s.Id) + 1
+                    : 1;
+
+                var newSession = new SessionDto
+                {
+                    Id = newSessionId,
+                    DeviceId = deviceId,
+                    DeviceName = device.Name,
+                    CustomerName = customerName,
+                    CustomerPhone = customerPhone,
+                    StartTime = DateTime.Now,
+                    HourlyRate = hourlyRate,
+                    Status = "Active",
+                    Duration = TimeSpan.Zero,
+                    TotalCost = 0,
+                    SessionType = sessionType
+                };
+
+                DashboardController.AddActiveSession(newSession);
+
+                device.IsAvailable = false;
+                device.Status = sessionType == "multi" ? "In Use (Multi)" : "In Use";
+                device.CurrentSession = newSession;
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Session started successfully",
+                    sessionId = newSessionId,
+                    sessionType = sessionType
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while starting the session",
+                    error = ex.Message
+                });
+            }
+        }
+
         // ============================================
         // HELPER METHODS
         // ============================================
@@ -192,17 +256,7 @@ namespace StationPro.Controllers
 
         private List<DeviceDto> GetAvailableDevices()
         {
-            return new List<DeviceDto>
-            {
-                new DeviceDto { Id = 1, Name = "PS5 - Station 1" },
-                new DeviceDto { Id = 2, Name = "PS5 - Station 2" },
-                new DeviceDto { Id = 3, Name = "PS4 - Station 1" },
-                new DeviceDto { Id = 4, Name = "PS4 - Station 2" },
-                new DeviceDto { Id = 5, Name = "Xbox Series X" },
-                new DeviceDto { Id = 6, Name = "Xbox One" },
-                new DeviceDto { Id = 7, Name = "Gaming PC - Ultimate" },
-                new DeviceDto { Id = 8, Name = "Gaming PC - Standard" }
-            };
+            return DeviceController._devices;
         }
 
         private static List<SessionReportDto> GenerateDummyHistoricalSessions()

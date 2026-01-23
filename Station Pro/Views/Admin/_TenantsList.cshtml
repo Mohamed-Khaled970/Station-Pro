@@ -1,0 +1,160 @@
+﻿@model List<TenantAdminDto>
+@using StationPro.Application.DTOs.Admin
+
+<div class="space-y-4">
+    @foreach (var tenant in Model)
+    {
+        var planBadgeClass = tenant.Plan switch
+        {
+            SubscriptionPlan.Free => "bg-gray-100 text-gray-700",
+            SubscriptionPlan.Basic => "bg-blue-100 text-blue-700",
+            SubscriptionPlan.Pro => "bg-purple-100 text-purple-700",
+            SubscriptionPlan.Enterprise => "bg-orange-100 text-orange-700",
+            _ => "bg-gray-100 text-gray-700"
+        };
+
+        var planIcon = tenant.Plan switch
+        {
+            SubscriptionPlan.Free => "fa-gift",
+            SubscriptionPlan.Basic => "fa-star",
+            SubscriptionPlan.Pro => "fa-gem",
+            SubscriptionPlan.Enterprise => "fa-crown",
+            _ => "fa-circle"
+        };
+
+        var isExpiringSoon = tenant.SubscriptionEndDate.HasValue &&
+        tenant.SubscriptionEndDate.Value <= DateTime.Now.AddDays(7);
+        var isExpired = tenant.SubscriptionEndDate.HasValue &&
+        tenant.SubscriptionEndDate.Value < DateTime.Now;
+
+        <div class="tenant-card p-4 rounded-lg border @(tenant.IsActive ? "bg-white border-gray-200" : "bg-gray-50 border-gray-300 opacity-75")">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h4 class="font-bold text-gray-900">@tenant.Name</h4>
+                        @if (!tenant.IsActive)
+                        {
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">
+                                INACTIVE
+                            </span>
+                        }
+                        @if (isExpired)
+                        {
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">
+                                EXPIRED
+                            </span>
+                        }
+                        else if (isExpiringSoon)
+                        {
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-semibold">
+                                EXPIRING SOON
+                            </span>
+                        }
+                    </div>
+                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                        <span>
+                            <i class="fas fa-link text-blue-500 mr-1"></i>
+                            @tenant.Subdomain
+                        </span>
+                        <span>
+                            <i class="fas fa-envelope text-gray-400 mr-1"></i>
+                            @tenant.Email
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                        <span>
+                            <i class="fas fa-calendar mr-1"></i>
+                            Joined @tenant.JoinedDate.ToString("MMM dd, yyyy")
+                        </span>
+                        @if (tenant.SubscriptionEndDate.HasValue)
+                        {
+                            <span>
+                                <i class="fas fa-clock mr-1"></i>
+                                Expires @tenant.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")
+                            </span>
+                        }
+                    </div>
+                </div>
+                <span class="@planBadgeClass px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <i class="fas @planIcon"></i>
+                    @tenant.Plan.ToString().ToUpper()
+                </span>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4 mb-3 pt-3 border-t border-gray-100">
+                <div class="text-center">
+                    <p class="text-xs text-gray-500 mb-1">Devices</p>
+                    <p class="text-lg font-bold text-gray-900">@tenant.TotalDevices</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-500 mb-1">Sessions</p>
+                    <p class="text-lg font-bold text-gray-900">@tenant.TotalSessions</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-500 mb-1">Total Revenue</p>
+                    <p class="text-lg font-bold text-green-600">@tenant.TotalRevenue.ToString("C0")</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-500 mb-1">Monthly</p>
+                    <p class="text-lg font-bold text-blue-600">@tenant.MonthlyRevenue.ToString("C0")</p>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <!-- Toggle Active Status -->
+                <button onclick="toggleTenantStatus(@tenant.Id, '@tenant.Name')"
+                        class="btn @(tenant.IsActive ? "btn-danger" : "btn-success") btn-sm flex-1">
+                    <i class="fas @(tenant.IsActive ? "fa-ban" : "fa-check") mr-1"></i>
+                    @(tenant.IsActive ? "Deactivate" : "Activate")
+                </button>
+
+                <!-- Change Subscription -->
+                <div class="relative flex-1">
+                    <button onclick="toggleSubscriptionMenu(@tenant.Id)"
+                            class="btn btn-outline btn-sm w-full">
+                        <i class="fas fa-crown mr-1"></i>
+                        Change Plan
+                    </button>
+                    <div id="subscription-menu-@tenant.Id" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                        <div class="p-2">
+                            <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Free))"
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2">
+                                <i class="fas fa-gift text-gray-600"></i>
+                                Free
+                            </button>
+                            <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Basic))"
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 rounded flex items-center gap-2">
+                                <i class="fas fa-star text-blue-600"></i>
+                                Basic
+                            </button>
+                            <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Pro))"
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-purple-50 rounded flex items-center gap-2">
+                                <i class="fas fa-gem text-purple-600"></i>
+                                Pro
+                            </button>
+                            <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Enterprise))"
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 rounded flex items-center gap-2">
+                                <i class="fas fa-crown text-orange-600"></i>
+                                Enterprise
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Details -->
+                <button onclick="viewTenantDetails(@tenant.Id)"
+                        class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-12">
+        <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
+        <p class="text-gray-500">No tenants found</p>
+    </div>
+}

@@ -309,6 +309,19 @@
     </div>
 </div>
 
+@* Hidden element to store localized messages for JavaScript *@
+<div id="localized-messages"
+     data-messages='@System.Text.Json.JsonSerializer.Serialize(new
+    {
+        sessionStarted = Localizer["SessionStartedSuccessfully"].Value,
+        singleSession = Localizer["Single"].Value,
+        multiSession = Localizer["Multi"].Value,
+        hour = Localizer["hr"].Value,
+        ok = Localizer["OK"].Value
+    })'
+     style="display: none;">
+</div>
+
 @section Scripts {
     <script src="@Url.Content("~/js/dashboard.js")"></script>
     <script src="@Url.Content("~/js/session-timer.js")"></script>

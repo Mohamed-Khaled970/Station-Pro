@@ -107,67 +107,17 @@
         }
     </div>
 
-    <!-- Actions -->
+    <!-- Actions - ONLY Edit and Delete -->
     <div class="flex space-x-2">
-        @if (Model.Status == "Available")
-        {
-            @if (Model.SupportsMultiSession)
-            {
-                <!-- Split button for single/multi session -->
-                <div class="flex-1 flex space-x-1">
-                    <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name', false)"
-                            class="btn btn-success flex-1"
-                            title="@Localizer["StartSingleSession"]">
-                        <i class="fas fa-user mr-1"></i>
-                        <span class="hidden sm:inline">@Localizer["Single"]</span>
-                    </button>
-                    <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name', true)"
-                            class="btn btn-success"
-                            style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);"
-                            title="@Localizer["StartMultiSession"]">
-                        <i class="fas fa-users"></i>
-                    </button>
-                </div>
-            }
-            else
-            {
-                <button onclick="quickStartDeviceSession(@Model.Id, '@Model.Name', false)"
-                        class="btn btn-success flex-1">
-                    <i class="fas fa-play mr-2"></i>
-                    @Localizer["Start"]
-                </button>
-            }
-        }
-        else if (Model.Status == "In Use")
-        {
-            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                <i class="fas fa-spinner fa-pulse mr-2"></i>
-                @Localizer["InUse"]
-            </button>
-        }
-        else if (Model.Status == "Maintenance")
-        {
-            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                <i class="fas fa-tools mr-2"></i>
-                @Localizer["Maintenance"]
-            </button>
-        }
-        else
-        {
-            <!-- Offline or other status -->
-            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                <i class="fas fa-power-off mr-2"></i>
-                @Localizer[Model.Status]
-            </button>
-        }
-
         <button onclick="editDevice(@Model.Id)"
-                class="btn btn-outline">
-            <i class="fas fa-edit"></i>
+                class="btn btn-outline flex-1">
+            <i class="fas fa-edit mr-2"></i>
+            @Localizer["Edit"]
         </button>
         <button onclick="deleteDevice(@Model.Id, '@Model.Name')"
-                class="btn btn-danger">
-            <i class="fas fa-trash"></i>
+                class="btn btn-danger flex-1">
+            <i class="fas fa-trash mr-2"></i>
+            @Localizer["Delete"]
         </button>
     </div>
 </div>

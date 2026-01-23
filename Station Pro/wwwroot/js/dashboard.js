@@ -405,6 +405,111 @@ class DashboardMetrics {
 
 const dashboardMetrics = new DashboardMetrics();
 
+
+// ============================================
+// SESSION START SUCCESS NOTIFICATION
+// ============================================
+
+// Listen for HTMX custom event when session starts
+document.body.addEventListener('sessionStarted', function (event) {
+    console.log('Session started event received:', event.detail);
+    const { deviceName, sessionType, rate } = event.detail;
+    showSessionStartedNotification(deviceName, sessionType, rate);
+});
+
+function showSessionStartedNotification(deviceName, sessionType, rate) {
+    // Get localized messages from data attributes
+    const messages = getLocalizedMessages();
+
+    const sessionTypeText = sessionType === 'multi'
+        ? messages.multiSession
+        : messages.singleSession;
+
+    const title = messages.sessionStarted;
+    const message = `${deviceName} - ${sessionTypeText} (${formatCurrency(rate)}/${messages.hour})`;
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'success-notification-overlay';
+    overlay.id = 'session-success-notification';
+
+    overlay.innerHTML = `
+        <div class="success-notification-content">
+            <!-- Success Icon with Animation -->
+            <div class="success-notification-icon-wrapper">
+                <div class="success-notification-icon-circle">
+                    <i class="fas fa-check success-notification-icon"></i>
+                </div>
+            </div>
+            
+            <!-- Title and Message -->
+            <h2 class="success-notification-title">${title}</h2>
+            <p class="success-notification-message">${message}</p>
+            
+            <!-- Action Button -->
+            <div class="success-notification-actions">
+                <button onclick="closeSessionNotification()" class="success-notification-btn-primary">
+                    <i class="fas fa-check mr-2"></i>
+                    ${messages.ok}
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Trigger animation
+    setTimeout(() => {
+        overlay.classList.add('show');
+    }, 10);
+}
+
+function closeSessionNotification() {
+    const overlay = document.getElementById('session-success-notification');
+    if (!overlay) return;
+
+    overlay.classList.remove('show');
+
+    setTimeout(() => {
+        overlay.remove();
+        // Refresh the page
+        window.location.reload();
+    }, 300);
+}
+
+function getLocalizedMessages() {
+    // Try to get messages from a data attribute on the body or a hidden element
+    const messagesElement = document.getElementById('localized-messages');
+
+    if (messagesElement) {
+        try {
+            return JSON.parse(messagesElement.dataset.messages);
+        } catch (e) {
+            console.error('Error parsing localized messages:', e);
+        }
+    }
+
+    // Fallback to English
+    return {
+        sessionStarted: 'Session Started Successfully!',
+        singleSession: 'Single Session',
+        multiSession: 'Multi Session',
+        hour: 'hr',
+        ok: 'OK'
+    };
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-EG', {
+        style: 'currency',
+        currency: 'EGP'
+    }).format(amount);
+}
+
+// Make sure this runs when the page loads
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Dashboard notification handler ready');
+});
 // ============================================
 // KEYBOARD SHORTCUTS
 // ============================================

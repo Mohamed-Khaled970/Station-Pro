@@ -1,0 +1,225 @@
+﻿@model AdminDashboardStatsDto
+@using StationPro.Application.DTOs.Admin
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css">
+}
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Header -->
+        <div class="mb-8 fade-in flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                    🛡️ Admin Dashboard
+                </h1>
+                <p class="text-gray-600">Manage tenants, subscriptions, and platform statistics</p>
+            </div>
+            <button onclick="refreshDashboard()"
+                    id="refresh-btn"
+                    class="btn btn-primary flex items-center gap-2">
+                <i class="fas fa-sync-alt" id="refresh-icon"></i>
+                Refresh
+            </button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Tenants -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-blue-100 rounded-xl">
+                        <i class="fas fa-building text-blue-600 text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                        TENANTS
+                    </span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-900 mb-1">@Model.TotalTenants</h3>
+                <p class="text-sm text-gray-600">
+                    <span class="text-green-600 font-semibold">@Model.ActiveTenants Active</span>
+                </p>
+            </div>
+
+            <!-- Total Revenue -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-green-100 rounded-xl">
+                        <i class="fas fa-dollar-sign text-green-600 text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                        REVENUE
+                    </span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-900 mb-1">@Model.TotalRevenue.ToString("C")</h3>
+                <p class="text-sm text-gray-600">All-time revenue</p>
+            </div>
+
+            <!-- Monthly Revenue -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-purple-100 rounded-xl">
+                        <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+                        MONTHLY
+                    </span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-900 mb-1">@Model.MonthlyRevenue.ToString("C")</h3>
+                <p class="text-sm text-gray-600">This month</p>
+            </div>
+
+            <!-- Active Subscriptions -->
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-orange-100 rounded-xl">
+                        <i class="fas fa-crown text-orange-600 text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
+                        PREMIUM
+                    </span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-900 mb-1">@(Model.BasicPlanCount + Model.ProPlanCount + Model.EnterprisePlanCount)</h3>
+                <p class="text-sm text-gray-600">Paid subscriptions</p>
+            </div>
+        </div>
+
+        <!-- Subscription Distribution -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2">
+                <div class="card p-6 fade-in">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-users text-blue-600 mr-2"></i>
+                        Tenants Overview
+                    </h2>
+
+                    <div id="tenants-container"
+                         hx-get="/Admin/Tenants"
+                         hx-trigger="load"
+                         hx-swap="innerHTML">
+                        <!-- Tenants list loaded here -->
+                        <div class="text-center py-12">
+                            <div class="loading mx-auto mb-4"></div>
+                            <p class="text-gray-500">Loading tenants...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscription Plans Breakdown -->
+            <div class="space-y-6">
+                <div class="card p-6 fade-in">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">
+                        <i class="fas fa-chart-pie text-purple-600 mr-2"></i>
+                        Subscription Plans
+                    </h3>
+                    <div class="space-y-4">
+                        <!-- Free Plan -->
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-gift text-gray-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">Free</p>
+                                    <p class="text-xs text-gray-500">Basic features</p>
+                                </div>
+                            </div>
+                            <span class="text-2xl font-bold text-gray-900">@Model.FreePlanCount</span>
+                        </div>
+
+                        <!-- Basic Plan -->
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-star text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-blue-900">Basic</p>
+                                    <p class="text-xs text-blue-600">$29/month</p>
+                                </div>
+                            </div>
+                            <span class="text-2xl font-bold text-blue-900">@Model.BasicPlanCount</span>
+                        </div>
+
+                        <!-- Pro Plan -->
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-gem text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-purple-900">Pro</p>
+                                    <p class="text-xs text-purple-600">$79/month</p>
+                                </div>
+                            </div>
+                            <span class="text-2xl font-bold text-purple-900">@Model.ProPlanCount</span>
+                        </div>
+
+                        <!-- Enterprise Plan -->
+                        <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-crown text-orange-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-orange-900">Enterprise</p>
+                                    <p class="text-xs text-orange-600">$199/month</p>
+                                </div>
+                            </div>
+                            <span class="text-2xl font-bold text-orange-900">@Model.EnterprisePlanCount</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card p-6 fade-in bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    <h4 class="font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-bolt"></i>
+                        Quick Actions
+                    </h4>
+                    <div class="space-y-2">
+                        <button class="w-full btn bg-white text-blue-600 hover:bg-blue-50">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add New Tenant
+                        </button>
+                        <button class="w-full btn bg-white/20 text-white hover:bg-white/30">
+                            <i class="fas fa-file-export mr-2"></i>
+                            Export Data
+                        </button>
+                        <button class="w-full btn bg-white/20 text-white hover:bg-white/30">
+                            <i class="fas fa-cog mr-2"></i>
+                            Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="@Url.Content("~/js/admin.js")"></script>
+}
+
+<script>
+    function refreshDashboard() {
+        const refreshIcon = document.getElementById('refresh-icon');
+        if (refreshIcon) {
+            refreshIcon.classList.add('fa-spin');
+        }
+
+        htmx.trigger('#tenants-container', 'load');
+
+        setTimeout(() => {
+            if (refreshIcon) {
+                refreshIcon.classList.remove('fa-spin');
+            }
+            location.reload();
+        }, 1000);
+    }
+</script>

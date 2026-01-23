@@ -1307,5 +1307,25 @@
 		<data name="On" xml:space="preserve">
     <value>على</value>
   </data>
+
+	<data name="SessionType" xml:space="preserve">
+    <value>نوع الجلسة</value>
+  </data>
+
+	<data name="SingleSession" xml:space="preserve">
+    <value>فردي</value>
+  </data>
+
+	<data name="MultiSession" xml:space="preserve">
+    <value>زوجي</value>
+  </data>
+
+	<data name="SessionStartedSuccessfully" xml:space="preserve">
+    <value>تم بدءالجلسة بنجاح</value>
+  </data>
+
+	<data name="OK" xml:space="preserve">
+    <value>تم</value>
+  </data>
 	
 </root>

@@ -445,6 +445,122 @@ function formatDuration(seconds) {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
+// Add these functions to your sessions.js file
+
+let selectedSessionType = 'single';
+
+// Handle device selection to show/hide session type options
+function handleDeviceSelection(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const supportsMulti = selectedOption.dataset.supportsMulti === 'true';
+    const singleRate = selectedOption.dataset.singleRate;
+    const multiRate = selectedOption.dataset.multiRate;
+
+    const sessionTypeContainer = document.getElementById('session-type-container');
+
+    if (supportsMulti) {
+        // Show session type selection
+        sessionTypeContainer.classList.remove('hidden');
+
+        // Update rate displays
+        document.getElementById('single-rate-display').textContent =
+            formatCurrency(parseFloat(singleRate)) + '/hr';
+        document.getElementById('multi-rate-display').textContent =
+            formatCurrency(parseFloat(multiRate)) + '/hr';
+
+        // Reset to single session
+        selectSessionType('single');
+    } else {
+        // Hide session type selection for single-session-only devices
+        sessionTypeContainer.classList.add('hidden');
+        selectSessionType('single');
+    }
+}
+
+// Select session type (single or multi)
+function selectSessionType(type) {
+    selectedSessionType = type;
+
+    const singleBtn = document.getElementById('session-type-single');
+    const multiBtn = document.getElementById('session-type-multi');
+    const input = document.getElementById('session-type-input');
+
+    if (type === 'single') {
+        singleBtn.classList.add('active');
+        multiBtn.classList.remove('active');
+    } else {
+        multiBtn.classList.add('active');
+        singleBtn.classList.remove('active');
+    }
+
+    if (input) {
+        input.value = type;
+    }
+}
+
+// Handle response after starting session
+function handleSessionStartResponse(event) {
+    const xhr = event.detail.xhr;
+
+    if (xhr.status === 200) {
+        try {
+            const response = JSON.parse(xhr.responseText);
+
+            if (response.success) {
+                showToast(response.message || 'Session started successfully!', 'success');
+
+                // Close modal
+                closeModal('start-session-modal');
+
+                // Reset form
+                document.getElementById('start-session-form').reset();
+                document.getElementById('session-type-container').classList.add('hidden');
+
+                // Reload page after short delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showToast(response.message || 'Failed to start session', 'error');
+            }
+        } catch (e) {
+            showToast('Session started! Refreshing...', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+    } else {
+        showToast('Failed to start session. Please try again.', 'error');
+    }
+}
+
+// Reset start session modal when opening
+function openStartSessionModal() {
+    // Reset form
+    const form = document.getElementById('start-session-form');
+    if (form) {
+        form.reset();
+    }
+
+    // Hide session type selection
+    const sessionTypeContainer = document.getElementById('session-type-container');
+    if (sessionTypeContainer) {
+        sessionTypeContainer.classList.add('hidden');
+    }
+
+    // Reset to single session type
+    selectSessionType('single');
+
+    // Open modal
+    openModal('start-session-modal');
+}
+
+// Export functions
+window.handleDeviceSelection = handleDeviceSelection;
+window.selectSessionType = selectSessionType;
+window.handleSessionStartResponse = handleSessionStartResponse;
+window.openStartSessionModal = openStartSessionModal;
+
 // Export functions for use in other scripts
 if (typeof window !== 'undefined') {
     window.viewSessionDetails = viewSessionDetails;

@@ -1,9 +1,32 @@
 ﻿using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.ResponseCompression;
 using Station_Pro;
 using StationPro;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+// ✅ Add Response Compression
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true; // Important for production
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+
+
+// Configure compression levels
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
 
 // ✅ Configure localization
 builder.Services.AddLocalization(options =>
@@ -18,6 +41,9 @@ builder.Services.AddControllersWithViews()
         options.DataAnnotationLocalizerProvider = (type, factory) =>
             factory.Create(typeof(SharedResources));
     });
+
+
+
 
 // ✅ Configure supported cultures
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -41,6 +67,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 // ✅ USE REQUEST LOCALIZATION (before routing!)
 app.UseRequestLocalization();

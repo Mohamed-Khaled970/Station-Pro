@@ -464,6 +464,69 @@ tbody tr {
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
     }
 
+.session-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+    .session-type-btn:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .session-type-btn.active {
+        border-color: #3b82f6;
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .session-type-btn i {
+        color: #6b7280;
+    }
+
+    .session-type-btn.active i {
+        color: #3b82f6;
+    }
+
+.session-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+    .session-type-btn:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .session-type-btn.active {
+        border-color: #3b82f6;
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .session-type-btn i {
+        color: #6b7280;
+    }
+
+    .session-type-btn.active i {
+        color: #3b82f6;
+    }
 /* ============================================ */
 /* RTL ICON SPACING FIX FOR SESSION DETAILS */
 /* ============================================ */
