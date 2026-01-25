@@ -27,6 +27,70 @@
             </button>
         </div>
 
+        <!-- Quick Access Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <!-- Pending Subscriptions Alert -->
+            <a href="/Admin/PendingSubscriptions"
+               class="card p-4 hover:shadow-lg transition-all bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-exclamation-circle text-yellow-600 text-xl"></i>
+                            <h3 class="font-bold text-gray-900">Pending Reviews</h3>
+                        </div>
+                        <p class="text-3xl font-bold text-yellow-700">@Model.PendingSubscriptionsCount</p>
+                        <p class="text-xs text-yellow-600 mt-1">Subscriptions awaiting approval</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-yellow-400 text-2xl"></i>
+                </div>
+            </a>
+
+            <!-- Approved Today -->
+            <a href="/Admin/PendingSubscriptions?filter=approved"
+               class="card p-4 hover:shadow-lg transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            <h3 class="font-bold text-gray-900">Approved Today</h3>
+                        </div>
+                        <p class="text-3xl font-bold text-green-600">@Model.ApprovedTodayCount</p>
+                        <p class="text-xs text-gray-600 mt-1">Subscriptions activated</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- All Tenants -->
+            <a href="#tenants-container"
+               class="card p-4 hover:shadow-lg transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                            <h3 class="font-bold text-gray-900">All Tenants</h3>
+                        </div>
+                        <p class="text-3xl font-bold text-blue-600">@Model.TotalTenants</p>
+                        <p class="text-xs text-gray-600 mt-1">Manage tenants</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Revenue Overview -->
+            <a href="#revenue"
+               class="card p-4 hover:shadow-lg transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                            <h3 class="font-bold text-gray-900">Revenue</h3>
+                        </div>
+                        <p class="text-3xl font-bold text-purple-600">@Model.MonthlyRevenue.ToString("N0")</p>
+                        <p class="text-xs text-gray-600 mt-1">This month (EGP)</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Total Tenants -->
@@ -183,15 +247,25 @@
                         Quick Actions
                     </h4>
                     <div class="space-y-2">
-                        <button class="w-full btn bg-white text-blue-600 hover:bg-blue-50">
+                        <a href="/Admin/PendingSubscriptions" class="w-full btn bg-yellow-500 hover:bg-yellow-600 text-white relative block text-center">
+                            <i class="fas fa-clock mr-2"></i>
+                            Review Subscriptions
+                            @if (Model.PendingSubscriptionsCount > 0)
+                            {
+                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                                    @Model.PendingSubscriptionsCount
+                                </span>
+                            }
+                        </a>
+                        <button onclick="alert('Add Tenant feature coming soon!')" class="w-full btn bg-white text-blue-600 hover:bg-blue-50">
                             <i class="fas fa-plus mr-2"></i>
                             Add New Tenant
                         </button>
-                        <button class="w-full btn bg-white/20 text-white hover:bg-white/30">
+                        <button onclick="alert('Export feature coming soon!')" class="w-full btn bg-white/20 text-white hover:bg-white/30">
                             <i class="fas fa-file-export mr-2"></i>
                             Export Data
                         </button>
-                        <button class="w-full btn bg-white/20 text-white hover:bg-white/30">
+                        <button onclick="alert('Settings coming soon!')" class="w-full btn bg-white/20 text-white hover:bg-white/30">
                             <i class="fas fa-cog mr-2"></i>
                             Settings
                         </button>

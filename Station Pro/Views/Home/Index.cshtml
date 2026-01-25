@@ -21,51 +21,165 @@
     <style>
         @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         @@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
-        
-        body { font-family: @(isRtl ? "'Cairo', sans-serif" : "'Inter', sans-serif"); }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .feature-card { transition: all 0.3s ease; }
-        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-        @@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
-        .float-animation { animation: float 3s ease-in-out infinite; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: all 0.2s ease; text-decoration: none; }
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-outline { border: 2px solid #3b82f6; color: #3b82f6; background: white; }
-        .btn-outline:hover { background: #3b82f6; color: white; }
-        .btn-secondary { background: #6b7280; color: white; }
-        .btn-secondary:hover { background: #4b5563; }
-        [dir="rtl"] .mr-2 { margin-right: 0; margin-left: 0.5rem; }
-        [dir="rtl"] .mr-3 { margin-right: 0; margin-left: 0.75rem; }
-        [dir="rtl"] .space-x-2 > * + * { margin-right: 0.5rem; margin-left: 0; }
-        [dir="rtl"] .space-x-3 > * + * { margin-right: 0.75rem; margin-left: 0; }
-        [dir="rtl"] .space-x-4 > * + * { margin-right: 1rem; margin-left: 0; }
-        .lang-dropdown { background: white; border-radius: 0.75rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
-        .lang-option { padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s ease; }
-        .lang-option:hover { background: #f3f4f6; }
-        .lang-option.active { background: #eff6ff; color: #3b82f6; }
+
+        body {
+            font-family: @(isRtl ? "'Cairo', sans-serif" : "'Inter', sans-serif");
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+            .feature-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            }
+
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background: #2563eb;
+            }
+
+        .btn-outline {
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            background: white;
+        }
+
+            .btn-outline:hover {
+                background: #3b82f6;
+                color: white;
+            }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+            .btn-secondary:hover {
+                background: #4b5563;
+            }
+
+        [dir="rtl"] .mr-2 {
+            margin-right: 0;
+            margin-left: 0.5rem;
+        }
+
+        [dir="rtl"] .mr-3 {
+            margin-right: 0;
+            margin-left: 0.75rem;
+        }
+
+        [dir="rtl"] .space-x-2 > * + * {
+            margin-right: 0.5rem;
+            margin-left: 0;
+        }
+
+        [dir="rtl"] .space-x-3 > * + * {
+            margin-right: 0.75rem;
+            margin-left: 0;
+        }
+
+        [dir="rtl"] .space-x-4 > * + * {
+            margin-right: 1rem;
+            margin-left: 0;
+        }
+
+        .lang-dropdown {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .lang-option {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .lang-option:hover {
+                background: #f3f4f6;
+            }
+
+            .lang-option.active {
+                background: #eff6ff;
+                color: #3b82f6;
+            }
+
+        /* Logo responsive fixes */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @@media (max-width: 640px) {
+            .logo-container {
+                gap: 0.375rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
-    
+
     <!-- Navigation -->
     <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-14 sm:h-16">
+                <!-- Logo - Fixed for mobile -->
+                <div class="logo-container">
                     <i class="fas fa-gamepad text-blue-600 text-xl sm:text-2xl"></i>
-                    <span class="text-lg sm:text-2xl font-bold text-gray-900">Station Pro</span>
+                    <span class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">Station Pro</span>
                 </div>
-                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 sm:space-x-4">
-                    
+
+                <!-- Right side buttons -->
+                <div class="flex items-center gap-1 sm:gap-2 md:gap-4">
+
                     <!-- Language Switcher -->
                     <div class="relative" id="langDropdown">
-                        <button class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all" onclick="toggleLangDropdown()">
-                            <i class="fas fa-globe"></i>
+                        <button class="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all text-sm sm:text-base" onclick="toggleLangDropdown()">
+                            <i class="fas fa-globe text-sm sm:text-base"></i>
                             <span class="font-medium hidden sm:inline">@(currentCulture.StartsWith("ar") ? "عربي" : "EN")</span>
                             <i class="fas fa-chevron-down text-xs"></i>
                         </button>
-                        
+
                         <div class="absolute @(isRtl ? "left-0" : "right-0") mt-2 w-48 lang-dropdown hidden" id="langMenu">
                             <form method="post" action="/Language/SetLanguage">
                                 <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
@@ -90,14 +204,20 @@
                             </form>
                         </div>
                     </div>
+
                     <!-- Admin Panel Button (For Testing) -->
-                    <a href="/Admin/Index" class="btn btn-secondary text-xs sm:text-base !px-3 !py-2 sm:!px-6 sm:!py-3">
-                        <i class="fas fa-shield-alt @(isRtl ? "ml-1" : "mr-1")"></i>
-                        <span class="hidden sm:inline">Admin Panel</span>
-                        <span class="sm:hidden">Admin</span>
+                    <a href="/Admin/Index" class="btn btn-secondary !px-2 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm">
+                        <i class="fas fa-shield-alt @(isRtl ? "sm:ml-1" : "sm:mr-1")"></i>
+                        <span class="hidden md:inline">Admin Panel</span>
+                        <span class="md:hidden">Admin</span>
                     </a>
-                    <a href="/auth/login" class="text-gray-700 hover:text-blue-600 font-medium text-sm sm:text-base">@Localizer["Login"]</a>
-                    <a href="/dashboard/index" class="btn btn-primary text-xs sm:text-base !px-3 !py-2 sm:!px-6 sm:!py-3">
+
+                    <!-- Login Link -->
+                    <a href="/auth/login" class="hidden sm:inline text-gray-700 hover:text-blue-600 font-medium text-sm">@Localizer["Login"]</a>
+
+                    <!-- Start Free Trial Button -->
+                    <a href="/auth/register" class="btn btn-primary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 lg:!px-6 lg:!py-3 text-xs sm:text-sm lg:text-base whitespace-nowrap">
+                        <i class="fas fa-rocket @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") hidden sm:inline"></i>
                         <span class="hidden sm:inline">@Localizer["StartFreeTrial"]</span>
                         <span class="sm:hidden">@Localizer["TryFree"]</span>
                     </a>
@@ -107,47 +227,47 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="gradient-bg pt-24 sm:pt-32 pb-12 sm:pb-20 px-4">
+    <section class="gradient-bg pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-20 px-4">
         <div class="max-w-7xl mx-auto">
             <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 <div class="text-white">
-                    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
                         @Localizer["ManageYourGamingStore"]
                     </h1>
-                    <p class="text-base sm:text-lg md:text-xl text-purple-100 mb-6 sm:mb-8">
+                    <p class="text-sm sm:text-base md:text-lg lg:text-xl text-purple-100 mb-6 sm:mb-8">
                         @Localizer["HeroDescription"]
                     </p>
                     <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                        <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
+                        <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
                             <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
                             @Localizer["StartFreeTrial"]
                         </a>
-                        <a href="#features" class="bg-purple-700 bg-opacity-50 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-opacity-70 transition-all inline-flex items-center justify-center">
+                        <a href="#features" class="bg-purple-700 bg-opacity-50 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-opacity-70 transition-all inline-flex items-center justify-center">
                             <i class="fas fa-play @(isRtl ? "ml-2" : "mr-2")"></i>
                             @Localizer["SeeHowItWorks"]
                         </a>
                     </div>
-                    <div class="grid grid-cols-3 gap-4 sm:gap-8 mt-6 sm:mt-8">
+                    <div class="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-8 mt-6 sm:mt-8">
                         <div>
-                            <p class="text-2xl sm:text-3xl font-bold">500+</p>
-                            <p class="text-xs sm:text-sm text-purple-200">@Localizer["ActiveStores"]</p>
+                            <p class="text-xl sm:text-2xl lg:text-3xl font-bold">500+</p>
+                            <p class="text-[10px] sm:text-xs lg:text-sm text-purple-200">@Localizer["ActiveStores"]</p>
                         </div>
                         <div>
-                            <p class="text-2xl sm:text-3xl font-bold">50K+</p>
-                            <p class="text-xs sm:text-sm text-purple-200">@Localizer["SessionsTracked"]</p>
+                            <p class="text-xl sm:text-2xl lg:text-3xl font-bold">50K+</p>
+                            <p class="text-[10px] sm:text-xs lg:text-sm text-purple-200">@Localizer["SessionsTracked"]</p>
                         </div>
                         <div>
-                            <p class="text-2xl sm:text-3xl font-bold">4.9/5</p>
-                            <p class="text-xs sm:text-sm text-purple-200">@Localizer["UserRating"]</p>
+                            <p class="text-xl sm:text-2xl lg:text-3xl font-bold">4.9/5</p>
+                            <p class="text-[10px] sm:text-xs lg:text-sm text-purple-200">@Localizer["UserRating"]</p>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="float-animation mt-8 lg:mt-0">
                     <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-gray-900 text-sm sm:text-base">@Localizer["DashboardPreview"]</h3>
-                            <div class="flex @(isRtl ? "space-x-reverse" : "") space-x-2">
+                            <h3 class="font-bold text-gray-900 text-xs sm:text-sm md:text-base">@Localizer["DashboardPreview"]</h3>
+                            <div class="flex gap-1.5 sm:gap-2">
                                 <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500"></div>
                                 <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-500"></div>
                                 <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
@@ -155,31 +275,31 @@
                         </div>
                         <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
                             <div class="bg-gradient-to-br from-green-500 to-green-600 p-3 sm:p-4 rounded-lg text-white">
-                                <p class="text-xs opacity-80">@Localizer["TodayRevenue"]</p>
-                                <p class="text-lg sm:text-2xl font-bold">2,450 EGP</p>
+                                <p class="text-[10px] sm:text-xs opacity-80">@Localizer["TodayRevenue"]</p>
+                                <p class="text-base sm:text-lg lg:text-2xl font-bold">2,450 EGP</p>
                             </div>
                             <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-3 sm:p-4 rounded-lg text-white">
-                                <p class="text-xs opacity-80">@Localizer["ActiveDevices"]</p>
-                                <p class="text-lg sm:text-2xl font-bold">5/8</p>
+                                <p class="text-[10px] sm:text-xs opacity-80">@Localizer["ActiveDevices"]</p>
+                                <p class="text-base sm:text-lg lg:text-2xl font-bold">5/8</p>
                             </div>
                         </div>
                         <div class="space-y-2">
                             <div class="flex items-center justify-between p-2 sm:p-3 bg-red-50 rounded-lg">
-                                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 sm:space-x-3">
-                                    <i class="fab fa-playstation text-red-500 text-lg sm:text-xl"></i>
+                                <div class="flex items-center gap-2 sm:gap-3">
+                                    <i class="fab fa-playstation text-red-500 text-base sm:text-lg lg:text-xl"></i>
                                     <div>
                                         <p class="font-medium text-xs sm:text-sm">PS5 - 1</p>
-                                        <p class="text-[10px] sm:text-xs text-gray-500">@Localizer["InUse"]</p>
+                                        <p class="text-[9px] sm:text-[10px] lg:text-xs text-gray-500">@Localizer["InUse"]</p>
                                     </div>
                                 </div>
-                                <span class="text-green-600 font-bold text-sm sm:text-base">125 EGP</span>
+                                <span class="text-green-600 font-bold text-xs sm:text-sm lg:text-base">125 EGP</span>
                             </div>
                             <div class="flex items-center justify-between p-2 sm:p-3 bg-green-50 rounded-lg">
-                                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 sm:space-x-3">
-                                    <i class="fab fa-playstation text-green-500 text-lg sm:text-xl"></i>
+                                <div class="flex items-center gap-2 sm:gap-3">
+                                    <i class="fab fa-playstation text-green-500 text-base sm:text-lg lg:text-xl"></i>
                                     <div>
                                         <p class="font-medium text-xs sm:text-sm">PS4 - 2</p>
-                                        <p class="text-[10px] sm:text-xs text-gray-500">@Localizer["Available"]</p>
+                                        <p class="text-[9px] sm:text-[10px] lg:text-xs text-gray-500">@Localizer["Available"]</p>
                                     </div>
                                 </div>
                                 <span class="text-gray-400 text-xs sm:text-sm">30 EGP/hr</span>
@@ -190,15 +310,15 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Features Section -->
     <section id="features" class="py-12 sm:py-20 px-4">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-12 sm:mb-16">
-                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">@Localizer["EverythingYouNeed"]</h2>
-                <p class="text-lg sm:text-xl text-gray-600">@Localizer["PowerfulFeatures"]</p>
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">@Localizer["EverythingYouNeed"]</h2>
+                <p class="text-base sm:text-lg lg:text-xl text-gray-600">@Localizer["PowerfulFeatures"]</p>
             </div>
-            
+
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
@@ -207,7 +327,7 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["RealTimeTracking"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["RealTimeTrackingDesc"]</p>
                 </div>
-                
+
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-chart-line text-green-600 text-xl sm:text-2xl"></i>
@@ -215,7 +335,7 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["RevenueReports"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["RevenueReportsDesc"]</p>
                 </div>
-                
+
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-gamepad text-purple-600 text-xl sm:text-2xl"></i>
@@ -223,7 +343,7 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["DeviceManagement"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["DeviceManagementDesc"]</p>
                 </div>
-                
+
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-mobile-alt text-yellow-600 text-xl sm:text-2xl"></i>
@@ -231,7 +351,7 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["MobileFriendly"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["MobileFriendlyDesc"]</p>
                 </div>
-                
+
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-shield-alt text-red-600 text-xl sm:text-2xl"></i>
@@ -239,7 +359,7 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["SecureReliable"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["SecureReliableDesc"]</p>
                 </div>
-                
+
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-indigo-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-headset text-indigo-600 text-xl sm:text-2xl"></i>
@@ -250,15 +370,15 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Pricing Section -->
     <section class="py-12 sm:py-20 px-4 bg-gray-100">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-12 sm:mb-16">
-                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">@Localizer["SimplePricing"]</h2>
-                <p class="text-lg sm:text-xl text-gray-600">@Localizer["ChoosePerfectPlan"]</p>
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">@Localizer["SimplePricing"]</h2>
+                <p class="text-base sm:text-lg lg:text-xl text-gray-600">@Localizer["ChoosePerfectPlan"]</p>
             </div>
-            
+
             <div class="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
                 <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">@Localizer["Free"]</h3>
@@ -283,7 +403,7 @@
                     </ul>
                     <a href="/auth/register" class="btn btn-outline w-full">@Localizer["GetStarted"]</a>
                 </div>
-                
+
                 <div class="bg-gradient-to-br from-blue-600 to-purple-600 p-6 sm:p-8 rounded-2xl shadow-2xl md:transform md:scale-105">
                     <div class="bg-yellow-400 text-gray-900 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold inline-block mb-3 sm:mb-4">
                         @Localizer["MostPopular"]
@@ -316,7 +436,7 @@
                         @Localizer["StartFreeTrial"]
                     </a>
                 </div>
-                
+
                 <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">@Localizer["Enterprise"]</h3>
                     <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">@Localizer["ForLargeOperations"]</p>
@@ -346,26 +466,26 @@
             </div>
         </div>
     </section>
-    
+
     <!-- CTA Section -->
     <section class="gradient-bg py-12 sm:py-20 px-4">
         <div class="max-w-4xl mx-auto text-center text-white">
-            <h2 class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">@Localizer["ReadyToGrow"]</h2>
-            <p class="text-base sm:text-xl text-purple-100 mb-6 sm:mb-8">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">@Localizer["ReadyToGrow"]</h2>
+            <p class="text-sm sm:text-base lg:text-xl text-purple-100 mb-6 sm:mb-8">
                 @Localizer["Join500Stores"]
             </p>
-            <a href="/dashboard/index" class="bg-white text-purple-600 px-8 sm:px-12 py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
+            <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
                 <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
                 @Localizer["StartFreeTrialNow"]
             </a>
-            <p class="text-sm sm:text-base text-purple-100 mt-4">@Localizer["NoCreditCard"]</p>
+            <p class="text-xs sm:text-sm lg:text-base text-purple-100 mt-4">@Localizer["NoCreditCard"]</p>
         </div>
     </section>
-    
+
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-8 sm:py-12 px-4">
         <div class="max-w-7xl mx-auto text-center">
-            <div class="flex items-center justify-center @(isRtl ? "space-x-reverse" : "") space-x-2 mb-4 sm:mb-6">
+            <div class="logo-container justify-center mb-4 sm:mb-6">
                 <i class="fas fa-gamepad text-2xl sm:text-3xl"></i>
                 <span class="text-xl sm:text-2xl font-bold">Station Pro</span>
             </div>

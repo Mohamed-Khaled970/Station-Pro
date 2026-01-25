@@ -17,4 +17,8 @@
 		<ProjectReference Include="..\StationPro.Application\StationPro.Application.csproj" />
 		<ProjectReference Include="..\StationPro.Infrastructure\StationPro.Infrastructure.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\payment-proofs\" />
+	</ItemGroup>
 </Project>

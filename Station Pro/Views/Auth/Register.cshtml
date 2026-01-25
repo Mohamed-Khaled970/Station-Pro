@@ -118,7 +118,9 @@
                         <p class="text-gray-600">@Localizer["RegisterSubtitle"]</p>
                     </div>
 
-                    <form id="register-form" action="/register" method="POST" class="space-y-6">
+                    <!-- CHANGED: Removed id="register-form" to prevent AJAX submission -->
+                    <form asp-action="Register" asp-controller="Auth" method="POST" class="space-y-6">
+                        @Html.AntiForgeryToken()
 
                         <!-- Store Name -->
                         <div>
@@ -199,13 +201,14 @@
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <p class="form-error hidden" id="password-match-error">@Localizer["PasswordMismatch"]</p>
+                            <p class="form-error hidden text-red-600 text-sm mt-1" id="password-match-error">@Localizer["PasswordMismatch"]</p>
                         </div>
 
                         <!-- Terms -->
                         <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-3">
                             <input type="checkbox"
                                    id="terms"
+                                   name="AcceptTerms"
                                    class="mt-1 w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                    required>
                             <label for="terms" class="text-sm text-gray-600 leading-relaxed">
@@ -236,6 +239,52 @@
         </div>
     </div>
 
-    <script src="~/js/auth.js"></script>
+    <!-- Keep auth.js for password visibility toggle only -->
+    <script>
+        // Password visibility toggle
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input?.nextElementSibling?.querySelector('i');
+
+            if (!input || !button) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.classList.remove('fa-eye');
+                button.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                button.classList.remove('fa-eye-slash');
+                button.classList.add('fa-eye');
+            }
+        }
+
+        // Password match validation
+        const confirmPassword = document.getElementById('confirm-password');
+        const password = document.getElementById('password');
+        const errorElement = document.getElementById('password-match-error');
+
+        if (confirmPassword && password) {
+            confirmPassword.addEventListener('input', function () {
+                if (this.value && password.value !== this.value) {
+                    errorElement?.classList.remove('hidden');
+                } else {
+                    errorElement?.classList.add('hidden');
+                }
+            });
+        }
+
+        // Phone number formatting
+        const phoneInput = document.querySelector('input[name="PhoneNumber"]');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) {
+                    value = value.slice(0, 11);
+                }
+                e.target.value = value;
+            });
+        }
+    </script>
 </body>
 </html>

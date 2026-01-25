@@ -201,7 +201,7 @@ async function submitRegisterForm(form) {
 
     try {
         const formData = new FormData(form);
-        const response = await fetch('/register', {
+        const response = await fetch('auth/register', {
             method: 'POST',
             body: formData
         });
