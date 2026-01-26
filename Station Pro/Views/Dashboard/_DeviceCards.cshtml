@@ -83,7 +83,7 @@
                 <div class="flex justify-between items-center p-3 @sessionTypeBgClass rounded-lg border">
                     <div class="flex items-center">
                         <i class="@sessionTypeIcon @sessionTypeTextClass mr-2"></i>
-                        <span class="text-sm font-medium @sessionTypeTextClass">@sessionTypeText @Localizer["Session"]</span>
+                        <span class="text-sm font-medium @sessionTypeTextClass">@Localizer[sessionTypeText]</span>
                     </div>
                     <span class="text-lg font-bold @sessionTypeTextClass">@device.CurrentSession.HourlyRate.ToString("C")/@Localizer["hr"]</span>
                 </div>

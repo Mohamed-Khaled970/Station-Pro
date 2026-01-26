@@ -4,6 +4,26 @@
 /* DEVICE PAGE STYLES */
 /* ============================================ */
 
+/* Devices Grid - Equal Height */
+#devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
+@media (min-width: 768px) {
+    #devices-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    #devices-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 /* Filter Buttons */
 .filter-btn {
     padding: 0.5rem 1rem;
@@ -30,7 +50,7 @@
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
 
-/* Device Card Base */
+/* Device Card Base - Flexbox for Equal Height */
 .device-card {
     background: white;
     border-radius: 16px;
@@ -41,6 +61,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
     .device-card::before {
@@ -61,6 +82,12 @@
 .device-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Push action buttons to bottom */
+.device-card > .flex.space-x-2.mt-auto {
+    margin-top: auto;
+    padding-top: 1rem;
 }
 
 /* Device Card States */
@@ -144,31 +171,16 @@
 
 /* Icon container */
 .device-card .bg-green-100,
-.device-card .bg-red-100 {
+.device-card .bg-red-100,
+.device-card .bg-yellow-100,
+.device-card .bg-gray-100 {
     padding: 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 48px;
     min-height: 48px;
-}
-
-/* Session info box - RTL Fix */
-.device-card .bg-red-50 {
-    background: #fef2f2;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-[dir="rtl"] .device-card .border-l-4 {
-    border-left: none;
-    border-right: 4px solid #ef4444;
-}
-
-[dir="ltr"] .device-card .border-l-4 {
-    border-left: 4px solid #ef4444;
 }
 
 /* Status Badges */
@@ -205,22 +217,14 @@
     color: #1f2937;
 }
 
-/* Timer and cost display - RTL Fix */
-.device-card .flex.justify-between.items-center {
+/* Action Buttons */
+.device-card .flex.space-x-2 {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 0.5rem;
 }
 
-/* Ensure proper spacing in session details */
-.device-card .text-xs.text-gray-500 {
-    font-size: 0.75rem;
-    color: #6b7280;
-}
-
-/* Font mono for timer */
-.font-mono {
-    font-family: 'Courier New', Courier, monospace;
+.device-card .btn {
+    min-height: 42px;
 }
 
 /* ============================================ */
@@ -586,75 +590,8 @@ input[type="number"] {
 }
 
 /* ============================================ */
-/* FIX FOR RTL PLACEHOLDER VISIBILITY */
+/* RTL SUPPORT */
 /* ============================================ */
-
-/* Ensure native placeholder works properly in RTL */
-input[type="text"]::placeholder,
-input[type="number"]::placeholder,
-.form-input::placeholder {
-    opacity: 0.5;
-    color: #9ca3af;
-    transition: opacity 0.2s ease;
-}
-
-/* Fix search input padding in RTL to prevent placeholder overlap */
-[dir="rtl"] #search-input {
-    padding-right: 2.5rem !important;
-    padding-left: 1rem !important;
-    text-align: right;
-}
-
-[dir="ltr"] #search-input {
-    padding-left: 2.5rem !important;
-    padding-right: 1rem !important;
-    text-align: left;
-}
-
-/* Fix search icon position in RTL */
-[dir="rtl"] #search-input + i.fa-search,
-[dir="rtl"] .fa-search.absolute {
-    left: auto !important;
-    right: 0.75rem !important;
-}
-
-[dir="ltr"] #search-input + i.fa-search,
-[dir="ltr"] .fa-search.absolute {
-    right: auto !important;
-    left: 0.75rem !important;
-}
-
-/* Fix for general input fields in RTL */
-[dir="rtl"] .form-input.pl-10 {
-    padding-left: 1rem !important;
-    padding-right: 2.5rem !important;
-}
-
-[dir="ltr"] .form-input.pl-10 {
-    padding-left: 2.5rem !important;
-    padding-right: 1rem !important;
-}
-
-/* Hide placeholder when input has focus or value */
-input[type="text"]:focus::placeholder,
-input[type="number"]:focus::placeholder,
-.form-input:focus::placeholder {
-    opacity: 0;
-}
-
-/* RTL specific placeholder fixes */
-[dir="rtl"] input[type="text"]::placeholder,
-[dir="rtl"] input[type="number"]::placeholder,
-[dir="rtl"] .form-input::placeholder {
-    text-align: right;
-    opacity: 0.5;
-}
-
-[dir="rtl"] input[type="text"]:focus::placeholder,
-[dir="rtl"] input[type="number"]:focus::placeholder,
-[dir="rtl"] .form-input:focus::placeholder {
-    opacity: 0;
-}
 
 /* Ensure input text direction is correct */
 [dir="rtl"] input[type="text"],
@@ -671,41 +608,24 @@ input[type="number"]:focus::placeholder,
     direction: ltr;
 }
 
-/* Fix for absolute positioned placeholder (if using custom placeholder) */
-[dir="rtl"] .absolute.right-3 {
-    right: auto !important;
-    left: 0.75rem !important;
+/* Fix search input padding in RTL */
+[dir="rtl"] #search-input {
+    padding-right: 2.5rem;
+    padding-left: 1rem;
 }
 
-[dir="rtl"] .absolute.left-3 {
-    left: auto !important;
-    right: 0.75rem !important;
+[dir="ltr"] #search-input {
+    padding-left: 2.5rem;
+    padding-right: 1rem;
 }
 
-/* Ensure placeholder disappears when input is not empty */
-input:not(:placeholder-shown) + .custom-placeholder,
-input:focus + .custom-placeholder {
-    display: none !important;
-    opacity: 0 !important;
+/* Fix search icon position */
+[dir="rtl"] .fa-search.absolute {
+    left: auto;
+    right: 0.75rem;
 }
 
-/* Additional fix for number inputs in RTL */
-[dir="rtl"] input[type="number"] {
-    text-align: right;
-}
-
-/* Fix for span text positioning in RTL (like "EGP/hour") */
-[dir="rtl"] .absolute.right-3.top-1\/2 {
-    right: auto !important;
-    left: 0.75rem !important;
-}
-
-[dir="rtl"] input[type="number"] {
-    padding-left: 4rem !important;
-    padding-right: 1rem !important;
-}
-
-[dir="ltr"] input[type="number"] {
-    padding-right: 4rem !important;
-    padding-left: 1rem !important;
+[dir="ltr"] .fa-search.absolute {
+    right: auto;
+    left: 0.75rem;
 }
