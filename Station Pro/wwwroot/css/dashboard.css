@@ -36,14 +36,160 @@
         box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
     }
 
-/* Device Grid */
+/* ============================================ */
+/* DEVICE CARDS - COMPACT & UNIFORM HEIGHT */
+/* ============================================ */
+
 .device-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
+/* Make all device cards same height */
+.device-card {
+    padding: 1rem !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 320px; /* Ensure consistent minimum height */
+}
+
+    /* Device Header - More Compact */
+    .device-card .flex.justify-between.items-start.mb-4 {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .device-card .flex.items-center.space-x-3 {
+        gap: 0.5rem !important;
+    }
+
+    /* Icon Container - Smaller */
+    .device-card .p-3.rounded-xl {
+        padding: 0.625rem !important;
+        border-radius: 0.625rem !important;
+    }
+
+        .device-card .p-3.rounded-xl i {
+            font-size: 1.25rem !important;
+        }
+
+    /* Device Name - SMALLER & COMPACT */
+    .device-card h3 {
+        font-size: 0.875rem !important; /* Reduced from 0.9375rem */
+        margin-bottom: 0.125rem !important;
+        line-height: 1.2 !important;
+        font-weight: 700 !important;
+    }
+
+    .device-card .text-sm.text-gray-500 {
+        font-size: 0.6875rem !important; /* Reduced from 0.75rem */
+    }
+
+/* Status Badge - Smaller & Better Positioned */
+.status-badge {
+    font-size: 0.5625rem !important; /* Even smaller */
+    padding: 0.25rem 0.5rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+    white-space: nowrap !important;
+}
+
+/* Device Details Section - Compact & Flex-grow */
+.device-card .border-t.border-gray-100.pt-4.mb-4 {
+    padding-top: 0.625rem !important;
+    margin-bottom: 0.625rem !important;
+    flex-grow: 1; /* Take up available space */
+}
+
+/* Single/Multi Session Rate Display - COMPACT */
+.device-card .space-y-2 {
+    gap: 0.375rem !important;
+}
+
+.device-card .flex.justify-between.items-center {
+    padding: 0.375rem 0 !important;
+}
+
+    .device-card .flex.justify-between.items-center.p-2 {
+        padding: 0.5rem !important;
+        border-radius: 0.5rem !important;
+    }
+
+    .device-card .flex.justify-between.items-center.p-3 {
+        padding: 0.5rem !important;
+    }
+
+/* Rate Text - Smaller */
+.device-card .text-sm.text-gray-600 {
+    font-size: 0.75rem !important;
+}
+
+    .device-card .text-sm.text-gray-600 i {
+        font-size: 0.75rem !important;
+        margin-right: 0.25rem !important;
+    }
+
+/* Rate Amount - Balanced Size */
+.device-card .text-lg.font-bold {
+    font-size: 1rem !important;
+    line-height: 1 !important;
+}
+
+/* Session Type Badge - Compact */
+.device-card .text-sm.font-medium {
+    font-size: 0.75rem !important;
+}
+
+/* Active Session Info - Compact */
+.device-card .bg-red-50.p-3 {
+    padding: 0.625rem !important;
+    border-radius: 0.5rem !important;
+}
+
+.device-card .text-xs.text-gray-600 {
+    font-size: 0.625rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.device-card .text-xs.font-semibold {
+    font-size: 0.625rem !important;
+}
+
+/* Customer Name Display */
+.device-card .customer-name-label {
+    font-size: 0.625rem !important;
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+}
+
+.device-card .customer-name-value {
+    font-size: 0.75rem !important;
+    color: #111827 !important;
+    font-weight: 600 !important;
+}
+
+/* Action Buttons - Fixed at Bottom */
+.device-card .flex.space-x-2 {
+    gap: 0.375rem !important;
+    margin-top: auto; /* Push buttons to bottom */
+}
+
+.device-card .btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8125rem !important;
+    border-radius: 0.5rem !important;
+}
+
+    .device-card .btn i {
+        font-size: 0.75rem !important;
+    }
+
+/* ============================================ */
 /* Pulse Animation for Active Status */
+/* ============================================ */
+
 .pulse-dot {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -107,6 +253,41 @@
 }
 
 /* ============================================ */
+/* ACTIVE SESSIONS HEADER - MOBILE OPTIMIZED */
+/* ============================================ */
+
+/* Compact header spacing */
+.card .flex.justify-between.items-center.mb-6 {
+    gap: 0.5rem;
+}
+
+    .card .flex.justify-between.items-center.mb-6 h2 {
+        font-size: 1rem;
+        line-height: 1.2;
+    }
+
+    .card .flex.justify-between.items-center.mb-6 i.fa-clock {
+        font-size: 1rem;
+    }
+
+/* Refresh button compact */
+.card button[title] {
+    padding: 0.375rem;
+    border-radius: 0.5rem;
+}
+
+/* Mobile auto-update indicator */
+@media (max-width: 639px) {
+    .card .flex.justify-between.items-center.mb-6 {
+        margin-bottom: 0.75rem !important;
+    }
+
+        .card .flex.justify-between.items-center.mb-6 h2 {
+            font-size: 0.9375rem;
+        }
+}
+
+/* ============================================ */
 /* RESPONSIVE MOBILE STYLES */
 /* ============================================ */
 
@@ -118,6 +299,11 @@
 
     .device-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .device-card {
+        min-height: 300px;
     }
 }
 
@@ -129,6 +315,7 @@
 
     .device-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
     /* Make header stack vertically */
@@ -143,7 +330,12 @@
         justify-content: center;
     }
 
-    /* Adjust card padding on mobile */
+    /* Adjust card padding on mobile - Keep mobile responsive */
+    .device-card {
+        padding: 0.875rem !important;
+        min-height: 280px;
+    }
+
     .card {
         padding: 1rem !important;
     }
@@ -178,6 +370,12 @@
         width: 40px;
         height: 40px;
         font-size: 1.25rem;
+    }
+
+    /* Device cards even more compact on small mobile */
+    .device-card {
+        padding: 0.75rem !important;
+        min-height: 260px;
     }
 }
 
@@ -470,7 +668,7 @@ iframe {
     }
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness for notification */
 @media (max-width: 640px) {
     .success-notification-content {
         padding: 2rem 1.5rem 1.5rem;
@@ -607,6 +805,9 @@ iframe {
     }
 }
 
+/* ============================================ */
+/* PAYMENT METHOD BUTTONS */
+/* ============================================ */
 
 .payment-method-btn {
     padding: 1rem;
@@ -639,5 +840,3 @@ iframe {
     .payment-method-btn.active i {
         color: #3b82f6;
     }
-
-

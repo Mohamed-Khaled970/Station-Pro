@@ -1294,5 +1294,8 @@
     <value>Session Started Successfully</value>
   </data>
 
+	<data name="UpdatesEvery60s" xml:space="preserve">
+    <value>Updates Every 60s</value>
+  </data>
 
 </root>

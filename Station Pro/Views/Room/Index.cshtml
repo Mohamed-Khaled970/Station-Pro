@@ -123,8 +123,8 @@
             </div>
         </div>
 
-        <!-- Rooms Grid -->
-        <div id="rooms-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rooms Grid - Grid layout handled by CSS -->
+        <div id="rooms-grid">
             @foreach (var room in Model)
             {
                 <partial name="_RoomCard" model="room" />

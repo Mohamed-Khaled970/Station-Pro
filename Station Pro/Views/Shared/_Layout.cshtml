@@ -34,6 +34,38 @@
     <style>
         @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         @@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+        /* Mobile Navigation Fix */
+        @@media (max-width: 767px) {
+            .mobile-nav-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+            }
+
+            .mobile-nav-left {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .mobile-nav-right {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .mobile-logout-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+                border-radius: 0.5rem;
+            }
+
+            .mobile-logout-icon {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -41,13 +73,37 @@
     <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <!-- Logo & Store Name -->
-                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2">
+                <!-- Mobile: Logo + Logout + Menu (Responsive Layout) -->
+                <div class="mobile-nav-header md:hidden w-full">
+                    <!-- Left: Logo -->
+                    <div class="mobile-nav-left">
+                        <i class="fas fa-gamepad text-blue-600 text-xl"></i>
+                        <span class="text-base font-bold text-gray-900">Station Pro</span>
+                    </div>
+
+                    <!-- Right: Logout + Menu -->
+                    <div class="mobile-nav-right">
+                        <!-- Logout Button - Mobile -->
+                        <a href="/home/index"
+                           class="mobile-logout-btn text-red-600 hover:bg-red-50 transition-colors"
+                           title="@Localizer["Logout"]">
+                            <i class="fas fa-sign-out-alt mobile-logout-icon"></i>
+                        </a>
+
+                        <!-- Mobile Menu Button -->
+                        <button class="p-2 text-gray-600" onclick="toggleMobileMenu()">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Desktop: Logo -->
+                <div class="hidden md:flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2">
                     <i class="fas fa-gamepad text-blue-600 text-xl"></i>
                     <span class="text-lg font-bold text-gray-900">Station Pro</span>
                 </div>
 
-                <!-- Navigation Links -->
+                <!-- Desktop: Navigation Links -->
                 <div class="hidden md:flex items-center @(isRtl ? "space-x-reverse" : "") space-x-1">
                     <a href="@Html.TenantUrl("Dashboard", "Index")"
                        class="nav-link px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all">
@@ -71,42 +127,38 @@
                     </a>
                 </div>
 
-                <!-- User Menu -->
-                <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-3">          
-                    <!-- Logout -->
+                <!-- Desktop: Logout -->
+                <div class="hidden md:flex items-center @(isRtl ? "space-x-reverse" : "") space-x-3">
                     <a href="/home/index" class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
                         <i class="fas fa-sign-out-alt"></i>
                         <span class="font-medium">@Localizer["Logout"]</span>
                     </a>
                 </div>
-
-                <!-- Mobile Menu Button -->
-                <button class="md:hidden p-2 text-gray-600" onclick="toggleMobileMenu()">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
             </div>
         </div>
 
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200">
             <div class="px-4 py-3 space-y-1">
-                <a href="@Html.TenantUrl("Dashboard", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-chart-line @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Dashboard"]
+                <a href="@Html.TenantUrl("Dashboard", "Index")" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-chart-line w-5 text-center"></i>
+                    <span>@Localizer["Dashboard"]</span>
                 </a>
-                <a href="@Html.TenantUrl("Device", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-gamepad @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Devices"]
+                <a href="@Html.TenantUrl("Device", "Index")" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-gamepad w-5 text-center"></i>
+                    <span>@Localizer["Devices"]</span>
                 </a>
-                <a href="@Html.TenantUrl("Session", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-clock @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Sessions"]
+                <a href="@Html.TenantUrl("Session", "Index")" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-clock w-5 text-center"></i>
+                    <span>@Localizer["Sessions"]</span>
                 </a>
-                <a href="@Html.TenantUrl("Room", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-door-open @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Rooms"]
+                <a href="@Html.TenantUrl("Room", "Index")" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-door-open w-5 text-center"></i>
+                    <span>@Localizer["Rooms"]</span>
                 </a>
-                <a href="@Html.TenantUrl("Report", "Index")" class="block px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50">
-                    <i class="fas fa-file-invoice-dollar @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Reports"]
-                </a>
-                <a href="/logout" class="block px-4 py-2 rounded-lg text-red-600 hover:bg-red-50">
-                    <i class="fas fa-sign-out-alt @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Logout"]
+                <a href="@Html.TenantUrl("Report", "Index")" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
+                    <span>@Localizer["Reports"]</span>
                 </a>
             </div>
         </div>

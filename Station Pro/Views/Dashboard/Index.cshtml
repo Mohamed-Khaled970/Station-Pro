@@ -41,37 +41,45 @@
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <!-- Active Sessions (2 columns) -->
             <!-- OPTIMIZED ACTIVE SESSIONS SECTION -->
             <div class="lg:col-span-2">
                 <div class="card p-6 fade-in">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">
-                            <i class="fas fa-clock text-blue-600 mr-2"></i>
-                            @Localizer["ActiveSessions"]
-                        </h2>
-                        <div class="flex items-center gap-4">
-                            <span class="text-sm text-gray-500">
-                                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
-                                @Localizer["UpdatesEvery60s"]
+                    <!-- COMPACT HEADER - Mobile Optimized -->
+                    <div class="flex justify-between items-center mb-6 gap-2">
+                        <!-- Title Section - Compact -->
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-clock text-blue-600 text-base sm:text-lg"></i>
+                            <h2 class="text-base sm:text-xl font-bold text-gray-900 leading-tight">
+                                @Localizer["ActiveSessions"]
+                            </h2>
+                        </div>
+
+                        <!-- Right Side - Responsive -->
+                        <div class="flex items-center gap-2 sm:gap-4">
+                            <!-- Updates Indicator - Hidden on small mobile -->
+                            <span class="hidden sm:flex items-center gap-1 text-xs text-gray-500">
+                                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span class="whitespace-nowrap">@Localizer["UpdatesEvery60s"]</span>
                             </span>
-                            <!-- Manual refresh button -->
-                            <button class="text-sm text-blue-600 hover:text-blue-700"
+
+                            <!-- Manual refresh button - Compact -->
+                            <button class="text-blue-600 hover:text-blue-700 p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
                                     hx-get="/Dashboard/ActiveSessions"
                                     hx-target="#active-sessions-container"
                                     hx-swap="innerHTML"
-                                    title="Refresh now">
-                                <i class="fas fa-sync-alt"></i>
+                                    title="@Localizer["RefreshNow"]">
+                                <i class="fas fa-sync-alt text-sm"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!--
-                        OPTIMIZATION 1: Increased interval to 60s
-                        - JS timers handle the 1-second updates
-                        - HTMX only syncs new/removed sessions
-                        - Reduces requests from 1,600/min to 400/min (75% reduction)
-                    -->
+                    <!-- Mobile-only Auto-update indicator - Shows below title on small screens -->
+                    <div class="flex sm:hidden items-center gap-1 text-xs text-gray-500 mb-4 pb-3 border-b border-gray-100">
+                        <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                        <span>@Localizer["UpdatesEvery60s"]</span>
+                    </div>
+
+                    <!-- Sessions Container -->
                     <div id="active-sessions-container"
                          hx-get="/Dashboard/ActiveSessions"
                          hx-trigger="load, every 60s"
@@ -81,12 +89,11 @@
                         <!-- Loading state -->
                         <div class="text-center py-12" id="sessions-loading">
                             <div class="loading mx-auto mb-4"></div>
-                            <p class="text-gray-500">Loading sessions...</p>
+                            <p class="text-gray-500">@Localizer["LoadingSessions"]</p>
                         </div>
                     </div>
                 </div>
             </div>
-
 
             <!-- Quick Actions (1 column) -->
             <div class="space-y-6">
