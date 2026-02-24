@@ -1,31 +1,53 @@
 ﻿@model RoomDto
 @using Microsoft.Extensions.Localization
 @using StationPro
+@using StationPro.Application.DTOs
 
 @inject IStringLocalizer<SharedResources> Localizer
 
 @{
-    var statusClass = Model.Status == "Available" ? "available" :
-                     Model.Status == "Occupied" ? "occupied" :
-                     Model.Status == "Reserved" ? "reserved" : "maintenance";
-    var statusFilter = Model.Status.ToLower();
-    var iconBgClass = Model.Status == "Available" ? "bg-green-100" :
-                     Model.Status == "Occupied" ? "bg-red-100" :
-                     Model.Status == "Reserved" ? "bg-yellow-100" : "bg-gray-100";
-    var iconColorClass = Model.Status == "Available" ? "text-green-600" :
-                        Model.Status == "Occupied" ? "text-red-600" :
-                        Model.Status == "Reserved" ? "text-yellow-600" : "text-gray-600";
-    var statusBadgeClass = Model.Status == "Available" ? "status-available" :
-                          Model.Status == "Occupied" ? "status-occupied" :
-                          Model.Status == "Reserved" ? "status-reserved" : "status-maintenance";
+    var statusClass = Model.Status switch
+    {
+        "Available" => "available",
+        "Occupied" => "occupied",
+        "Reserved" => "reserved",
+        _ => "maintenance"
+    };
+    var iconBgClass = Model.Status switch
+    {
+        "Available" => "bg-green-100",
+        "Occupied" => "bg-red-100",
+        "Reserved" => "bg-yellow-100",
+        _ => "bg-gray-100"
+    };
+    var iconColorClass = Model.Status switch
+    {
+        "Available" => "text-green-600",
+        "Occupied" => "text-red-600",
+        "Reserved" => "text-yellow-600",
+        _ => "text-gray-600"
+    };
+    var statusBadgeClass = Model.Status switch
+    {
+        "Available" => "status-available",
+        "Occupied" => "status-occupied",
+        "Reserved" => "status-reserved",
+        _ => "status-maintenance"
+    };
+
+    // UTC ISO string — global session-timer.js reads this via data-start-time
+    var startTimeIso = Model.SessionStartTime.HasValue
+        ? Model.SessionStartTime.Value.ToUniversalTime().ToString("O")
+        : string.Empty;
 }
 
 <div class="room-card @statusClass fade-in"
      data-room-name="@Model.Name.ToLower()"
-     data-room-status="@statusFilter"
-     data-room-id="@Model.Id">
+     data-room-status="@Model.Status.ToLower()"
+     data-room-id="@Model.Id"
+     id="room-card-@Model.Id">
 
-    <!-- Room Header -->
+    <!-- ── Header ──────────────────────────────────────────────────── -->
     <div class="flex justify-between items-start mb-4">
         <div class="flex items-center space-x-3">
             <div class="@iconBgClass p-3 rounded-xl">
@@ -49,13 +71,12 @@
             </div>
         </div>
 
-        <!-- Status Badge -->
         <span class="status-badge @statusBadgeClass">
             @Localizer[Model.Status]
         </span>
     </div>
 
-    <!-- Room Details -->
+    <!-- ── Static Details ───────────────────────────────────────────── -->
     <div class="border-t border-gray-100 pt-4 mb-4 space-y-3">
         <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600">@Localizer["HourlyRate"]</span>
@@ -64,68 +85,138 @@
 
         <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600">
-                <i class="fas fa-users mr-1"></i>
-                @Localizer["Capacity"]
+                <i class="fas fa-users mr-1"></i>@Localizer["Capacity"]
             </span>
             <span class="text-sm font-bold text-gray-900">@Model.Capacity @Localizer["People"]</span>
         </div>
 
-        @if (Model.Status == "Occupied")
+        <!-- ── Occupied: live timer block ──────────────────────────── -->
+        @if (Model.Status == "Occupied" && Model.SessionStartTime.HasValue && Model.ActiveSessionId.HasValue)
         {
             <div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-600">@Localizer["CurrentOccupancy"]</span>
-                    <span class="text-sm font-bold text-red-600">
-                        @Model.CurrentOccupancy / @Model.Capacity
+
+                <!-- Client & occupancy -->
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-gray-600 font-medium">
+                        <i class="fas fa-user mr-1 text-red-500"></i>
+                        @(Model.SessionClientName ?? "Guest")
+                    </span>
+                    <span class="text-xs font-bold text-red-600">
+                        @Model.CurrentOccupancy / @Model.Capacity guests
                     </span>
                 </div>
-                <div class="mt-2 bg-gray-200 rounded-full h-2">
-                    <div class="bg-red-600 h-2 rounded-full transition-all"
-                         style="width: @((Model.CurrentOccupancy * 100.0 / Model.Capacity).ToString("F0"))%"></div>
+
+                <!-- Occupancy bar -->
+                <div class="bg-gray-200 rounded-full h-1.5 mb-3">
+                    <div class="bg-red-500 h-1.5 rounded-full"
+                         style="width:@((Model.CurrentOccupancy * 100.0 / Model.Capacity).ToString("F0"))%"></div>
                 </div>
+
+                <!-- Live timer — ID uses ActiveSessionId so global session-timer.js finds it -->
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>Duration
+                    </span>
+                    <span class="font-mono font-bold text-red-700 text-sm"
+                          id="timer-@Model.ActiveSessionId"
+                          data-start-time="@startTimeIso"
+                          data-hourly-rate="@Model.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                        00:00:00
+                    </span>
+                </div>
+
+                <!-- Running cost — ID uses ActiveSessionId so global session-timer.js finds it -->
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-xs text-gray-500">
+                        <i class="fas fa-coins mr-1"></i>Running cost
+                    </span>
+                    <span class="font-bold text-green-700 text-sm"
+                          id="cost-@Model.ActiveSessionId">
+                        EGP 0.00
+                    </span>
+                </div>
+            </div>
+        }
+
+        <!-- ── Reserved: reservation info block ────────────────────── -->
+        @if (Model.Status == "Reserved")
+        {
+            <div class="bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-600 font-medium">
+                        <i class="fas fa-user mr-1 text-yellow-600"></i>
+                        @(Model.ReservationClientName ?? "Client")
+                    </span>
+                    <span class="text-xs font-bold text-yellow-700">Reserved</span>
+                </div>
+                @if (Model.ReservationTime.HasValue)
+                {
+                    <div class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-calendar-check mr-1"></i>
+                        @Model.ReservationTime.Value.ToString("ddd, MMM d • h:mm tt")
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ReservationNotes))
+                {
+                    <div class="text-xs text-gray-400 mt-1 italic truncate">
+                        @Model.ReservationNotes
+                    </div>
+                }
             </div>
         }
     </div>
 
-    <!-- Actions -->
-    <div class="flex gap-2">
+    <!-- ── Action Buttons ────────────────────────────────────────────── -->
+    <div class="flex gap-2 mt-auto pt-2">
         @if (Model.Status == "Available")
         {
-            <button class="btn btn-success flex-1">
+            <button onclick="openBookingModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))', @Model.Capacity, '@Model.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture)')"
+                    class="btn btn-success flex-1">
                 <i class="fas fa-door-open"></i>
-                <span>@Localizer["BookNow"]</span>
+                <span>Book Now</span>
+            </button>
+            <button onclick="openReserveModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                    class="btn btn-warning flex-1"
+                    title="Reserve">
+                <i class="fas fa-calendar-plus"></i>
+                <span>Reserve</span>
             </button>
         }
-        else if (Model.Status == "Occupied")
+        else if (Model.Status == "Occupied" && Model.ActiveSessionId.HasValue)
         {
-            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                <i class="fas fa-users"></i>
-                <span>@Localizer["Occupied"]</span>
+            @* Pass sessionId (not roomId) so the End handler knows which session to close *@
+            <button onclick="openEndSessionModal(@Model.Id, @Model.ActiveSessionId.Value, '@Html.Raw(Model.Name.Replace("'", "\\'"))', '@Html.Raw((Model.SessionClientName ?? "Guest").Replace("'", "\\'"))')"
+                    class="btn btn-danger flex-1">
+                <i class="fas fa-stop-circle"></i>
+                <span>End Session</span>
             </button>
         }
         else if (Model.Status == "Reserved")
         {
-            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                <i class="fas fa-calendar-check"></i>
-                <span>@Localizer["Reserved"]</span>
+            <button onclick="activateReservation(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                    class="btn btn-success flex-1">
+                <i class="fas fa-check-circle"></i>
+                <span>Check In</span>
+            </button>
+            <button onclick="cancelReservation(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                    class="btn btn-secondary flex-shrink-0">
+                <i class="fas fa-calendar-times"></i>
+                <span>Cancel</span>
             </button>
         }
         else
         {
             <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
                 <i class="fas fa-tools"></i>
-                <span>@Localizer["Maintenance"]</span>
+                <span>Maintenance</span>
             </button>
         }
 
-        <button onclick="editRoom(@Model.Id)"
-                class="btn btn-outline"
-                title="@Localizer["Edit"]">
+        <button onclick="editRoom(@Model.Id)" class="btn btn-outline" title="Edit">
             <i class="fas fa-edit"></i>
         </button>
-        <button onclick="deleteRoom(@Model.Id, '@Model.Name')"
-                class="btn btn-danger"
-                title="@Localizer["Delete"]">
+        <button onclick="deleteRoom(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                class="btn btn-danger" title="Delete">
             <i class="fas fa-trash"></i>
         </button>
     </div>

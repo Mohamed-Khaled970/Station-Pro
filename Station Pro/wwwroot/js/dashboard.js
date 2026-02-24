@@ -166,10 +166,9 @@ async function confirmEndSession() {
         // Close confirmation modal
         closeEndSessionModal();
 
-        // Stop the timer for this session
-        if (typeof stopTimer === 'function') {
-            stopTimer(pendingSessionId);
-        }
+
+       timerManager.removeTimer(String(pendingSessionId));
+      
 
         // Get current path (handle tenant URLs)
         const currentPath = window.location.pathname;
@@ -196,14 +195,19 @@ async function confirmEndSession() {
                 document.body.style.overflow = 'hidden';
             }
 
-            // Refresh active sessions to remove ended session
-            const sessionsContainer = document.getElementById('active-sessions-container');
-            if (sessionsContainer && typeof htmx !== 'undefined') {
-                htmx.trigger(sessionsContainer, 'load');
-            }
+            // ✅ Remove timer immediately from JS side
+            timerManager.removeTimer(String(pendingSessionId));
 
-            // Show success toast
+            // ✅ Small delay to avoid race condition with auto-refresh
+            setTimeout(() => {
+                const sessionsContainer = document.getElementById('active-sessions-container');
+                if (sessionsContainer && typeof htmx !== 'undefined') {
+                    htmx.trigger(sessionsContainer, 'load');
+                }
+            }, 300);
+
             showToast('Session ended successfully!', 'success');
+
         } else {
             showToast('Failed to end session', 'error');
         }

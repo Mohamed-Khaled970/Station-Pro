@@ -1247,3 +1247,54 @@ input[type="number"] {
         page-break-inside: avoid;
     }
 }
+
+
+/* Warning button (Reserve) */
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+    }
+
+/* Room live timer pulse */
+.room-timer {
+    animation: timerTick 1s ease-in-out infinite;
+}
+
+@keyframes timerTick {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.75;
+    }
+}
+
+/* Occupied card timer section */
+.room-card.occupied .bg-red-50 {
+    animation: none; /* keep timer block stable */
+}
+
+/* Card action row: make Reserve button slightly smaller text */
+.room-card .btn-warning span {
+    font-size: 0.8125rem;
+}
+
+/* Available card — two action buttons side by side */
+.room-card.available .flex.gap-2 .btn-success,
+.room-card.available .flex.gap-2 .btn-warning {
+    flex: 1;
+}
+
+/* End Session button — full width primary action */
+.room-card.occupied .flex.gap-2 .btn-danger:first-child {
+    flex: 1;
+}

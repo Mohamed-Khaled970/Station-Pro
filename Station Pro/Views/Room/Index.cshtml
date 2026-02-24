@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<RoomDto>
 @using Microsoft.Extensions.Localization
 @using StationPro
+@using StationPro.Application.DTOs
 
 @inject IStringLocalizer<SharedResources> Localizer
 
@@ -24,15 +25,13 @@
                 </h1>
                 <p class="text-gray-600">@Localizer["ManageVIPRooms"]</p>
             </div>
-            <button onclick="openModal('add-room-modal')"
-                    class="btn btn-primary mt-4 md:mt-0">
-                <i class="fas fa-plus mr-2"></i>
-                @Localizer["AddRoom"]
+            <button onclick="openModal('add-room-modal')" class="btn btn-primary mt-4 md:mt-0">
+                <i class="fas fa-plus mr-2"></i>@Localizer["AddRoom"]
             </button>
         </div>
 
         <!-- Stats Row -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 fade-in">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 fade-in">
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
@@ -44,7 +43,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
@@ -56,7 +54,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
@@ -68,15 +65,14 @@
                     </div>
                 </div>
             </div>
-
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 mb-1">@Localizer["TotalCapacity"]</p>
-                        <p class="text-2xl font-bold text-purple-600">@Model.Sum(r => r.Capacity)</p>
+                        <p class="text-sm text-gray-600 mb-1">Reserved</p>
+                        <p class="text-2xl font-bold text-yellow-600">@Model.Count(r => r.Status == "Reserved")</p>
                     </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-user-friends text-purple-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-yellow-600 text-xl"></i>
                     </div>
                 </div>
             </div>
@@ -85,45 +81,24 @@
         <!-- Filters & Search -->
         <div class="card p-6 mb-8 fade-in">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                <!-- Search -->
                 <div class="flex-1 max-w-md">
                     <div class="relative">
-                        <input type="text"
-                               id="search-input"
+                        <input type="text" id="search-input"
                                placeholder="@Localizer["SearchRooms"]"
-                               class="form-input pl-10"
-                               onkeyup="filterRooms()">
+                               class="form-input pl-10" onkeyup="filterRooms()">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </div>
-
-                <!-- Filter Buttons -->
-                <div class="flex items-center space-x-2">
-                    <button onclick="filterByStatus('all')"
-                            class="filter-btn active"
-                            data-filter="all">
-                        @Localizer["All"]
-                    </button>
-                    <button onclick="filterByStatus('available')"
-                            class="filter-btn"
-                            data-filter="available">
-                        @Localizer["Available"]
-                    </button>
-                    <button onclick="filterByStatus('occupied')"
-                            class="filter-btn"
-                            data-filter="occupied">
-                        @Localizer["Occupied"]
-                    </button>
-                    <button onclick="filterByStatus('reserved')"
-                            class="filter-btn"
-                            data-filter="reserved">
-                        @Localizer["Reserved"]
-                    </button>
+                <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+                    <button onclick="filterByStatus('all')" class="filter-btn active" data-filter="all">All</button>
+                    <button onclick="filterByStatus('available')" class="filter-btn" data-filter="available">@Localizer["Available"]</button>
+                    <button onclick="filterByStatus('occupied')" class="filter-btn" data-filter="occupied">@Localizer["Occupied"]</button>
+                    <button onclick="filterByStatus('reserved')" class="filter-btn" data-filter="reserved">Reserved</button>
                 </div>
             </div>
         </div>
 
-        <!-- Rooms Grid - Grid layout handled by CSS -->
+        <!-- Rooms Grid -->
         <div id="rooms-grid">
             @foreach (var room in Model)
             {
@@ -138,109 +113,65 @@
                 <h3 class="text-xl font-bold text-gray-900 mb-2">@Localizer["NoRoomsYet"]</h3>
                 <p class="text-gray-600 mb-6">@Localizer["AddFirstRoom"]</p>
                 <button onclick="openModal('add-room-modal')" class="btn btn-primary">
-                    <i class="fas fa-plus mr-2"></i>
-                    @Localizer["AddFirstRoomButton"]
+                    <i class="fas fa-plus mr-2"></i>@Localizer["AddFirstRoomButton"]
                 </button>
             </div>
         }
     </div>
 </div>
 
-<!-- Add Room Modal -->
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     ADD ROOM MODAL
+════════════════════════════════════════════════════════════════════════════ -->
 <div id="add-room-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="text-xl font-bold text-gray-900">@Localizer["AddNewRoom"]</h3>
         </div>
         <form id="add-room-form" hx-post="/Room/Create"
-              hx-target="#rooms-grid"
-              hx-swap="afterbegin"
+              hx-target="#rooms-grid" hx-swap="afterbegin"
               hx-on::after-request="handleRoomAdded()">
             <div class="modal-body space-y-4">
                 <div>
-                    <label class="form-label">
-                        <i class="fas fa-tag text-blue-600 mr-2"></i>
-                        @Localizer["RoomName"]
-                    </label>
-                    <input type="text"
-                           name="Name"
-                           class="form-input"
-                           placeholder="@Localizer["RoomNamePlaceholder"]"
-                           required>
+                    <label class="form-label"><i class="fas fa-tag text-blue-600 mr-2"></i>@Localizer["RoomName"]</label>
+                    <input type="text" name="Name" class="form-input" placeholder="@Localizer["RoomNamePlaceholder"]" required>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="form-label">
-                            <i class="fas fa-coins text-blue-600 mr-2"></i>
-                            @Localizer["HourlyRateEGP"]
-                        </label>
-                        <input type="number"
-                               name="HourlyRate"
-                               class="form-input"
-                               placeholder="100"
-                               step="0.01"
-                               min="0"
-                               required>
+                        <label class="form-label"><i class="fas fa-coins text-blue-600 mr-2"></i>@Localizer["HourlyRateEGP"]</label>
+                        <input type="number" name="HourlyRate" class="form-input" placeholder="100" step="0.01" min="0" required>
                     </div>
-
                     <div>
-                        <label class="form-label">
-                            <i class="fas fa-users text-blue-600 mr-2"></i>
-                            @Localizer["Capacity"]
-                        </label>
-                        <input type="number"
-                               name="Capacity"
-                               class="form-input"
-                               placeholder="@Localizer["CapacityPlaceholder"]"
-                               min="1"
-                               required>
+                        <label class="form-label"><i class="fas fa-users text-blue-600 mr-2"></i>@Localizer["Capacity"]</label>
+                        <input type="number" name="Capacity" class="form-input" placeholder="@Localizer["CapacityPlaceholder"]" min="1" required>
                     </div>
                 </div>
-
                 <div>
-                    <label class="form-label">
-                        <i class="fas fa-gamepad text-blue-600 mr-2"></i>
-                        @Localizer["NumberOfDevices"]
-                    </label>
-                    <input type="number"
-                           name="DeviceCount"
-                           class="form-input"
-                           placeholder="@Localizer["DeviceCountPlaceholder"]"
-                           min="0"
-                           value="0">
-                    <p class="text-xs text-gray-500 mt-1">@Localizer["HowManyDevices"]</p>
+                    <label class="form-label"><i class="fas fa-gamepad text-blue-600 mr-2"></i>@Localizer["NumberOfDevices"]</label>
+                    <input type="number" name="DeviceCount" class="form-input" placeholder="@Localizer["DeviceCountPlaceholder"]" min="0" value="0">
                 </div>
-
                 <div>
                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox"
-                               name="HasAC"
-                               class="w-5 h-5 text-blue-600 border-gray-300 rounded">
-                        <span class="text-sm font-medium text-gray-700">
-                            <i class="fas fa-wind text-blue-600 mr-1"></i>
-                            @Localizer["RoomHasAC"]
-                        </span>
+                        <input type="checkbox" name="HasAC" class="w-5 h-5 text-blue-600 border-gray-300 rounded">
+                        <span class="text-sm font-medium text-gray-700"><i class="fas fa-wind text-blue-600 mr-1"></i>@Localizer["RoomHasAC"]</span>
                     </label>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button"
-                        onclick="closeModal('add-room-modal')"
-                        class="btn btn-secondary">
-                    <i class="fas fa-times mr-2"></i>
-                    @Localizer["Cancel"]
+                <button type="button" onclick="closeModal('add-room-modal')" class="btn btn-secondary">
+                    <i class="fas fa-times mr-2"></i>@Localizer["Cancel"]
                 </button>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus mr-2"></i>
-                    @Localizer["AddRoomButton"]
+                    <i class="fas fa-plus mr-2"></i>@Localizer["AddRoomButton"]
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Edit Room Modal -->
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     EDIT ROOM MODAL
+════════════════════════════════════════════════════════════════════════════ -->
 <div id="edit-room-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
@@ -251,87 +182,205 @@
             <div class="modal-body space-y-4">
                 <div>
                     <label class="form-label">@Localizer["RoomName"]</label>
-                    <input type="text"
-                           id="edit-room-name"
-                           name="Name"
-                           class="form-input"
-                           required>
+                    <input type="text" id="edit-room-name" name="Name" class="form-input" required>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="form-label">@Localizer["HourlyRateEGP"]</label>
-                        <input type="number"
-                               id="edit-room-rate"
-                               name="HourlyRate"
-                               class="form-input"
-                               step="0.01"
-                               min="0"
-                               required>
+                        <input type="number" id="edit-room-rate" name="HourlyRate" class="form-input" step="0.01" min="0" required>
                     </div>
-
                     <div>
                         <label class="form-label">@Localizer["Capacity"]</label>
-                        <input type="number"
-                               id="edit-room-capacity"
-                               name="Capacity"
-                               class="form-input"
-                               min="1"
-                               required>
+                        <input type="number" id="edit-room-capacity" name="Capacity" class="form-input" min="1" required>
                     </div>
                 </div>
-
                 <div>
-                    <label class="form-label">
-                        <i class="fas fa-gamepad text-blue-600 mr-2"></i>
-                        @Localizer["NumberOfDevices"]
-                    </label>
-                    <input type="number"
-                           id="edit-room-devices"
-                           name="DeviceCount"
-                           class="form-input"
-                           min="0">
+                    <label class="form-label"><i class="fas fa-gamepad text-blue-600 mr-2"></i>@Localizer["NumberOfDevices"]</label>
+                    <input type="number" id="edit-room-devices" name="DeviceCount" class="form-input" min="0">
                 </div>
-
                 <div>
                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox"
-                               id="edit-room-ac"
-                               name="HasAC"
-                               class="w-5 h-5 text-blue-600 border-gray-300 rounded">
-                        <span class="text-sm font-medium text-gray-700">
-                            @Localizer["RoomHasAC"]
-                        </span>
+                        <input type="checkbox" id="edit-room-ac" name="HasAC" class="w-5 h-5 text-blue-600 border-gray-300 rounded">
+                        <span class="text-sm font-medium text-gray-700">@Localizer["RoomHasAC"]</span>
                     </label>
                 </div>
-
                 <div>
                     <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox"
-                               id="edit-room-active"
-                               name="IsActive"
-                               class="w-5 h-5 text-blue-600 border-gray-300 rounded">
-                        <span class="text-sm font-medium text-gray-700">
-                            @Localizer["RoomIsActive"]
-                        </span>
+                        <input type="checkbox" id="edit-room-active" name="IsActive" class="w-5 h-5 text-blue-600 border-gray-300 rounded">
+                        <span class="text-sm font-medium text-gray-700">@Localizer["RoomIsActive"]</span>
                     </label>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button"
-                        onclick="closeModal('edit-room-modal')"
-                        class="btn btn-secondary">
-                    @Localizer["Cancel"]
+                <button type="button" onclick="closeModal('edit-room-modal')" class="btn btn-secondary">@Localizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-2"></i>@Localizer["SaveChanges"]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BOOK (START SESSION) MODAL
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="book-room-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-door-open text-green-600 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Book Room</h3>
+                    <p class="text-sm text-gray-500" id="book-room-name-label">Start a new session</p>
+                </div>
+            </div>
+        </div>
+        <form id="book-room-form">
+            <input type="hidden" id="book-room-id">
+            <input type="hidden" id="book-room-rate">
+            <div class="modal-body space-y-4">
+                <div>
+                    <label class="form-label"><i class="fas fa-user text-blue-600 mr-2"></i>Client Name</label>
+                    <input type="text" id="book-client-name" class="form-input" placeholder="Enter client name" required>
+                </div>
+                <div>
+                    <label class="form-label"><i class="fas fa-users text-blue-600 mr-2"></i>Number of Guests</label>
+                    <input type="number" id="book-guest-count" class="form-input" placeholder="1" min="1" value="1" required>
+                    <p class="text-xs text-gray-400 mt-1">Max capacity: <span id="book-max-capacity" class="font-semibold">—</span></p>
+                </div>
+                <!-- Rate preview -->
+                <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Hourly Rate</span>
+                        <span class="font-bold text-blue-700" id="book-rate-preview">—</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Timer starts immediately upon booking.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeModal('book-room-modal')" class="btn btn-secondary">
+                    <i class="fas fa-times mr-2"></i>Cancel
                 </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save mr-2"></i>
-                    @Localizer["SaveChanges"]
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-play mr-2"></i>Start Session
                 </button>
             </div>
         </form>
     </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RESERVE ROOM MODAL
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="reserve-room-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-calendar-plus text-yellow-600 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Reserve Room</h3>
+                    <p class="text-sm text-gray-500" id="reserve-room-name-label">Hold this room for a future booking</p>
+                </div>
+            </div>
+        </div>
+        <form id="reserve-room-form">
+            <input type="hidden" id="reserve-room-id">
+            <div class="modal-body space-y-4">
+                <div>
+                    <label class="form-label"><i class="fas fa-user text-blue-600 mr-2"></i>Client Name</label>
+                    <input type="text" id="reserve-client-name" class="form-input" placeholder="Enter client name" required>
+                </div>
+                <div>
+                    <label class="form-label"><i class="fas fa-phone text-blue-600 mr-2"></i>Phone Number</label>
+                    <input type="tel" id="reserve-phone" class="form-input" placeholder="01XXXXXXXXX">
+                </div>
+                <div>
+                    <label class="form-label"><i class="fas fa-calendar text-blue-600 mr-2"></i>Reservation Date & Time</label>
+                    <input type="datetime-local" id="reserve-datetime" class="form-input" required>
+                </div>
+                <div>
+                    <label class="form-label"><i class="fas fa-sticky-note text-blue-600 mr-2"></i>Notes</label>
+                    <textarea id="reserve-notes" class="form-input" rows="2" placeholder="Any special requests..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeModal('reserve-room-modal')" class="btn btn-secondary">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-calendar-check mr-2"></i>Confirm Reservation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     END SESSION MODAL
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="end-session-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-stop-circle text-red-600 text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">End Session</h3>
+                    <p class="text-sm text-gray-500" id="end-session-room-label">—</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-body space-y-4">
+            <input type="hidden" id="end-session-id">
+            <input type="hidden" id="end-session-room-id">
+
+            <!-- Live summary (updates every second) -->
+            <div class="bg-red-50 rounded-xl p-4 border border-red-100 space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600"><i class="fas fa-user mr-1 text-red-400"></i>Client</span>
+                    <span class="font-bold text-gray-900" id="end-client-name">—</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600"><i class="fas fa-clock mr-1 text-red-400"></i>Duration</span>
+                    <span class="font-mono font-bold text-red-700" id="end-session-duration">00:00:00</span>
+                </div>
+                <div class="flex justify-between text-sm border-t border-red-100 pt-2">
+                    <span class="text-gray-700 font-semibold">Total Cost</span>
+                    <span class="font-bold text-green-700 text-lg" id="end-session-cost">EGP 0.00</span>
+                </div>
+            </div>
+
+            <p class="text-sm text-gray-500 text-center">
+                The session will be ended and the room will become available.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closeModal('end-session-modal')" class="btn btn-secondary">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+            <button onclick="confirmEndSession()" class="btn btn-danger">
+                <i class="fas fa-stop-circle mr-2"></i>End Session
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     RECEIPT MODAL  (same structure as sessions page receipt modal)
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="receipt-modal" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-lg">
+        <div id="receipt-content">
+            <!-- Filled dynamically by room.js → showReceiptModal() after EndSession succeeds -->
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+        {{!-- Global timer manager — must load BEFORE room.js --}}
+    <script src="~/js/session-timer.js"></script>
     <script src="~/js/room.js"></script>
 }

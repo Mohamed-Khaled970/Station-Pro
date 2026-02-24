@@ -17,5 +17,16 @@ namespace StationPro.Application.DTOs
         public string Status { get; set; } = "Available"; // Available, Occupied, Reserved, Maintenance
         public int CurrentOccupancy { get; set; }
         public int DeviceCount { get; set; }
+
+
+        // Session info (populated when Occupied)
+        public DateTime? SessionStartTime { get; set; }
+        public string? SessionClientName { get; set; }
+        public int? ActiveSessionId { get; set; }
+
+        // Reservation info (populated when Reserved)
+        public string? ReservationClientName { get; set; }
+        public DateTime? ReservationTime { get; set; }
+        public string? ReservationNotes { get; set; }
     }
 }

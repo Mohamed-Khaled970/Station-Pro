@@ -438,6 +438,12 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             _activeSessions.Add(session);
         }
 
+        // this function for Room page , to show the completed sessions in Session page 
+        // SessionController pulls its data from DashboardController.GetCompletedSessions().
+        public static void AddCompletedSession(SessionReportDto session)
+        {
+            _completedSessions.Add(session);
+        }
         private decimal CalculateTodayRevenue()
         {
             // Calculate current active sessions value

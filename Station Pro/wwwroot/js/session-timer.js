@@ -58,6 +58,7 @@ class SessionTimer {
         const formatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
         // Update time
+        // to enhance the performace , we check if the lastRender time and cost are still the same or not , if they ? don't update the DOM
         if (this.lastRenderedTime !== formatted) {
             this.element.textContent = formatted;
             this.lastRenderedTime = formatted;
@@ -154,6 +155,8 @@ class TimerManager {
 
     removeTimer(sessionId) {
         this.timers.delete(sessionId);
+        console.log(`delete timer ${sessionId}`);
+        console.log(`📊 Active timers: ${this.timers.size}`);
 
         if (this.timers.size === 0) {
             this.stop();

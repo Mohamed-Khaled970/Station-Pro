@@ -4,6 +4,8 @@
 // UTILITY FUNCTIONS
 // ============================================
 
+
+// toast containers in layout
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {

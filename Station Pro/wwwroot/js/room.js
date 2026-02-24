@@ -1,7 +1,14 @@
 ﻿// wwwroot/js/room.js
+//
+// TIMER NOTE:
+// This file does NOT manage timers directly.
+// The global session-timer.js (already loaded in layout) handles all timers.
+// It scans for elements with id="timer-{sessionId}" and data-start-time on page load,
+// and calls timerManager.smartRestart() after any DOM change.
+// _RoomCard.cshtml renders exactly those IDs, so everything is automatic.
 
 // ============================================
-// MODAL FUNCTIONS
+// MODAL HELPERS
 // ============================================
 
 function openModal(modalId) {
@@ -17,124 +24,527 @@ function closeModal(modalId) {
     if (modal) {
         modal.classList.add('hidden');
         document.body.style.overflow = 'auto';
-
         const form = modal.querySelector('form');
-        if (form) {
-            form.reset();
-        }
+        if (form) form.reset();
     }
 }
 
 // ============================================
-// INITIALIZATION
+// RECEIPT MODAL  (same pattern as sessions.js)
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Room page initialized');
-    initializeRoomPage();
-});
+function showReceiptModal(html) {
+    const content = document.getElementById('receipt-content');
+    const modal = document.getElementById('receipt-modal');
+    if (content && modal) {
+        content.innerHTML = html;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
 
-function initializeRoomPage() {
-    setupAddRoomForm();
-    setupEditRoomForm();
-    setupKeyboardShortcuts();
+function closeReceiptModal() {
+    const modal = document.getElementById('receipt-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
 }
 
 // ============================================
-// FILTER ROOMS BY SEARCH
+// BOOK (START SESSION) MODAL
+// ============================================
+
+function openBookingModal(roomId, roomName, capacity, hourlyRate) {
+    document.getElementById('book-room-id').value = roomId;
+    document.getElementById('book-room-rate').value = hourlyRate;
+    document.getElementById('book-room-name-label').textContent = roomName;
+    document.getElementById('book-max-capacity').textContent = capacity;
+    document.getElementById('book-guest-count').max = capacity;
+    document.getElementById('book-rate-preview').textContent = formatEGP(parseFloat(hourlyRate)) + '/hr';
+    openModal('book-room-modal');
+}
+
+function setupBookRoomForm() {
+    const form = document.getElementById('book-room-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const roomId = parseInt(document.getElementById('book-room-id').value);
+        const clientName = document.getElementById('book-client-name').value.trim();
+        const guestCount = parseInt(document.getElementById('book-guest-count').value);
+
+        if (!clientName) return;
+
+        try {
+            const res = await fetch('/Room/StartSession', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId, clientName, guestCount })
+            });
+
+            if (res.ok) {
+                closeModal('book-room-modal');
+                // Refresh this single card — global timerManager.smartRestart()
+                // is called inside refreshRoomCard() after the DOM update
+                await refreshRoomCard(roomId);
+                showSuccessNotification(
+                    'Session Started! 🎉',
+                    `${clientName}'s session is now live. Timer is running.`,
+                    'fa-play-circle'
+                );
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showErrorNotification(err.message || 'Failed to start session.');
+            }
+        } catch {
+            showErrorNotification('Network error. Please try again.');
+        }
+    });
+}
+
+// ============================================
+// RESERVE ROOM MODAL
+// ============================================
+
+function openReserveModal(roomId, roomName) {
+    document.getElementById('reserve-room-id').value = roomId;
+    document.getElementById('reserve-room-name-label').textContent = roomName;
+
+    // Default to 1 hour from now
+    const dt = new Date(Date.now() + 60 * 60 * 1000);
+    const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000)
+        .toISOString().slice(0, 16);
+    document.getElementById('reserve-datetime').value = local;
+
+    openModal('reserve-room-modal');
+}
+
+function setupReserveRoomForm() {
+    const form = document.getElementById('reserve-room-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const roomId = parseInt(document.getElementById('reserve-room-id').value);
+        const clientName = document.getElementById('reserve-client-name').value.trim();
+        const phone = document.getElementById('reserve-phone').value.trim();
+        const dt = document.getElementById('reserve-datetime').value;
+        const notes = document.getElementById('reserve-notes').value.trim();
+
+        if (!clientName || !dt) return;
+
+        try {
+            const res = await fetch('/Room/Reserve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    roomId,
+                    clientName,
+                    phone,
+                    reservationTime: new Date(dt).toISOString(),
+                    notes
+                })
+            });
+
+            if (res.ok) {
+                closeModal('reserve-room-modal');
+                await refreshRoomCard(roomId);
+                showSuccessNotification(
+                    'Room Reserved! 📅',
+                    `${clientName}'s reservation has been confirmed.`,
+                    'fa-calendar-check'
+                );
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showErrorNotification(err.message || 'Failed to create reservation.');
+            }
+        } catch {
+            showErrorNotification('Network error. Please try again.');
+        }
+    });
+}
+
+// ============================================
+// END SESSION MODAL
+// ============================================
+
+// Tracks a setInterval for the live cost/duration inside the end-session modal
+let _endModalInterval = null;
+
+function openEndSessionModal(roomId, sessionId, roomName, clientName) {
+    document.getElementById('end-session-id').value = sessionId;
+    document.getElementById('end-session-room-id').value = roomId;
+    document.getElementById('end-session-room-label').textContent = roomName;
+    document.getElementById('end-client-name').textContent = clientName;
+
+    // Read start time + rate directly from the timer element the global timer already manages
+    // The element is: id="timer-{sessionId}" with data-start-time and data-hourly-rate
+    const timerEl = document.getElementById(`timer-${sessionId}`);
+    const startMs = timerEl ? new Date(timerEl.dataset.startTime).getTime() : Date.now();
+    const hourlyRate = timerEl ? parseFloat(timerEl.dataset.hourlyRate) : 0;
+
+    // Live-update duration + cost inside the modal every second
+    clearInterval(_endModalInterval);
+    const tick = () => {
+        const elapsed = Math.floor((Date.now() - startMs) / 1000);
+        const h = Math.floor(elapsed / 3600);
+        const m = Math.floor((elapsed % 3600) / 60);
+        const s = elapsed % 60;
+        document.getElementById('end-session-duration').textContent
+            = `${pad(h)}:${pad(m)}:${pad(s)}`;
+        document.getElementById('end-session-cost').textContent
+            = formatEGP((elapsed / 3600) * hourlyRate);
+    };
+    tick();
+    _endModalInterval = setInterval(tick, 1000);
+
+    openModal('end-session-modal');
+}
+
+async function confirmEndSession() {
+    const sessionId = document.getElementById('end-session-id').value;
+    const roomId = parseInt(document.getElementById('end-session-room-id').value);
+
+    // Stop live update inside the modal
+    clearInterval(_endModalInterval);
+    closeModal('end-session-modal');
+
+    try {
+        const res = await fetch(`/Room/EndSession?sessionId=${sessionId}`, { method: 'POST' });
+
+        if (res.ok) {
+            // 1. Refresh the room card (stops the global timer for this session automatically
+            //    because smartRestart() won't find the old timer-{sessionId} element anymore)
+            await refreshRoomCard(roomId);
+
+            // 2. Fetch the receipt partial from the server and show it
+            //    Same pattern as sessions.js → printReceipt()
+            const receiptRes = await fetch(`/Room/SessionReceipt?sessionId=${sessionId}`);
+            if (receiptRes.ok) {
+                const receiptHtml = await receiptRes.text();
+                showReceiptModal(receiptHtml);
+            } else {
+                // Receipt fetch failed — still show a success toast
+                showSuccessNotification('Session Ended ✅', 'The room is now available.', 'fa-check-circle');
+            }
+        } else {
+            const err = await res.json().catch(() => ({}));
+            showErrorNotification(err.message || 'Failed to end session.');
+        }
+    } catch {
+        showErrorNotification('Network error. Please try again.');
+    }
+}
+
+// ============================================
+// RESERVATION ACTIONS (in-place, no reload)
+// ============================================
+
+function cancelReservation(roomId, roomName) {
+    showDeleteConfirmation(
+        `cancel the reservation for "${roomName}"`,
+        'The room will become available immediately.',
+        async () => {
+            const res = await fetch(`/Room/CancelReservation?roomId=${roomId}`, { method: 'POST' });
+            if (res.ok) {
+                await refreshRoomCard(roomId);
+                showSuccessNotification('Reservation Cancelled', `${roomName} is now available.`, 'fa-calendar-times');
+            } else {
+                showErrorNotification('Failed to cancel reservation.');
+            }
+        }
+    );
+}
+
+async function activateReservation(roomId, roomName) {
+    try {
+        const res = await fetch(`/Room/ActivateReservation?roomId=${roomId}`, { method: 'POST' });
+        if (res.ok) {
+            const data = await res.json();
+            await refreshRoomCard(roomId);
+            showSuccessNotification(
+                'Checked In! 🎉',
+                `${data.clientName} is now checked in to ${roomName}. Timer started.`,
+                'fa-check-circle'
+            );
+        } else {
+            const err = await res.json().catch(() => ({}));
+            showErrorNotification(err.message || 'Failed to check in.');
+        }
+    } catch {
+        showErrorNotification('Network error. Please try again.');
+    }
+}
+
+// ============================================
+// REFRESH A SINGLE ROOM CARD IN THE DOM
+// After replacing the HTML, tell the global
+// TimerManager to rescan — it adds new timers
+// and removes ones that no longer exist.
+// ============================================
+
+async function refreshRoomCard(roomId) {
+    try {
+        const res = await fetch(`/Room/CardPartial?id=${roomId}`);
+        if (!res.ok) { location.reload(); return; }
+
+        const html = await res.text();
+        const card = document.getElementById(`room-card-${roomId}`);
+
+        if (!card) { location.reload(); return; }
+
+        // Swap the card HTML
+        card.outerHTML = html;
+
+        // Tell the global TimerManager to rescan the DOM.
+        // It will:
+        //  - ADD a timer for the new timer-{sessionId} element (if room is now Occupied)
+        //  - REMOVE any timer whose element no longer exists (session ended / card changed)
+        if (window.timerManager) {
+            setTimeout(() => window.timerManager.smartRestart(), 50);
+        }
+    } catch {
+        location.reload();
+    }
+}
+
+// ============================================
+// EDIT ROOM
+// ============================================
+
+async function editRoom(roomId) {
+    try {
+        const res = await fetch(`/Room/Get/${roomId}`);
+        if (!res.ok) throw new Error();
+        const room = await res.json();
+
+        document.getElementById('edit-room-id').value = room.id;
+        document.getElementById('edit-room-name').value = room.name;
+        document.getElementById('edit-room-rate').value = room.hourlyRate;
+        document.getElementById('edit-room-capacity').value = room.capacity;
+        document.getElementById('edit-room-devices').value = room.deviceCount || 0;
+        document.getElementById('edit-room-ac').checked = room.hasAC;
+        document.getElementById('edit-room-active').checked = room.isActive;
+        openModal('edit-room-modal');
+    } catch {
+        showErrorNotification('Failed to load room details.');
+    }
+}
+
+function setupEditRoomForm() {
+    const form = document.getElementById('edit-room-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const roomId = fd.get('Id');
+
+        try {
+            const res = await fetch(`/Room/Update/${roomId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: fd.get('Name'),
+                    hourlyRate: parseFloat(fd.get('HourlyRate')),
+                    capacity: parseInt(fd.get('Capacity')),
+                    deviceCount: parseInt(fd.get('DeviceCount')) || 0,
+                    hasAC: fd.get('HasAC') === 'on',
+                    isActive: fd.get('IsActive') === 'on'
+                })
+            });
+
+            if (res.ok) {
+                closeModal('edit-room-modal');
+                showSuccessNotification('Room Updated! ✨', 'Room details saved successfully.', 'fa-edit');
+            } else {
+                showErrorNotification('Failed to update room.');
+            }
+        } catch {
+            showErrorNotification('Network error. Please try again.');
+        }
+    });
+}
+
+// ============================================
+// DELETE ROOM
+// ============================================
+
+function deleteRoom(roomId, roomName) {
+    showDeleteConfirmation(
+        `delete "${roomName}"`,
+        'This action cannot be undone.',
+        async () => {
+            const res = await fetch(`/Room/Delete/${roomId}`, { method: 'DELETE' });
+            if (res.ok) {
+                const card = document.querySelector(`[data-room-id="${roomId}"]`);
+                if (card) {
+                    card.style.transition = 'all .3s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => { card.remove(); closeDeletingOverlay(); }, 300);
+                } else {
+                    closeDeletingOverlay();
+                }
+                showSuccessNotification('Room Deleted 🗑️', `"${roomName}" has been removed.`, 'fa-check-circle');
+            } else {
+                closeDeletingOverlay();
+                const err = await res.json().catch(() => ({}));
+                showErrorNotification(err.message || 'Cannot delete this room.');
+            }
+        }
+    );
+}
+
+// ============================================
+// ADD ROOM (HTMX callback)
+// After HTMX inserts the new card, tell the
+// global timer to rescan (no-op if not occupied)
+// ============================================
+
+function handleRoomAdded() {
+    closeModal('add-room-modal');
+    if (window.timerManager) {
+        setTimeout(() => window.timerManager.smartRestart(), 50);
+    }
+    showSuccessNotification('Room Added! 🎉', 'Your new room is ready for bookings.', 'fa-door-open');
+    document.getElementById('add-room-form')?.reset();
+}
+
+// ============================================
+// FILTER
 // ============================================
 
 function filterRooms() {
-    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
-    const rooms = document.querySelectorAll('.room-card');
-    let visibleCount = 0;
-
-    rooms.forEach(room => {
-        const roomName = room.dataset.roomName || '';
-        const isMatch = roomName.includes(searchTerm);
-
-        if (isMatch) {
-            room.classList.remove('hidden');
-            visibleCount++;
-        } else {
-            room.classList.add('hidden');
-        }
+    const term = document.getElementById('search-input').value.toLowerCase().trim();
+    let visible = 0;
+    document.querySelectorAll('.room-card').forEach(card => {
+        const match = (card.dataset.roomName || '').includes(term);
+        card.classList.toggle('hidden', !match);
+        if (match) visible++;
     });
-
-    updateNoResultsMessage(visibleCount);
+    updateNoResultsMessage(visible);
 }
-
-// ============================================
-// FILTER ROOMS BY STATUS
-// ============================================
 
 function filterByStatus(status) {
-    const rooms = document.querySelectorAll('.room-card');
-    const buttons = document.querySelectorAll('.filter-btn');
-    let visibleCount = 0;
-
-    buttons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.filter === status) {
-            btn.classList.add('active');
-        }
-    });
-
-    rooms.forEach(room => {
-        const roomStatus = room.dataset.roomStatus || '';
-        const isMatch = status === 'all' || roomStatus === status;
-
-        if (isMatch) {
-            room.classList.remove('hidden');
-            visibleCount++;
-        } else {
-            room.classList.add('hidden');
-        }
+    document.querySelectorAll('.filter-btn').forEach(btn =>
+        btn.classList.toggle('active', btn.dataset.filter === status)
+    );
+    document.querySelectorAll('.room-card').forEach(card => {
+        const match = status === 'all' || (card.dataset.roomStatus || '') === status;
+        card.classList.toggle('hidden', !match);
     });
 }
 
-// ============================================
-// UPDATE NO RESULTS MESSAGE
-// ============================================
-
 function updateNoResultsMessage(visibleCount) {
-    let noResultsDiv = document.getElementById('no-results-message');
-
+    let el = document.getElementById('no-results-message');
     if (visibleCount === 0) {
-        if (!noResultsDiv) {
-            noResultsDiv = document.createElement('div');
-            noResultsDiv.id = 'no-results-message';
-            noResultsDiv.className = 'col-span-full text-center py-12';
-            noResultsDiv.innerHTML = `
-                <i class="fas fa-search text-gray-300 text-5xl mb-4"></i>
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'no-results-message';
+            el.className = 'col-span-full text-center py-12';
+            el.innerHTML = `
+                <i class="fas fa-search text-gray-300 text-5xl mb-4 block"></i>
                 <p class="text-gray-600 font-medium">No rooms found</p>
-                <p class="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>
-            `;
-            document.getElementById('rooms-grid').appendChild(noResultsDiv);
+                <p class="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>`;
+            document.getElementById('rooms-grid').appendChild(el);
         }
     } else {
-        if (noResultsDiv) {
-            noResultsDiv.remove();
-        }
+        el?.remove();
     }
 }
 
 // ============================================
-// ENHANCED SUCCESS NOTIFICATION
+// DELETE CONFIRMATION (reusable)
 // ============================================
 
+function showDeleteConfirmation(actionLabel, warningText, onConfirm) {
+    document.getElementById('delete-confirmation')?.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'delete-confirmation';
+    modal.className = 'delete-confirmation-overlay';
+    modal.innerHTML = `
+        <div class="delete-confirmation-content">
+            <div class="delete-confirmation-icon-wrapper">
+                <div class="delete-confirmation-icon-circle">
+                    <i class="fas fa-exclamation-triangle delete-confirmation-icon"></i>
+                </div>
+                <div class="warning-pulse"></div>
+            </div>
+            <h3 class="delete-confirmation-title">Are you sure?</h3>
+            <p class="delete-confirmation-message">You are about to <strong>${actionLabel}</strong>.</p>
+            <p class="delete-confirmation-warning">
+                <i class="fas fa-info-circle mr-1"></i>${warningText}
+            </p>
+            <div class="delete-confirmation-actions">
+                <button onclick="closeDeleteConfirmation()" class="delete-confirmation-btn-cancel">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button id="delete-confirm-btn" class="delete-confirmation-btn-delete">
+                    <i class="fas fa-check mr-2"></i>Confirm
+                </button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+
+    document.getElementById('delete-confirm-btn').addEventListener('click', async () => {
+        closeDeleteConfirmation();
+        showDeletingOverlay();
+        await onConfirm();
+    });
+
+    modal.addEventListener('click', e => { if (e.target === modal) closeDeleteConfirmation(); });
+    const esc = e => {
+        if (e.key === 'Escape') { closeDeleteConfirmation(); document.removeEventListener('keydown', esc); }
+    };
+    document.addEventListener('keydown', esc);
+}
+
+function closeDeleteConfirmation() {
+    const m = document.getElementById('delete-confirmation');
+    if (m) { m.classList.remove('show'); m.classList.add('hide'); setTimeout(() => m.remove(), 300); }
+}
+
+function showDeletingOverlay() {
+    const el = document.createElement('div');
+    el.id = 'deleting-overlay';
+    el.className = 'deleting-overlay';
+    el.innerHTML = `<div class="deleting-spinner-wrapper">
+        <div class="deleting-spinner"></div>
+        <p class="deleting-text">Processing...</p>
+    </div>`;
+    document.body.appendChild(el);
+    setTimeout(() => el.classList.add('show'), 10);
+}
+
+function closeDeletingOverlay() {
+    const el = document.getElementById('deleting-overlay');
+    if (el) { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }
+}
+
+// ============================================
+// SUCCESS / ERROR NOTIFICATIONS
+// ============================================
+
+let _successTimeout = null;
+
 function showSuccessNotification(title, message, icon = 'fa-check-circle') {
-    const existing = document.getElementById('success-notification');
-    if (existing) existing.remove();
+    document.getElementById('success-notification')?.remove();
+    clearTimeout(_successTimeout);
 
-    const notification = document.createElement('div');
-    notification.id = 'success-notification';
-    notification.className = 'success-notification-overlay';
-
-    notification.innerHTML = `
+    const el = document.createElement('div');
+    el.id = 'success-notification';
+    el.className = 'success-notification-overlay';
+    el.innerHTML = `
         <div class="success-notification-content">
             <div class="confetti-container" id="confetti-container"></div>
-            
             <div class="success-notification-icon-wrapper">
                 <div class="success-notification-icon-circle">
                     <i class="fas ${icon} success-notification-icon"></i>
@@ -144,380 +554,83 @@ function showSuccessNotification(title, message, icon = 'fa-check-circle') {
                 <div class="sparkle sparkle-3">✨</div>
                 <div class="sparkle sparkle-4">⭐</div>
             </div>
-            
             <h3 class="success-notification-title">${title}</h3>
             <p class="success-notification-message">${message}</p>
-            
-            <div class="success-progress-bar">
-                <div class="success-progress-fill"></div>
-            </div>
-            
+            <div class="success-progress-bar"><div class="success-progress-fill"></div></div>
             <div class="success-notification-actions">
                 <button onclick="closeSuccessNotification()" class="success-notification-btn-primary">
-                    <i class="fas fa-check mr-2"></i>
-                    <span>Awesome!</span>
+                    <i class="fas fa-check mr-2"></i><span>Awesome!</span>
                 </button>
             </div>
-        </div>
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.classList.add('show');
-        createConfetti();
-    }, 10);
-
-    setTimeout(() => {
-        closeSuccessNotification();
-    }, 5000);
+        </div>`;
+    document.body.appendChild(el);
+    setTimeout(() => { el.classList.add('show'); createConfetti(); }, 10);
+    _successTimeout = setTimeout(closeSuccessNotification, 5000);
 }
 
 function createConfetti() {
     const container = document.getElementById('confetti-container');
     if (!container) return;
-
     const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
     const shapes = ['circle', 'square'];
-
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 40; i++) {
         setTimeout(() => {
-            const confetti = document.createElement('div');
-            confetti.className = `confetti confetti-${shapes[Math.floor(Math.random() * shapes.length)]}`;
-            confetti.style.left = Math.random() * 100 + '%';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animationDelay = Math.random() * 0.3 + 's';
-            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-
-            container.appendChild(confetti);
-
-            setTimeout(() => confetti.remove(), 4000);
+            const el = document.createElement('div');
+            el.className = `confetti confetti-${shapes[i % 2]}`;
+            el.style.left = Math.random() * 100 + '%';
+            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            el.style.animationDelay = Math.random() * 0.3 + 's';
+            el.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
         }, i * 30);
     }
 }
 
 function closeSuccessNotification() {
-    const notification = document.getElementById('success-notification');
-    if (notification) {
-        notification.classList.remove('show');
-        notification.classList.add('hide');
-        setTimeout(() => {
-            notification.remove();
-            location.reload();
-        }, 400);
-    }
+    clearTimeout(_successTimeout);
+    const el = document.getElementById('success-notification');
+    if (el) { el.classList.remove('show'); el.classList.add('hide'); setTimeout(() => el.remove(), 400); }
 }
 
-// ============================================
-// HANDLE ROOM ADDED
-// ============================================
-
-function handleRoomAdded() {
-    closeModal('add-room-modal');
-
-    showSuccessNotification(
-        'Room Added Successfully! 🎉',
-        'Your new room has been created and is ready for bookings.',
-        'fa-door-open'
-    );
-
-    const form = document.getElementById('add-room-form');
-    if (form) form.reset();
-}
-
-// ============================================
-// EDIT ROOM
-// ============================================
-
-async function editRoom(roomId) {
-    try {
-        const response = await fetch(`/Room/Get/${roomId}`);
-
-        if (!response.ok) {
-            throw new Error('Failed to load room');
-        }
-
-        const room = await response.json();
-
-        document.getElementById('edit-room-id').value = room.id;
-        document.getElementById('edit-room-name').value = room.name;
-        document.getElementById('edit-room-rate').value = room.hourlyRate;
-        document.getElementById('edit-room-capacity').value = room.capacity;
-        document.getElementById('edit-room-devices').value = room.deviceCount || 0;
-        document.getElementById('edit-room-ac').checked = room.hasAC;
-        document.getElementById('edit-room-active').checked = room.isActive;
-
-        openModal('edit-room-modal');
-    } catch (error) {
-        console.error('Error loading room:', error);
-        alert('Failed to load room details');
-    }
-}
-
-// ============================================
-// SETUP EDIT ROOM FORM
-// ============================================
-
-function setupEditRoomForm() {
-    const form = document.getElementById('edit-room-form');
-    if (!form) return;
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const formData = new FormData(e.target);
-        const roomId = formData.get('Id');
-
-        const data = {
-            name: formData.get('Name'),
-            hourlyRate: parseFloat(formData.get('HourlyRate')),
-            capacity: parseInt(formData.get('Capacity')),
-            deviceCount: parseInt(formData.get('DeviceCount')) || 0,
-            hasAC: formData.get('HasAC') === 'on',
-            isActive: formData.get('IsActive') === 'on'
-        };
-
-        try {
-            const response = await fetch(`/Room/Update/${roomId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                closeModal('edit-room-modal');
-                showSuccessNotification(
-                    'Room Updated! ✨',
-                    'Your room has been updated successfully with the new information.',
-                    'fa-edit'
-                );
-            } else {
-                alert('Failed to update room');
-            }
-        } catch (error) {
-            console.error('Error updating room:', error);
-            alert('An error occurred while updating');
-        }
-    });
-}
-
-// ============================================
-// DELETE ROOM - NEW ENHANCED VERSION
-// ============================================
-
-function deleteRoom(roomId, roomName) {
-    // Show custom delete confirmation modal
-    showDeleteConfirmation(roomId, roomName);
-}
-
-function showDeleteConfirmation(roomId, roomName) {
-    const existing = document.getElementById('delete-confirmation');
-    if (existing) existing.remove();
-
-    const modal = document.createElement('div');
-    modal.id = 'delete-confirmation';
-    modal.className = 'delete-confirmation-overlay';
-
-    // Escape the room name to prevent XSS and quote issues
-    const escapedName = roomName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
-    modal.innerHTML = `
-        <div class="delete-confirmation-content">
-            <div class="delete-confirmation-icon-wrapper">
-                <div class="delete-confirmation-icon-circle">
-                    <i class="fas fa-exclamation-triangle delete-confirmation-icon"></i>
-                </div>
-                <div class="warning-pulse"></div>
-            </div>
-            
-            <h3 class="delete-confirmation-title">Delete Room?</h3>
-            <p class="delete-confirmation-message">
-                Are you sure you want to delete <strong>"${roomName}"</strong>?
-            </p>
-            <p class="delete-confirmation-warning">
-                <i class="fas fa-info-circle mr-1"></i>
-                This action cannot be undone.
-            </p>
-            
-            <div class="delete-confirmation-actions">
-                <button onclick="closeDeleteConfirmation()" class="delete-confirmation-btn-cancel">
-                    <i class="fas fa-times mr-2"></i>
-                    <span>Cancel</span>
-                </button>
-                <button onclick="confirmDeleteRoom(${roomId}, '${escapedName}')" class="delete-confirmation-btn-delete">
-                    <i class="fas fa-trash mr-2"></i>
-                    <span>Delete Room</span>
-                </button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    setTimeout(() => {
-        modal.classList.add('show');
-    }, 10);
-
-    // Close on Escape key
-    const handleEscape = (e) => {
-        if (e.key === 'Escape') {
-            closeDeleteConfirmation();
-            document.removeEventListener('keydown', handleEscape);
-        }
-    };
-    document.addEventListener('keydown', handleEscape);
-
-    // Close on backdrop click
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeDeleteConfirmation();
-        }
-    });
-}
-
-function closeDeleteConfirmation() {
-    const modal = document.getElementById('delete-confirmation');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.classList.add('hide');
-        setTimeout(() => {
-            modal.remove();
-        }, 300);
-    }
-}
-
-async function confirmDeleteRoom(roomId, roomName) {
-    closeDeleteConfirmation();
-
-    // Show deleting overlay
-    showDeletingOverlay();
-
-    try {
-        const response = await fetch(`/Room/Delete/${roomId}`, {
-            method: 'DELETE'
-        });
-
-        if (response.ok) {
-            const roomCard = document.querySelector(`[data-room-id="${roomId}"]`);
-            if (roomCard) {
-                roomCard.style.opacity = '0';
-                roomCard.style.transform = 'scale(0.9)';
-
-                setTimeout(() => {
-                    roomCard.remove();
-                    closeDeletingOverlay();
-                    showDeleteSuccessNotification(roomName);
-                }, 300);
-            }
-        } else {
-            closeDeletingOverlay();
-            showDeleteErrorNotification();
-        }
-    } catch (error) {
-        console.error('Error deleting room:', error);
-        closeDeletingOverlay();
-        showDeleteErrorNotification();
-    }
-}
-
-function showDeletingOverlay() {
-    const overlay = document.createElement('div');
-    overlay.id = 'deleting-overlay';
-    overlay.className = 'deleting-overlay';
-    overlay.innerHTML = `
-        <div class="deleting-spinner-wrapper">
-            <div class="deleting-spinner"></div>
-            <p class="deleting-text">Deleting room...</p>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-
-    setTimeout(() => {
-        overlay.classList.add('show');
-    }, 10);
-}
-
-function closeDeletingOverlay() {
-    const overlay = document.getElementById('deleting-overlay');
-    if (overlay) {
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.remove(), 300);
-    }
-}
-
-function showDeleteSuccessNotification(roomName) {
-    showSuccessNotification(
-        'Room Deleted Successfully! 🗑️',
-        `"${roomName}" has been permanently removed from your system.`,
-        'fa-check-circle'
-    );
-}
-
-function showDeleteErrorNotification() {
-    const existing = document.getElementById('error-notification');
-    if (existing) existing.remove();
-
-    const notification = document.createElement('div');
-    notification.id = 'error-notification';
-    notification.className = 'error-notification-overlay';
-
-    notification.innerHTML = `
+function showErrorNotification(msg) {
+    document.getElementById('error-notification')?.remove();
+    const el = document.createElement('div');
+    el.id = 'error-notification';
+    el.className = 'error-notification-overlay';
+    el.innerHTML = `
         <div class="error-notification-content">
             <div class="error-notification-icon-wrapper">
                 <div class="error-notification-icon-circle">
                     <i class="fas fa-times-circle error-notification-icon"></i>
                 </div>
             </div>
-            
-            <h3 class="error-notification-title">Delete Failed</h3>
-            <p class="error-notification-message">
-                We couldn't delete the room. Please try again.
-            </p>
-            
+            <h3 class="error-notification-title">Something went wrong</h3>
+            <p class="error-notification-message">${msg}</p>
             <div class="error-notification-actions">
                 <button onclick="closeErrorNotification()" class="error-notification-btn">
-                    <i class="fas fa-check mr-2"></i>
-                    <span>Got it</span>
+                    <i class="fas fa-check mr-2"></i>Got it
                 </button>
             </div>
-        </div>
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 10);
-
-    setTimeout(() => {
-        closeErrorNotification();
-    }, 4000);
+        </div>`;
+    document.body.appendChild(el);
+    setTimeout(() => el.classList.add('show'), 10);
+    setTimeout(closeErrorNotification, 5000);
 }
 
 function closeErrorNotification() {
-    const notification = document.getElementById('error-notification');
-    if (notification) {
-        notification.classList.remove('show');
-        notification.classList.add('hide');
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }
+    const el = document.getElementById('error-notification');
+    if (el) { el.classList.remove('show'); el.classList.add('hide'); setTimeout(() => el.remove(), 300); }
 }
 
 // ============================================
-// SETUP ADD ROOM FORM
+// UTILITIES
 // ============================================
 
-function setupAddRoomForm() {
-    const form = document.getElementById('add-room-form');
-    if (!form) return;
+function pad(n) { return String(n).padStart(2, '0'); }
 
-    form.addEventListener('submit', (e) => {
-        console.log('Adding new room...');
-    });
+function formatEGP(amount) {
+    return new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(amount);
 }
 
 // ============================================
@@ -525,25 +638,13 @@ function setupAddRoomForm() {
 // ============================================
 
 function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-        // Don't trigger shortcuts if user is typing in an input, textarea, or select
-        const activeElement = document.activeElement;
-        const isTyping = activeElement.tagName === 'INPUT' ||
-            activeElement.tagName === 'TEXTAREA' ||
-            activeElement.tagName === 'SELECT';
+    document.addEventListener('keydown', e => {
+        const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
 
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-            e.preventDefault();
-            document.getElementById('search-input')?.focus();
-        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('search-input')?.focus(); }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); openModal('add-room-modal'); }
 
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-            e.preventDefault();
-            openModal('add-room-modal');
-        }
-
-        // Only allow number key shortcuts when NOT typing in a field
-        if (!e.ctrlKey && !e.metaKey && !e.altKey && !isTyping) {
+        if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey) {
             if (e.key === '1') filterByStatus('all');
             if (e.key === '2') filterByStatus('available');
             if (e.key === '3') filterByStatus('occupied');
@@ -551,13 +652,24 @@ function setupKeyboardShortcuts() {
         }
 
         if (e.key === 'Escape') {
+            clearInterval(_endModalInterval);
             closeSuccessNotification();
             closeDeleteConfirmation();
             closeErrorNotification();
-
-            // Close any open modal
-            const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
-            modals.forEach(modal => closeModal(modal.id));
+            closeReceiptModal();
+            document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m => closeModal(m.id));
         }
     });
 }
+
+// ============================================
+// INIT
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupBookRoomForm();
+    setupEditRoomForm();
+    setupReserveRoomForm();
+    setupKeyboardShortcuts();
+    // No startAllTimers() here — session-timer.js already calls it on DOMContentLoaded
+});
