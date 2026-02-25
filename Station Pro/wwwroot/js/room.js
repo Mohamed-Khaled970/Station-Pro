@@ -2,10 +2,10 @@
 //
 // TIMER NOTE:
 // This file does NOT manage timers directly.
-// The global session-timer.js (already loaded in layout) handles all timers.
-// It scans for elements with id="timer-{sessionId}" and data-start-time on page load,
-// and calls timerManager.smartRestart() after any DOM change.
-// _RoomCard.cshtml renders exactly those IDs, so everything is automatic.
+// session-timer.js (loaded before this file) owns all timer logic via the
+// global `timerManager`. It scans for id="timer-{sessionId}" elements with
+// data-start-time and data-hourly-rate on page load, and smartRestart() is
+// called after every card refresh so new / removed timers are synced.
 
 // ============================================
 // MODAL HELPERS
@@ -30,7 +30,7 @@ function closeModal(modalId) {
 }
 
 // ============================================
-// RECEIPT MODAL  (same pattern as sessions.js)
+// RECEIPT MODAL
 // ============================================
 
 function showReceiptModal(html) {
@@ -87,8 +87,7 @@ function setupBookRoomForm() {
 
             if (res.ok) {
                 closeModal('book-room-modal');
-                // Refresh this single card — global timerManager.smartRestart()
-                // is called inside refreshRoomCard() after the DOM update
+                // refreshRoomCard calls timerManager.smartRestart() after DOM update
                 await refreshRoomCard(roomId);
                 showSuccessNotification(
                     'Session Started! 🎉',
@@ -172,35 +171,21 @@ function setupReserveRoomForm() {
 // END SESSION MODAL
 // ============================================
 
-// Tracks a setInterval for the live cost/duration inside the end-session modal
-let _endModalInterval = null;
-
 function openEndSessionModal(roomId, sessionId, roomName, clientName) {
     document.getElementById('end-session-id').value = sessionId;
     document.getElementById('end-session-room-id').value = roomId;
     document.getElementById('end-session-room-label').textContent = roomName;
     document.getElementById('end-client-name').textContent = clientName;
 
-    // Read start time + rate directly from the timer element the global timer already manages
-    // The element is: id="timer-{sessionId}" with data-start-time and data-hourly-rate
+    // ── Read current values from the timer elements that session-timer.js already updates.
+    //    No separate interval needed here — we just snapshot the live values once.
     const timerEl = document.getElementById(`timer-${sessionId}`);
-    const startMs = timerEl ? new Date(timerEl.dataset.startTime).getTime() : Date.now();
-    const hourlyRate = timerEl ? parseFloat(timerEl.dataset.hourlyRate) : 0;
+    const costEl = document.getElementById(`cost-${sessionId}`);
 
-    // Live-update duration + cost inside the modal every second
-    clearInterval(_endModalInterval);
-    const tick = () => {
-        const elapsed = Math.floor((Date.now() - startMs) / 1000);
-        const h = Math.floor(elapsed / 3600);
-        const m = Math.floor((elapsed % 3600) / 60);
-        const s = elapsed % 60;
-        document.getElementById('end-session-duration').textContent
-            = `${pad(h)}:${pad(m)}:${pad(s)}`;
-        document.getElementById('end-session-cost').textContent
-            = formatEGP((elapsed / 3600) * hourlyRate);
-    };
-    tick();
-    _endModalInterval = setInterval(tick, 1000);
+    document.getElementById('end-session-duration').textContent =
+        timerEl ? timerEl.textContent.trim() : '00:00:00';
+    document.getElementById('end-session-cost').textContent =
+        costEl ? costEl.textContent.trim() : formatEGP(0);
 
     openModal('end-session-modal');
 }
@@ -209,26 +194,23 @@ async function confirmEndSession() {
     const sessionId = document.getElementById('end-session-id').value;
     const roomId = parseInt(document.getElementById('end-session-room-id').value);
 
-    // Stop live update inside the modal
-    clearInterval(_endModalInterval);
     closeModal('end-session-modal');
 
     try {
         const res = await fetch(`/Room/EndSession?sessionId=${sessionId}`, { method: 'POST' });
 
         if (res.ok) {
-            // 1. Refresh the room card (stops the global timer for this session automatically
-            //    because smartRestart() won't find the old timer-{sessionId} element anymore)
+            const data = await res.json();
+
+            // 1. Refresh card → timerManager.smartRestart() inside refreshRoomCard
+            //    will remove the timer because the element no longer exists in the new HTML.
             await refreshRoomCard(roomId);
 
-            // 2. Fetch the receipt partial from the server and show it
-            //    Same pattern as sessions.js → printReceipt()
-            const receiptRes = await fetch(`/Room/SessionReceipt?sessionId=${sessionId}`);
+            // 2. Show receipt
+            const receiptRes = await fetch(`/Room/SessionReceipt?sessionId=${data.sessionId}`);
             if (receiptRes.ok) {
-                const receiptHtml = await receiptRes.text();
-                showReceiptModal(receiptHtml);
+                showReceiptModal(await receiptRes.text());
             } else {
-                // Receipt fetch failed — still show a success toast
                 showSuccessNotification('Session Ended ✅', 'The room is now available.', 'fa-check-circle');
             }
         } else {
@@ -241,7 +223,7 @@ async function confirmEndSession() {
 }
 
 // ============================================
-// RESERVATION ACTIONS (in-place, no reload)
+// RESERVATION ACTIONS
 // ============================================
 
 function cancelReservation(roomId, roomName) {
@@ -282,9 +264,8 @@ async function activateReservation(roomId, roomName) {
 
 // ============================================
 // REFRESH A SINGLE ROOM CARD IN THE DOM
-// After replacing the HTML, tell the global
-// TimerManager to rescan — it adds new timers
-// and removes ones that no longer exist.
+// After swapping the HTML, smartRestart() syncs
+// the global TimerManager with the new elements.
 // ============================================
 
 async function refreshRoomCard(roomId) {
@@ -297,13 +278,11 @@ async function refreshRoomCard(roomId) {
 
         if (!card) { location.reload(); return; }
 
-        // Swap the card HTML
         card.outerHTML = html;
 
-        // Tell the global TimerManager to rescan the DOM.
-        // It will:
-        //  - ADD a timer for the new timer-{sessionId} element (if room is now Occupied)
-        //  - REMOVE any timer whose element no longer exists (session ended / card changed)
+        // Sync TimerManager with the new DOM:
+        //  • Adds a timer for a new timer-{sessionId} element (room just became Occupied)
+        //  • Removes timers whose elements no longer exist (session ended)
         if (window.timerManager) {
             setTimeout(() => window.timerManager.smartRestart(), 50);
         }
@@ -402,8 +381,6 @@ function deleteRoom(roomId, roomName) {
 
 // ============================================
 // ADD ROOM (HTMX callback)
-// After HTMX inserts the new card, tell the
-// global timer to rescan (no-op if not occupied)
 // ============================================
 
 function handleRoomAdded() {
@@ -652,7 +629,6 @@ function setupKeyboardShortcuts() {
         }
 
         if (e.key === 'Escape') {
-            clearInterval(_endModalInterval);
             closeSuccessNotification();
             closeDeleteConfirmation();
             closeErrorNotification();

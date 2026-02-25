@@ -10,9 +10,6 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/sessions.css">
-    <style>
-      
-    </style>
 }
 
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
@@ -36,7 +33,6 @@
 
         <!-- Statistics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Total Sessions -->
             <div class="card p-6 fade-in">
                 <div class="flex items-center justify-between">
                     <div>
@@ -49,7 +45,6 @@
                 </div>
             </div>
 
-            <!-- Total Revenue -->
             <div class="card p-6 fade-in">
                 <div class="flex items-center justify-between">
                     <div>
@@ -62,7 +57,6 @@
                 </div>
             </div>
 
-            <!-- Average Duration -->
             <div class="card p-6 fade-in">
                 <div class="flex items-center justify-between">
                     <div>
@@ -77,7 +71,6 @@
                 </div>
             </div>
 
-            <!-- Most Popular Device -->
             <div class="card p-6 fade-in">
                 <div class="flex items-center justify-between">
                     <div>
@@ -96,7 +89,6 @@
             <form method="get" asp-action="Index" id="filters-form">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-                    <!-- Date Filter -->
                     <div>
                         <label class="form-label">@Localizer["DateRange"]</label>
                         <select name="dateFilter" class="form-input" onchange="document.getElementById('filters-form').submit()">
@@ -107,7 +99,6 @@
                         </select>
                     </div>
 
-                    <!-- Status Filter -->
                     <div>
                         <label class="form-label">@Localizer["Status"]</label>
                         <select name="status" class="form-input" onchange="document.getElementById('filters-form').submit()">
@@ -117,7 +108,6 @@
                         </select>
                     </div>
 
-                    <!-- Device Filter -->
                     <div>
                         <label class="form-label">@Localizer["Device"]</label>
                         <select name="deviceId" class="form-input" onchange="document.getElementById('filters-form').submit()">
@@ -129,7 +119,6 @@
                         </select>
                     </div>
 
-                    <!-- Search -->
                     <div>
                         <label class="form-label">@Localizer["Search"]</label>
                         <div class="relative">
@@ -146,7 +135,6 @@
 
                 </div>
 
-                <!-- Clear Filters Button -->
                 <div class="mt-4 flex justify-end">
                     <a href="@Html.TenantUrl("Session", "Index")" class="btn btn-secondary btn-sm">
                         <i class="fas fa-times mr-2"></i>
@@ -177,6 +165,26 @@
             }
             else
             {
+                @*
+            ============================================================
+            HIDDEN TIMER SOURCE ELEMENTS — ONE PER ACTIVE SESSION
+            These are the single source of truth for the JS timer system.
+            They are invisible. Desktop and mobile both READ from these.
+            id="timer-{id}" is what session-timer.js looks for.
+            ============================================================
+            *@
+                @foreach (var session in Model.Sessions)
+                {
+                    @if (session.Status == "Active")
+                    {
+                        <span class="hidden"
+                              id="timer-@session.Id"
+                              data-start-time="@session.StartTime.ToString("o")"
+                              data-hourly-rate="@session.HourlyRate">
+                        </span>
+                    }
+                }
+
                 <!-- Desktop Table View -->
                 <div class="hidden lg:block overflow-x-auto">
                     <table class="w-full">
@@ -195,7 +203,8 @@
                             @foreach (var session in Model.Sessions)
                             {
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <!-- Device Column with Session Type -->
+
+                                    <!-- Device -->
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <div class="bg-blue-100 p-2 rounded-lg">
@@ -214,7 +223,7 @@
                                         </div>
                                     </td>
 
-                                    <!-- Customer Column -->
+                                    <!-- Customer -->
                                     <td class="px-6 py-4">
                                         @if (!string.IsNullOrEmpty(session.CustomerName))
                                         {
@@ -232,7 +241,7 @@
                                         }
                                     </td>
 
-                                    <!-- Start Time Column -->
+                                    <!-- Start Time -->
                                     <td class="px-6 py-4 text-gray-700">
                                         <div>
                                             <p class="font-medium">@session.StartTime.ToString("MMM dd, yyyy")</p>
@@ -240,64 +249,65 @@
                                         </div>
                                     </td>
 
-                                    <!-- Duration Column -->
+                                    <!-- Duration — display element uses CSS class, NOT id -->
                                     <td class="px-6 py-4">
-
                                         @if (session.Status == "Active")
                                         {
-                                        <span class="font-mono font-semibold text-blue-600"
-                                              id="timer-@session.Id"
-                                              data-start-time="@session.StartTime.ToString("o")"
-                                              data-hourly-rate="@session.HourlyRate">@session.DurationFormatted</span>
+                                            <span class="font-mono font-semibold text-blue-600 timer-display-@session.Id">
+                                                @session.DurationFormatted
+                                            </span>
                                         }
-                                        else{
-
-                                        <span class="font-mono font-semibold text-blue-600">@session.DurationFormatted</span>
+                                        else
+                                        {
+                                            <span class="font-mono font-semibold text-blue-600">
+                                                @session.DurationFormatted
+                                            </span>
                                         }
                                     </td>
 
-                                    <!-- Cost Column with Rate -->
+                                    <!-- Cost — display element uses CSS class, NOT id -->
                                     <td class="px-6 py-4">
                                         <div>
-                                            @if (session.SessionType == "multi")
+                                            @if (session.Status == "Active")
                                             {
-
-                                                @if (session.Status == "Active")
+                                                <span class="font-bold text-green-600 cost-display-@session.Id">
+                                                    @session.TotalCost.ToString("C")
+                                                </span>
+                                                @if (session.SessionType == "multi")
                                                 {
-                                                    <span class="font-bold text-green-600" id="cost-@session.Id">@session.TotalCost.ToString("C")</span>
-                                                <span class="block text-xs text-purple-600 font-semibold mt-1"
-                                                      id="cost-@session.Id">
-                                                    Multi: @session.HourlyRate.ToString("C")/hr
-                                                </span>
+                                                    <span class="block text-xs text-purple-600 font-semibold mt-1">
+                                                        Multi: @session.HourlyRate.ToString("C")/hr
+                                                    </span>
                                                 }
-                                                else{
-                                                    <span class="font-bold text-green-600">@session.TotalCost.ToString("C")</span>
-                                                <span class="block text-xs text-purple-600 font-semibold mt-1">
-                                                    Multi: @session.HourlyRate.ToString("C")/hr
-                                                </span>
+                                                else
+                                                {
+                                                    <span class="block text-xs text-gray-500 mt-1">
+                                                        @session.HourlyRate.ToString("C")/hr
+                                                    </span>
                                                 }
                                             }
                                             else
                                             {
-                                                @if (session.Status == "Active")
+                                                <span class="font-bold text-green-600">
+                                                    @session.TotalCost.ToString("C")
+                                                </span>
+                                                @if (session.SessionType == "multi")
                                                 {
-                                                    <span class="font-bold text-green-600" id="cost-@session.Id">@session.TotalCost.ToString("C")</span>
-                                                <span class="block text-xs text-gray-500 mt-1"
-                                                      id="cost-@session.Id">
-                                                    @session.HourlyRate.ToString("C")/hr
-                                                </span>
+                                                    <span class="block text-xs text-purple-600 font-semibold mt-1">
+                                                        Multi: @session.HourlyRate.ToString("C")/hr
+                                                    </span>
                                                 }
-                                                else{
-                                                    <span class="font-bold text-green-600">@session.TotalCost.ToString("C")</span>
-                                                <span class="block text-xs text-gray-500 mt-1">
-                                                    @session.HourlyRate.ToString("C")/hr
-                                                </span>
+                                                else
+                                                {
+                                                    <span class="block text-xs text-gray-500 mt-1">
+                                                        @session.HourlyRate.ToString("C")/hr
+                                                    </span>
                                                 }
                                             }
                                         </div>
                                     </td>
 
-                                    <!-- Status Column -->
+                                    <!-- Status -->
                                     <td class="px-6 py-4">
                                         @if (session.Status == "Active")
                                         {
@@ -315,7 +325,7 @@
                                         }
                                     </td>
 
-                                    <!-- Actions Column -->
+                                    <!-- Actions -->
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2">
                                             <button onclick="viewSessionDetails(@session.Id)"
@@ -341,6 +351,7 @@
                                             }
                                         </div>
                                     </td>
+
                                 </tr>
                             }
                         </tbody>
@@ -383,30 +394,41 @@
                                     <p class="text-gray-500">@Localizer["Customer"]</p>
                                     <p class="font-medium text-gray-900">@(session.CustomerName ?? Localizer["Guest"])</p>
                                 </div>
+
+                                <!-- Duration — same class as desktop, JS updates both -->
                                 <div>
                                     <p class="text-gray-500">@Localizer["Duration"]</p>
                                     @if (session.Status == "Active")
                                     {
-                                    <p class="font-mono font-semibold text-blue-600"
-                                       id="timer-@session.Id"
-                                       data-start-time="@session.StartTime.ToString("o")"
-                                        data-hourly-rate="@session.HourlyRate">@session.DurationFormatted</p>
+                                        <p class="font-mono font-semibold text-blue-600 timer-display-@session.Id">
+                                            @session.DurationFormatted
+                                        </p>
                                     }
                                     else
                                     {
                                         <p class="font-mono font-semibold text-blue-600">@session.DurationFormatted</p>
                                     }
                                 </div>
+
+                                <!-- Cost — same class as desktop, JS updates both -->
                                 <div>
                                     <p class="text-gray-500">@Localizer["Cost"]</p>
-                                    <div>
+                                    @if (session.Status == "Active")
+                                    {
+                                        <p class="font-bold text-green-600 cost-display-@session.Id">
+                                            @session.TotalCost.ToString("C")
+                                        </p>
+                                    }
+                                    else
+                                    {
                                         <p class="font-bold text-green-600">@session.TotalCost.ToString("C")</p>
-                                        @if (session.SessionType == "multi")
-                                        {
-                                            <p class="text-xs text-purple-600 font-semibold">Multi Rate</p>
-                                        }
-                                    </div>
+                                    }
+                                    @if (session.SessionType == "multi")
+                                    {
+                                        <p class="text-xs text-purple-600 font-semibold">Multi Rate</p>
+                                    }
                                 </div>
+
                                 <div>
                                     <p class="text-gray-500">@Localizer["Rate"]</p>
                                     <p class="font-medium text-gray-900">@session.HourlyRate.ToString("C")/hr</p>
@@ -512,7 +534,7 @@
     </div>
 </div>
 
-<!-- Start Session Modal with Session Type Selection -->
+<!-- Start Session Modal -->
 <div id="start-session-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
@@ -525,7 +547,6 @@
               hx-on::after-request="handleSessionStartResponse(event)">
             <div class="modal-body space-y-4">
 
-                <!-- Device Selection -->
                 <div>
                     <label class="form-label">@Localizer["SelectDevice"] *</label>
                     <select name="deviceId" id="device-select" class="form-input" required
@@ -543,24 +564,19 @@
                     </select>
                 </div>
 
-                <!-- Session Type Selection (Hidden by default, shown for multi-session devices) -->
                 <div id="session-type-container" class="hidden">
                     <label class="block text-sm font-semibold text-gray-700 mb-3">
                         @Localizer["SessionType"] *
                     </label>
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button"
-                                onclick="selectSessionType('single')"
-                                id="session-type-single"
-                                class="session-type-btn active">
+                        <button type="button" onclick="selectSessionType('single')"
+                                id="session-type-single" class="session-type-btn active">
                             <i class="fas fa-user text-xl mb-1"></i>
                             <span class="block text-sm font-semibold">@Localizer["SingleSession"]</span>
                             <span class="block text-xs text-gray-500 mt-1" id="single-rate-display">-</span>
                         </button>
-                        <button type="button"
-                                onclick="selectSessionType('multi')"
-                                id="session-type-multi"
-                                class="session-type-btn">
+                        <button type="button" onclick="selectSessionType('multi')"
+                                id="session-type-multi" class="session-type-btn">
                             <i class="fas fa-users text-xl mb-1"></i>
                             <span class="block text-sm font-semibold">@Localizer["MultiSession"]</span>
                             <span class="block text-xs text-gray-500 mt-1" id="multi-rate-display">-</span>
@@ -569,14 +585,12 @@
                     <input type="hidden" name="sessionType" id="session-type-input" value="single">
                 </div>
 
-                <!-- Customer Name -->
                 <div>
                     <label class="form-label">@Localizer["CustomerNameOptional"]</label>
                     <input type="text" name="customerName" class="form-input"
                            placeholder="@Localizer["EnterCustomerName"]">
                 </div>
 
-                <!-- Customer Phone -->
                 <div>
                     <label class="form-label">@Localizer["CustomerPhoneOptional"]</label>
                     <input type="tel" name="customerPhone" class="form-input" placeholder="01234567890">
@@ -600,7 +614,7 @@
 <div id="receipt-modal" class="modal-overlay hidden" style="z-index: 9999;">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div id="receipt-content" class="animate-scale-in">
-            <!-- Receipt will be loaded here -->
+            <!-- Receipt loaded here -->
         </div>
     </div>
 </div>
@@ -609,22 +623,12 @@
 <div id="end-session-confirm-modal" class="modal-overlay hidden" style="z-index: 9998;">
     <div class="modal-content max-w-md">
         <div class="text-center p-6">
-            <!-- Warning Icon -->
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
                 <i class="fas fa-exclamation-triangle text-red-600 text-3xl"></i>
             </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">@Localizer["EndSession"]</h3>
+            <p class="text-gray-600 mb-2">@Localizer["EndSessionConfirmation"]</p>
 
-            <!-- Title -->
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">
-                @Localizer["EndSession"]
-            </h3>
-
-            <!-- Message -->
-            <p class="text-gray-600 mb-2">
-                @Localizer["EndSessionConfirmation"]
-            </p>
-
-            <!-- Session Details -->
             <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm text-gray-600">@Localizer["Device"]:</span>
@@ -640,37 +644,29 @@
                 </div>
             </div>
 
-            <!-- Payment Method Selection -->
             <div class="mb-6">
                 <label class="block text-sm font-semibold text-gray-700 mb-3">@Localizer["PaymentMethod"]</label>
                 <div class="grid grid-cols-2 gap-3">
-                    <button type="button"
-                            onclick="selectPaymentMethod(1)"
-                            id="payment-cash"
-                            class="payment-method-btn active">
+                    <button type="button" onclick="selectPaymentMethod(1)"
+                            id="payment-cash" class="payment-method-btn active">
                         <i class="fas fa-money-bill-wave text-xl mb-1"></i>
                         <span class="block text-sm font-semibold">@Localizer["Cash"]</span>
                     </button>
-                    <button type="button"
-                            onclick="selectPaymentMethod(2)"
-                            id="payment-card"
-                            class="payment-method-btn">
+                    <button type="button" onclick="selectPaymentMethod(2)"
+                            id="payment-card" class="payment-method-btn">
                         <i class="fas fa-credit-card text-xl mb-1"></i>
                         <span class="block text-sm font-semibold">@Localizer["Card"]</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="flex gap-3">
-                <button type="button"
-                        onclick="closeEndSessionModal()"
+                <button type="button" onclick="closeEndSessionModal()"
                         class="flex-1 btn btn-secondary">
                     <i class="fas fa-times mr-2"></i>
                     @Localizer["Cancel"]
                 </button>
-                <button type="button"
-                        onclick="confirmEndSession()"
+                <button type="button" onclick="confirmEndSession()"
                         class="flex-1 btn btn-danger">
                     <i class="fas fa-stop mr-2"></i>
                     @Localizer["EndSession"]

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Station_Pro.Controllers;
 using Station_Pro.Controllers.Station_Pro.Controllers;
 using StationPro.Application.DTOs;
 using StationPro.Web.Controllers;
@@ -24,25 +25,51 @@ namespace StationPro.Controllers
         {
             var allSessions = GetAllSessions();
 
-
+            // ── Active device sessions (from Dashboard) ──────────────────────
             var activeSessions = GetActiveSessionsFromDashboard();
+            var activeDeviceSessions = activeSessions.Select(session => new SessionReportDto
+            {
+                DeviceName = session.DeviceName,
+                DeviceType = session.DeviceName.Contains("PS5") ? "PS5" :
+                             session.DeviceName.Contains("PS4") ? "PS4" :
+                             session.DeviceName.Contains("Xbox") ? "Xbox" :
+                             session.DeviceName.Contains("PC") ? "PC" : "Other",
+                CustomerName = session.CustomerName,
+                StartTime = session.StartTime,
+                EndTime = session.EndTime,
+                Status = session.Status,
+                HourlyRate = session.HourlyRate,
+                TotalCost = session.TotalCost,
+                Duration = session.Duration,
+                DurationFormatted = session.DurationFormatted,
+                Id = session.Id,
+                SessionType = session.SessionType,
+            });
+            allSessions.AddRange(activeDeviceSessions);
 
-           var AllActiveSessions =  activeSessions.Select(session => new SessionReportDto
-           {
-               DeviceName = session.DeviceName,
-               Duration = session.Duration,
-               CustomerName = session.CustomerName,
-               StartTime = session.StartTime,
-               EndTime = session.EndTime,
-               Status = session.Status,
-               HourlyRate = session.HourlyRate,
-               TotalCost = session.TotalCost,
-               DurationFormatted = session.DurationFormatted,
-               Id = session.Id,
-              
-              
-           } );
-            allSessions.AddRange(AllActiveSessions);
+            // ── Active room sessions (from RoomController) ───────────────────
+            var activeRoomSessions = RoomController.GetActiveSessions();
+            var activeRoomReports = activeRoomSessions.Select(s =>
+            {
+                var elapsed = DateTime.UtcNow - s.StartTime;
+                return new SessionReportDto
+                {
+                    Id = s.Id,
+                    DeviceName = RoomController.GetRoomName(s.RoomId),
+                    DeviceType = "Room",
+                    CustomerName = s.ClientName,
+                    StartTime = s.StartTime,
+                    EndTime = null,
+                    Status = "Active",
+                    HourlyRate = s.HourlyRate,
+                    TotalCost = Math.Round((decimal)elapsed.TotalHours * s.HourlyRate, 2),
+                    Duration = elapsed,
+                    DurationFormatted = $"{(int)elapsed.TotalHours:D2}:{elapsed.Minutes:D2}:{elapsed.Seconds:D2}",
+                    SessionType = "Room",
+                };
+            });
+            allSessions.AddRange(activeRoomReports);
+
             // Apply filters
             var filteredSessions = ApplyFilters(allSessions, dateFilter, status, deviceId, search);
 
@@ -91,9 +118,9 @@ namespace StationPro.Controllers
         {
             var allSessions = GetAllSessions();
 
+            // Active device sessions
             var activeSessions = GetActiveSessionsFromDashboard();
-
-            var AllActiveSessions = activeSessions.Select(session => new SessionReportDto
+            var activeDeviceSessions = activeSessions.Select(session => new SessionReportDto
             {
                 DeviceName = session.DeviceName,
                 Duration = session.Duration,
@@ -105,17 +132,36 @@ namespace StationPro.Controllers
                 TotalCost = session.TotalCost,
                 DurationFormatted = session.DurationFormatted,
                 Id = session.Id,
-
-
+                SessionType = session.SessionType,
             });
-            allSessions.AddRange(AllActiveSessions);
+            allSessions.AddRange(activeDeviceSessions);
+
+            // Active room sessions
+            var activeRoomSessions = RoomController.GetActiveSessions();
+            var activeRoomReports = activeRoomSessions.Select(s =>
+            {
+                var elapsed = DateTime.UtcNow - s.StartTime;
+                return new SessionReportDto
+                {
+                    Id = s.Id,
+                    DeviceName = RoomController.GetRoomName(s.RoomId),
+                    DeviceType = "Room",
+                    CustomerName = s.ClientName,
+                    StartTime = s.StartTime,
+                    Status = "Active",
+                    HourlyRate = s.HourlyRate,
+                    TotalCost = Math.Round((decimal)elapsed.TotalHours * s.HourlyRate, 2),
+                    Duration = elapsed,
+                    DurationFormatted = $"{(int)elapsed.TotalHours:D2}:{elapsed.Minutes:D2}:{elapsed.Seconds:D2}",
+                    SessionType = "Room",
+                };
+            });
+            allSessions.AddRange(activeRoomReports);
 
             var session = allSessions.FirstOrDefault(s => s.Id == id);
 
             if (session == null)
-            {
                 return NotFound();
-            }
 
             return PartialView("_SessionDetails", session);
         }
@@ -127,9 +173,7 @@ namespace StationPro.Controllers
             var session = allSessions.FirstOrDefault(s => s.Id == id);
 
             if (session == null)
-            {
                 return NotFound();
-            }
 
             var receipt = new SessionReceiptDto
             {
@@ -162,12 +206,10 @@ namespace StationPro.Controllers
                 if (!device.IsAvailable)
                     return BadRequest(new { success = false, message = "Device is not available" });
 
-                // Determine hourly rate based on session type
                 decimal hourlyRate = sessionType == "multi" && device.MultiSessionRate.HasValue
                     ? device.MultiSessionRate.Value
                     : device.SingleSessionRate;
 
-                // Generate new session ID
                 int newSessionId = DashboardController.GetActiveSessions().Any()
                     ? DashboardController.GetActiveSessions().Max(s => s.Id) + 1
                     : 1;
@@ -220,7 +262,6 @@ namespace StationPro.Controllers
         {
             var filtered = sessions.AsQueryable();
 
-            // Date filter
             filtered = dateFilter switch
             {
                 "today" => filtered.Where(s => s.StartTime.Date == DateTime.Today),
@@ -230,26 +271,17 @@ namespace StationPro.Controllers
                 _ => filtered
             };
 
-            // Status filter
             if (status != "all")
-            {
                 filtered = filtered.Where(s => s.Status.ToLower() == status.ToLower());
-            }
 
-            // Device filter
             if (deviceId.HasValue)
-            {
                 filtered = filtered.Where(s => s.DeviceName.Contains($"Station {deviceId}") ||
-                                              s.DeviceName.Contains($"PC {deviceId}"));
-            }
+                                               s.DeviceName.Contains($"PC {deviceId}"));
 
-            // Search filter
             if (!string.IsNullOrWhiteSpace(search))
-            {
                 filtered = filtered.Where(s =>
                     (s.CustomerName != null && s.CustomerName.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
                     s.DeviceName.Contains(search, StringComparison.OrdinalIgnoreCase));
-            }
 
             return filtered.OrderByDescending(s => s.StartTime).ToList();
         }
@@ -277,7 +309,6 @@ namespace StationPro.Controllers
 
             int sessionId = 100;
 
-            // Generate sessions for the last 30 days
             for (int daysAgo = 0; daysAgo < 30; daysAgo++)
             {
                 var sessionsPerDay = random.Next(5, 15);
@@ -334,7 +365,6 @@ namespace StationPro.Controllers
         {
             return DashboardController.GetActiveSessions();
         }
-
     }
 
     // ============================================
@@ -353,5 +383,4 @@ namespace StationPro.Controllers
         public string SearchQuery { get; set; } = "";
         public List<DeviceDto> AvailableDevices { get; set; } = new();
     }
-
 }

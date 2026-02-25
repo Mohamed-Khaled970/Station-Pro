@@ -1,4 +1,5 @@
 ﻿// FIXED VERSION - Timers survive HTMX swaps
+// Uses CSS classes for display elements instead of IDs — supports desktop + mobile simultaneously
 
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-EG', {
@@ -10,14 +11,17 @@ function formatCurrency(amount) {
 class SessionTimer {
     constructor(elementId, startTime) {
         this.elementId = elementId;
+
+        // Extract session ID from element ID (e.g. "timer-5" → "5")
+        this.sessionId = elementId.replace('timer-', '');
+
         this.startTime = new Date(startTime).getTime();
+
+        // The hidden source-of-truth element (has the data attributes)
         this.element = document.getElementById(elementId);
-        console.log(`✅Timer element : ${elementId}`);
+
         if (this.element) {
             this.hourlyRate = parseFloat(this.element.dataset.hourlyRate) || 0;
-            this.costElementId = elementId.replace('timer-', 'cost-');
-
-            this.costElement = document.getElementById(this.costElementId);
             console.log(`✅ Timer created: ${elementId}, rate: ${this.hourlyRate}`);
         } else {
             console.error(`❌ Timer element not found: ${elementId}`);
@@ -28,19 +32,26 @@ class SessionTimer {
         this.updateCount = 0;
     }
 
-    // Refresh element references (critical after HTMX swap)
+    // Refresh the hidden source element reference (critical after HTMX swap)
     refreshElements() {
         this.element = document.getElementById(this.elementId);
-        this.costElement = document.getElementById(this.costElementId);
 
         if (this.element) {
-            // Re-read hourly rate in case it changed
             this.hourlyRate = parseFloat(this.element.dataset.hourlyRate) || this.hourlyRate;
         }
     }
 
+    // Get all visual display elements for this session (desktop + mobile + any future breakpoints)
+    getTimerDisplayElements() {
+        return document.querySelectorAll(`.timer-display-${this.sessionId}`);
+    }
+
+    getCostDisplayElements() {
+        return document.querySelectorAll(`.cost-display-${this.sessionId}`);
+    }
+
     update(currentTime) {
-        // Refresh element if it's missing (HTMX might have replaced it)
+        // Refresh hidden element reference if HTMX replaced it
         if (!this.element || !document.body.contains(this.element)) {
             this.refreshElements();
         }
@@ -58,20 +69,19 @@ class SessionTimer {
 
         const formatted = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-        // Update time
-        // to enhance the performace , we check if the lastRender time and cost are still the same or not , if they ? don't update the DOM
+        // Update ALL timer display elements (desktop + mobile) at once
         if (this.lastRenderedTime !== formatted) {
-            this.element.textContent = formatted;
+            this.getTimerDisplayElements().forEach(el => el.textContent = formatted);
             this.lastRenderedTime = formatted;
         }
 
-        // Update cost
+        // Update ALL cost display elements (desktop + mobile) at once
         const elapsedHours = elapsed / 3600;
         const currentCost = elapsedHours * this.hourlyRate;
         const formattedCost = formatCurrency(currentCost);
 
-        if (this.costElement && this.lastRenderedCost !== formattedCost) {
-            this.costElement.textContent = formattedCost;
+        if (this.lastRenderedCost !== formattedCost) {
+            this.getCostDisplayElements().forEach(el => el.textContent = formattedCost);
             this.lastRenderedCost = formattedCost;
         }
 
@@ -120,7 +130,6 @@ class TimerManager {
         this.totalUpdates++;
         const currentTime = Date.now();
 
-        // Update all timers and collect invalid ones
         const invalidTimers = [];
 
         this.timers.forEach((timer, sessionId) => {
@@ -155,8 +164,8 @@ class TimerManager {
     }
 
     removeTimer(sessionId) {
-        this.timers.delete(sessionId);
-        console.log(`delete timer ${sessionId}`);
+        this.timers.delete(String(sessionId));
+        console.log(`🗑️ Deleted timer ${sessionId}`);
         console.log(`📊 Active timers: ${this.timers.size}`);
 
         if (this.timers.size === 0) {
@@ -173,7 +182,7 @@ class TimerManager {
         return this.timers.size;
     }
 
-    // CRITICAL FIX: After HTMX swap, refresh all timer element references
+    // After HTMX swap, refresh all hidden source element references
     refreshAllTimerElements() {
         console.log('🔄 Refreshing all timer element references after HTMX swap');
         let refreshed = 0;
@@ -186,10 +195,11 @@ class TimerManager {
         console.log(`✅ Refreshed ${refreshed}/${this.timers.size} timer elements`);
     }
 
-    // Smart restart - sync with DOM but preserve timer state
+    // Smart restart — sync JS timers with DOM without resetting elapsed time
     smartRestart() {
         console.log('🔄 SMART RESTART: Syncing timers with DOM');
 
+        // Find all hidden source-of-truth timer elements
         const timerElements = document.querySelectorAll('[id^="timer-"]');
         const currentSessions = new Set();
 
@@ -198,7 +208,7 @@ class TimerManager {
             currentSessions.add(sessionId);
 
             if (!this.timers.has(sessionId)) {
-                // New session - create timer
+                // New session appeared — create timer for it
                 const startTime = timerElement.dataset.startTime;
                 if (startTime) {
                     const timer = new SessionTimer(timerElement.id, startTime);
@@ -208,7 +218,7 @@ class TimerManager {
             }
         });
 
-        // Remove timers for sessions that no longer exist
+        // Remove timers for sessions that no longer exist in the DOM
         const toRemove = [];
         this.timers.forEach((timer, sessionId) => {
             if (!currentSessions.has(sessionId)) {
@@ -221,7 +231,7 @@ class TimerManager {
             console.log(`➖ Removed ended session timer: ${sessionId}`);
         });
 
-        // Refresh element references for existing timers
+        // Refresh hidden element references for existing timers
         this.refreshAllTimerElements();
 
         console.log(`✅ Smart restart complete: ${this.timers.size} active timers`);
@@ -235,13 +245,16 @@ function startAllTimers() {
 
     timerManager.clear();
 
+    // Only select the hidden source-of-truth elements (not display elements)
     const timerElements = document.querySelectorAll('[id^="timer-"]');
 
-    console.log(timerElements.size);
+    console.log(`Found ${timerElements.length} timer elements`);
 
     timerElements.forEach(timerElement => {
         const sessionId = timerElement.id.replace('timer-', '');
         const startTime = timerElement.dataset.startTime;
+
+        console.log(`Element: ${timerElement.id}, startTime: ${startTime}`);
 
         if (startTime) {
             const timer = new SessionTimer(timerElement.id, startTime);
@@ -252,25 +265,27 @@ function startAllTimers() {
     console.log(`✅ Initialized ${timerManager.getTimerCount()} timers`);
 }
 
-// Event Handlers
+// ============================================
+// EVENT HANDLERS
+// ============================================
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🎯 DOM Ready - Starting timers');
     startAllTimers();
 });
 
-// CRITICAL FIX: Handle HTMX swaps properly
+// Handle HTMX swaps — used on Dashboard active sessions container
 document.body.addEventListener('htmx:afterSwap', (event) => {
     if (event.target.id === 'active-sessions-container') {
         console.log('🔄 HTMX swapped active-sessions-container');
 
-        // Use smartRestart to sync with new DOM while preserving timer state
         setTimeout(() => {
             timerManager.smartRestart();
         }, 50);
     }
 });
 
-// Pause timers when tab is hidden (save CPU)
+// Pause timers when tab is hidden to save CPU
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         console.log('👁️ Tab hidden - pausing updates');
@@ -288,7 +303,7 @@ window.addEventListener('beforeunload', () => {
     timerManager.clear();
 });
 
-// Export for debugging
+// Export for debugging in browser console
 window.SessionTimer = SessionTimer;
 window.startAllTimers = startAllTimers;
 window.timerManager = timerManager;

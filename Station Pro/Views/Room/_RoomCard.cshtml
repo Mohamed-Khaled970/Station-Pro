@@ -35,9 +35,11 @@
         _ => "status-maintenance"
     };
 
-    // UTC ISO string — global session-timer.js reads this via data-start-time
+    // SessionStartTime is already stored as UTC in RoomController.
+    // Output directly with "O" format — DO NOT call ToUniversalTime() again
+    // or the offset gets doubled and the timer shows the wrong elapsed time.
     var startTimeIso = Model.SessionStartTime.HasValue
-        ? Model.SessionStartTime.Value.ToUniversalTime().ToString("O")
+        ? Model.SessionStartTime.Value.ToString("O")
         : string.Empty;
 }
 
@@ -112,12 +114,16 @@
                          style="width:@((Model.CurrentOccupancy * 100.0 / Model.Capacity).ToString("F0"))%"></div>
                 </div>
 
-                <!-- Live timer — ID uses ActiveSessionId so global session-timer.js finds it -->
+                <!-- Live timer
+                     id="timer-X"            → session-timer.js uses this to READ data-start-time
+                     class="timer-display-X"  → session-timer.js uses this to WRITE the updated time
+                     Both roles on the same element since it IS the visible timer here.
+                -->
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-gray-500">
                         <i class="fas fa-clock mr-1"></i>Duration
                     </span>
-                    <span class="font-mono font-bold text-red-700 text-sm"
+                    <span class="font-mono font-bold text-red-700 text-sm timer-display-@Model.ActiveSessionId"
                           id="timer-@Model.ActiveSessionId"
                           data-start-time="@startTimeIso"
                           data-hourly-rate="@Model.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture)">
@@ -125,12 +131,15 @@
                     </span>
                 </div>
 
-                <!-- Running cost — ID uses ActiveSessionId so global session-timer.js finds it -->
+                <!-- Running cost
+                     id="cost-X"            → kept for backward compatibility
+                     class="cost-display-X"  → session-timer.js uses this to WRITE the updated cost
+                -->
                 <div class="flex justify-between items-center mt-1">
                     <span class="text-xs text-gray-500">
                         <i class="fas fa-coins mr-1"></i>Running cost
                     </span>
-                    <span class="font-bold text-green-700 text-sm"
+                    <span class="font-bold text-green-700 text-sm cost-display-@Model.ActiveSessionId"
                           id="cost-@Model.ActiveSessionId">
                         EGP 0.00
                     </span>
@@ -184,7 +193,6 @@
         }
         else if (Model.Status == "Occupied" && Model.ActiveSessionId.HasValue)
         {
-            @* Pass sessionId (not roomId) so the End handler knows which session to close *@
             <button onclick="openEndSessionModal(@Model.Id, @Model.ActiveSessionId.Value, '@Html.Raw(Model.Name.Replace("'", "\\'"))', '@Html.Raw((Model.SessionClientName ?? "Guest").Replace("'", "\\'"))')"
                     class="btn btn-danger flex-1">
                 <i class="fas fa-stop-circle"></i>
