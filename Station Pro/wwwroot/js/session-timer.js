@@ -12,10 +12,11 @@ class SessionTimer {
         this.elementId = elementId;
         this.startTime = new Date(startTime).getTime();
         this.element = document.getElementById(elementId);
-
+        console.log(`✅Timer element : ${elementId}`);
         if (this.element) {
             this.hourlyRate = parseFloat(this.element.dataset.hourlyRate) || 0;
             this.costElementId = elementId.replace('timer-', 'cost-');
+
             this.costElement = document.getElementById(this.costElementId);
             console.log(`✅ Timer created: ${elementId}, rate: ${this.hourlyRate}`);
         } else {
@@ -235,6 +236,8 @@ function startAllTimers() {
     timerManager.clear();
 
     const timerElements = document.querySelectorAll('[id^="timer-"]');
+
+    console.log(timerElements.size);
 
     timerElements.forEach(timerElement => {
         const sessionId = timerElement.id.replace('timer-', '');

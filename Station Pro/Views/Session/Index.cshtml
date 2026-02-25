@@ -242,24 +242,57 @@
 
                                     <!-- Duration Column -->
                                     <td class="px-6 py-4">
+
+                                        @if (session.Status == "Active")
+                                        {
+                                        <span class="font-mono font-semibold text-blue-600"
+                                              id="timer-@session.Id"
+                                              data-start-time="@session.StartTime.ToString("o")"
+                                              data-hourly-rate="@session.HourlyRate">@session.DurationFormatted</span>
+                                        }
+                                        else{
+
                                         <span class="font-mono font-semibold text-blue-600">@session.DurationFormatted</span>
+                                        }
                                     </td>
 
                                     <!-- Cost Column with Rate -->
                                     <td class="px-6 py-4">
                                         <div>
-                                            <span class="font-bold text-green-600">@session.TotalCost.ToString("C")</span>
                                             @if (session.SessionType == "multi")
                                             {
+
+                                                @if (session.Status == "Active")
+                                                {
+                                                    <span class="font-bold text-green-600" id="cost-@session.Id">@session.TotalCost.ToString("C")</span>
+                                                <span class="block text-xs text-purple-600 font-semibold mt-1"
+                                                      id="cost-@session.Id">
+                                                    Multi: @session.HourlyRate.ToString("C")/hr
+                                                </span>
+                                                }
+                                                else{
+                                                    <span class="font-bold text-green-600">@session.TotalCost.ToString("C")</span>
                                                 <span class="block text-xs text-purple-600 font-semibold mt-1">
                                                     Multi: @session.HourlyRate.ToString("C")/hr
                                                 </span>
+                                                }
                                             }
                                             else
                                             {
+                                                @if (session.Status == "Active")
+                                                {
+                                                    <span class="font-bold text-green-600" id="cost-@session.Id">@session.TotalCost.ToString("C")</span>
+                                                <span class="block text-xs text-gray-500 mt-1"
+                                                      id="cost-@session.Id">
+                                                    @session.HourlyRate.ToString("C")/hr
+                                                </span>
+                                                }
+                                                else{
+                                                    <span class="font-bold text-green-600">@session.TotalCost.ToString("C")</span>
                                                 <span class="block text-xs text-gray-500 mt-1">
                                                     @session.HourlyRate.ToString("C")/hr
                                                 </span>
+                                                }
                                             }
                                         </div>
                                     </td>
@@ -352,7 +385,17 @@
                                 </div>
                                 <div>
                                     <p class="text-gray-500">@Localizer["Duration"]</p>
-                                    <p class="font-mono font-semibold text-blue-600">@session.DurationFormatted</p>
+                                    @if (session.Status == "Active")
+                                    {
+                                    <p class="font-mono font-semibold text-blue-600"
+                                       id="timer-@session.Id"
+                                       data-start-time="@session.StartTime.ToString("o")"
+                                        data-hourly-rate="@session.HourlyRate">@session.DurationFormatted</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="font-mono font-semibold text-blue-600">@session.DurationFormatted</p>
+                                    }
                                 </div>
                                 <div>
                                     <p class="text-gray-500">@Localizer["Cost"]</p>
@@ -639,4 +682,5 @@
 
 @section Scripts {
     <script src="@Url.Content("~/js/sessions.js")"></script>
+    <script src="@Url.Content("~/js/session-timer.js")"></script>
 }

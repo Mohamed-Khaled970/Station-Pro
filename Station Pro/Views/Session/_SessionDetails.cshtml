@@ -104,7 +104,11 @@
                 </div>
                 <div class="timeline-content">
                     <p class="font-semibold text-gray-900">@Localizer["Duration"]</p>
-                    <p class="text-2xl font-mono font-bold text-blue-600">@Model.DurationFormatted</p>
+
+                    <div class="text-2xl font-mono font-bold text-blue-600"
+                       id="timer-@Model.Id"
+                       data-start-time="@Model.StartTime.ToString("o")"
+                       data-hourly-rate="@Model.HourlyRate">@Model.DurationFormatted</div>
                     @{
                         var hours = (int)Model.Duration.TotalHours;
                         var minutes = Model.Duration.Minutes;
@@ -163,7 +167,7 @@
             <div class="pt-3 border-t-2 border-green-300">
                 <div class="flex justify-between items-center">
                     <span class="text-xl font-bold text-gray-900">@Localizer["TotalCost"]:</span>
-                    <span class="text-3xl font-bold text-green-600">@Model.TotalCost.ToString("C")</span>
+                    <span class="text-3xl font-bold text-green-600" id="cost-@Model.Id">@Model.TotalCost.ToString("C")</span>
                 </div>
             </div>
         </div>
