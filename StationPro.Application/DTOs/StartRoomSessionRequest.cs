@@ -11,5 +11,7 @@ namespace StationPro.Application.DTOs
         public int RoomId { get; set; }
         public string ClientName { get; set; } = string.Empty;
         public int GuestCount { get; set; } = 1;
+        public string SessionType { get; set; } = "Single";
+
     }
 }

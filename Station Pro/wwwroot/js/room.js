@@ -1,11 +1,8 @@
 ﻿// wwwroot/js/room.js
 //
 // TIMER NOTE:
-// This file does NOT manage timers directly.
-// session-timer.js (loaded before this file) owns all timer logic via the
-// global `timerManager`. It scans for id="timer-{sessionId}" elements with
-// data-start-time and data-hourly-rate on page load, and smartRestart() is
-// called after every card refresh so new / removed timers are synced.
+// session-timer.js owns all timer logic via `timerManager`.
+// It scans for id="timer-{sessionId}" elements on load and after smartRestart().
 
 // ============================================
 // MODAL HELPERS
@@ -52,46 +49,92 @@ function closeReceiptModal() {
 }
 
 // ============================================
-// BOOK (START SESSION) MODAL
+// QUICK BOOK MODAL
+// Called directly from the Single / Multi buttons on each room card.
+//
+// @param {number} roomId
+// @param {string} roomName
+// @param {string} sessionType   "Single" | "Multi"
+// @param {string} hourlyRate    invariant-culture decimal string
+// @param {number} maxGuests     2 for Single, 4 for Multi
 // ============================================
 
-function openBookingModal(roomId, roomName, capacity, hourlyRate) {
-    document.getElementById('book-room-id').value = roomId;
-    document.getElementById('book-room-rate').value = hourlyRate;
-    document.getElementById('book-room-name-label').textContent = roomName;
-    document.getElementById('book-max-capacity').textContent = capacity;
-    document.getElementById('book-guest-count').max = capacity;
-    document.getElementById('book-rate-preview').textContent = formatEGP(parseFloat(hourlyRate)) + '/hr';
-    openModal('book-room-modal');
+function openQuickBookModal(roomId, roomName, sessionType, hourlyRate, maxGuests) {
+    // Populate hidden fields
+    document.getElementById('qb-room-id').value = roomId;
+    document.getElementById('qb-session-type').value = sessionType;
+    document.getElementById('qb-hourly-rate').value = hourlyRate;
+    document.getElementById('qb-max-guests').value = maxGuests;
+
+    // Header styling — blue for Single, purple for Multi
+    const isMulti = sessionType === 'Multi';
+    const iconWrap = document.getElementById('qb-icon-wrap');
+    const typeLabel = document.getElementById('qb-type-label');
+    const roomLabel = document.getElementById('qb-room-label');
+    const ratePreview = document.getElementById('qb-rate-preview');
+    const guestInput = document.getElementById('qb-guest-count');
+    const guestMaxNote = document.getElementById('qb-guest-max');
+
+    iconWrap.className = `w-10 h-10 rounded-xl flex items-center justify-center ${isMulti ? 'bg-purple-100' : 'bg-green-100'}`;
+    iconWrap.innerHTML = `<i class="fas ${isMulti ? 'fa-users text-purple-600' : 'fa-user text-green-600'} text-lg"></i>`;
+    typeLabel.textContent = `${sessionType} Session`;
+    typeLabel.className = `text-xl font-bold ${isMulti ? 'text-purple-700' : 'text-gray-900'}`;
+    roomLabel.textContent = roomName;
+
+    ratePreview.textContent = formatEGP(parseFloat(hourlyRate)) + '/hr';
+    ratePreview.className = `font-bold text-lg ${isMulti ? 'text-purple-700' : 'text-blue-700'}`;
+
+    const previewBox = document.getElementById('qb-rate-box');
+    previewBox.className = `rounded-xl p-4 border transition-colors duration-200 ${isMulti ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'}`;
+
+    guestInput.max = maxGuests;
+    guestInput.value = 1;
+    guestMaxNote.textContent = `Max ${maxGuests} ${maxGuests === 1 ? 'person' : 'persons'}`;
+
+    // Submit button colour
+    const submitBtn = document.getElementById('qb-submit-btn');
+    submitBtn.className = `btn ${isMulti ? 'btn-multi' : 'btn-success'}`;
+    submitBtn.innerHTML = `<i class="fas fa-play mr-2"></i>Start ${sessionType} Session`;
+
+    openModal('quick-book-modal');
+    // Focus client name for fast keyboard entry
+    setTimeout(() => document.getElementById('qb-client-name')?.focus(), 100);
 }
 
-function setupBookRoomForm() {
-    const form = document.getElementById('book-room-form');
+function setupQuickBookForm() {
+    const form = document.getElementById('quick-book-form');
     if (!form) return;
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const roomId = parseInt(document.getElementById('book-room-id').value);
-        const clientName = document.getElementById('book-client-name').value.trim();
-        const guestCount = parseInt(document.getElementById('book-guest-count').value);
+        const roomId = parseInt(document.getElementById('qb-room-id').value);
+        const sessionType = document.getElementById('qb-session-type').value;
+        const clientName = document.getElementById('qb-client-name').value.trim();
+        const guestCount = parseInt(document.getElementById('qb-guest-count').value);
+        const maxGuests = parseInt(document.getElementById('qb-max-guests').value);
 
         if (!clientName) return;
+        if (guestCount < 1 || guestCount > maxGuests) {
+            showErrorNotification(`Guest count must be between 1 and ${maxGuests} for a ${sessionType} session.`);
+            return;
+        }
 
         try {
             const res = await fetch('/Room/StartSession', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId, clientName, guestCount })
+                body: JSON.stringify({ roomId, clientName, guestCount, sessionType })
             });
 
             if (res.ok) {
-                closeModal('book-room-modal');
-                // refreshRoomCard calls timerManager.smartRestart() after DOM update
+                const data = await res.json();
+                closeModal('quick-book-modal');
+                // Refresh card → timerManager.smartRestart() picks up the new timer element
                 await refreshRoomCard(roomId);
                 showSuccessNotification(
                     'Session Started! 🎉',
-                    `${clientName}'s session is now live. Timer is running.`,
+                    `${clientName}'s ${data.sessionType} session is live. Timer is running.`,
                     'fa-play-circle'
                 );
             } else {
@@ -112,7 +155,6 @@ function openReserveModal(roomId, roomName) {
     document.getElementById('reserve-room-id').value = roomId;
     document.getElementById('reserve-room-name-label').textContent = roomName;
 
-    // Default to 1 hour from now
     const dt = new Date(Date.now() + 60 * 60 * 1000);
     const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000)
         .toISOString().slice(0, 16);
@@ -177,8 +219,6 @@ function openEndSessionModal(roomId, sessionId, roomName, clientName) {
     document.getElementById('end-session-room-label').textContent = roomName;
     document.getElementById('end-client-name').textContent = clientName;
 
-    // ── Read current values from the timer elements that session-timer.js already updates.
-    //    No separate interval needed here — we just snapshot the live values once.
     const timerEl = document.getElementById(`timer-${sessionId}`);
     const costEl = document.getElementById(`cost-${sessionId}`);
 
@@ -201,12 +241,8 @@ async function confirmEndSession() {
 
         if (res.ok) {
             const data = await res.json();
-
-            // 1. Refresh card → timerManager.smartRestart() inside refreshRoomCard
-            //    will remove the timer because the element no longer exists in the new HTML.
             await refreshRoomCard(roomId);
 
-            // 2. Show receipt
             const receiptRes = await fetch(`/Room/SessionReceipt?sessionId=${data.sessionId}`);
             if (receiptRes.ok) {
                 showReceiptModal(await receiptRes.text());
@@ -263,9 +299,7 @@ async function activateReservation(roomId, roomName) {
 }
 
 // ============================================
-// REFRESH A SINGLE ROOM CARD IN THE DOM
-// After swapping the HTML, smartRestart() syncs
-// the global TimerManager with the new elements.
+// REFRESH A SINGLE ROOM CARD
 // ============================================
 
 async function refreshRoomCard(roomId) {
@@ -275,14 +309,10 @@ async function refreshRoomCard(roomId) {
 
         const html = await res.text();
         const card = document.getElementById(`room-card-${roomId}`);
-
         if (!card) { location.reload(); return; }
 
         card.outerHTML = html;
 
-        // Sync TimerManager with the new DOM:
-        //  • Adds a timer for a new timer-{sessionId} element (room just became Occupied)
-        //  • Removes timers whose elements no longer exist (session ended)
         if (window.timerManager) {
             setTimeout(() => window.timerManager.smartRestart(), 50);
         }
@@ -303,7 +333,8 @@ async function editRoom(roomId) {
 
         document.getElementById('edit-room-id').value = room.id;
         document.getElementById('edit-room-name').value = room.name;
-        document.getElementById('edit-room-rate').value = room.hourlyRate;
+        document.getElementById('edit-room-single-rate').value = room.singleHourlyRate ?? room.hourlyRate ?? '';
+        document.getElementById('edit-room-multi-rate').value = room.multiHourlyRate ?? '';
         document.getElementById('edit-room-capacity').value = room.capacity;
         document.getElementById('edit-room-devices').value = room.deviceCount || 0;
         document.getElementById('edit-room-ac').checked = room.hasAC;
@@ -329,7 +360,8 @@ function setupEditRoomForm() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: fd.get('Name'),
-                    hourlyRate: parseFloat(fd.get('HourlyRate')),
+                    singleHourlyRate: parseFloat(fd.get('SingleHourlyRate')),
+                    multiHourlyRate: parseFloat(fd.get('MultiHourlyRate')),
                     capacity: parseInt(fd.get('Capacity')),
                     deviceCount: parseInt(fd.get('DeviceCount')) || 0,
                     hasAC: fd.get('HasAC') === 'on',
@@ -339,6 +371,7 @@ function setupEditRoomForm() {
 
             if (res.ok) {
                 closeModal('edit-room-modal');
+                await refreshRoomCard(parseInt(roomId));
                 showSuccessNotification('Room Updated! ✨', 'Room details saved successfully.', 'fa-edit');
             } else {
                 showErrorNotification('Failed to update room.');
@@ -436,7 +469,7 @@ function updateNoResultsMessage(visibleCount) {
 }
 
 // ============================================
-// DELETE CONFIRMATION (reusable)
+// DELETE CONFIRMATION
 // ============================================
 
 function showDeleteConfirmation(actionLabel, warningText, onConfirm) {
@@ -643,9 +676,9 @@ function setupKeyboardShortcuts() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupBookRoomForm();
+    setupQuickBookForm();
     setupEditRoomForm();
     setupReserveRoomForm();
     setupKeyboardShortcuts();
-    // No startAllTimers() here — session-timer.js already calls it on DOMContentLoaded
+    // Timers are started by session-timer.js on DOMContentLoaded
 });

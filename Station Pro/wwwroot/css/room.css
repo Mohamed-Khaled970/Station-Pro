@@ -1298,3 +1298,364 @@ input[type="number"] {
 .room-card.occupied .flex.gap-2 .btn-danger:first-child {
     flex: 1;
 }
+
+.session-type-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 14px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    user-select: none;
+}
+
+    .session-type-card:hover {
+        border-color: #93c5fd;
+        background: #eff6ff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .session-type-card.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+    }
+
+/* Multi card selected state — purple */
+#type-multi-card.selected {
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+}
+
+#type-multi-card:hover {
+    border-color: #a78bfa;
+    background: #f5f3ff;
+}
+
+.session-type-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.session-type-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.2;
+}
+
+.session-type-sub {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.session-type-rate {
+    margin-left: auto;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    color: #3b82f6;
+    white-space: nowrap;
+}
+
+#type-multi-card .session-type-rate {
+    color: #7c3aed;
+}
+
+/* Selected checkmark indicator */
+.session-type-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.625rem;
+    font-weight: 900;
+    color: #3b82f6;
+    background: #dbeafe;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 16px;
+    text-align: center;
+}
+
+#type-multi-card.selected::after {
+    color: #7c3aed;
+    background: #ede9fe;
+}
+
+
+/* ============================================
+   APPEND THIS ENTIRE BLOCK TO THE BOTTOM
+   OF YOUR EXISTING wwwroot/css/room.css
+   ============================================ */
+
+/* ── Multi session button (purple) ────────────────────────────────────────── */
+.btn-multi {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 42px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+    .btn-multi:hover {
+        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+    }
+
+    .btn-multi i {
+        font-size: 0.875rem;
+    }
+
+/* ── Icon-only buttons (Edit, Delete, Reserve on available cards) ──────────── */
+.btn-icon-only {
+    flex: 0 0 auto !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    padding: 0.625rem !important;
+}
+
+/* Override the room-card flex-1 that would otherwise stretch icon buttons */
+.room-card .btn-icon-only {
+    flex: 0 0 auto;
+    width: 42px;
+    min-width: 42px;
+}
+
+/* ── Available card: Single + Multi buttons side-by-side ──────────────────── */
+.room-card.available .btn-success,
+.room-card.available .btn-multi {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── Mobile tweaks ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .btn-multi {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+        min-height: 38px;
+    }
+
+    .btn-icon-only {
+        width: 38px !important;
+        min-width: 38px !important;
+        padding: 0.5rem !important;
+    }
+}
+
+/* ── 1. Reset old conflicting rules ────────────────────────────── */
+
+/* OLD: made ALL btn-outline & btn-danger fixed 42px squares       */
+.room-card .btn-outline,
+.room-card .btn-danger {
+    flex: unset;
+    width: unset;
+    min-width: unset;
+    padding: 0.625rem 1rem;
+}
+
+/* OLD: pushed last div with margin-top:auto — interferes now      */
+.room-card > div:last-child {
+    margin-top: unset;
+    padding-top: unset;
+}
+
+/* ── 2. Equal card heights — buttons always at the same baseline ─ */
+
+/* The details block (.card-details) grows to fill all free space  */
+/* between the header row and the action buttons.                  */
+/* Cards with less content (Available) will stretch the details    */
+/* section to match taller cards (Occupied/Reserved) in same row.  */
+.room-card .card-details {
+    flex: 1; /* grow to fill available height   */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-bottom: 0; /* card-actions handles its own gap */
+}
+
+/* card-actions sits right after card-details — no extra push needed */
+.room-card .card-actions {
+    margin-top: 0;
+    padding-top: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+    /* ── 3. Button rows ─────────────────────────────────────────────── */
+
+    .room-card .card-actions .btn-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    /* Session buttons (Single / Multi / Check In / Cancel) — 50/50    */
+    .room-card .card-actions .btn-session {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    /* Utility buttons (Reserve / End Session / Edit-stretch)          */
+    .room-card .card-actions .btn-utility {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    /* Icon-only squares (Edit, Delete) — fixed 42 px                  */
+    .room-card .card-actions .btn-icon-only {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+        padding: 0 !important;
+    }
+
+/* ── 4. Multi button — purple ───────────────────────────────────── */
+.btn-multi {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 42px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+    .btn-multi:hover {
+        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4) !important;
+    }
+
+/* ── 5. Mobile ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .room-card .card-actions .btn-icon-only {
+        flex: 0 0 38px !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+    }
+}
+/* ── FIX 1: Button rows — prevent overlap on narrow cards ─────────── */
+
+/* Allow text to wrap or shrink gracefully */
+.room-card .card-actions .btn-row {
+    gap: 0.375rem; /* tighter gap so buttons have more room      */
+    flex-wrap: nowrap; /* keep on one line but let flex do its job    */
+    min-width: 0;
+}
+
+/* Session & utility buttons: allow shrinking, clip text with ellipsis */
+.room-card .card-actions .btn-session,
+.room-card .card-actions .btn-utility {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+    .room-card .card-actions .btn-session span,
+    .room-card .card-actions .btn-utility span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+    }
+
+/* Icon-only buttons: never shrink below 38px, never grow */
+.room-card .card-actions .btn-icon-only {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── FIX 2: Edit (btn-outline) hover — visible on Reserved (yellow bg) */
+
+/* Global outline button hover — darker so it reads on any card color  */
+.room-card .btn-outline {
+    background-color: white;
+    border: 2px solid #d1d5db;
+    color: #6b7280;
+}
+
+    .room-card .btn-outline:hover {
+        background-color: #e5e7eb !important; /* medium gray, readable everywhere */
+        border-color: #9ca3af !important;
+        color: #374151 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+/* Specifically on reserved (yellow bg) cards, darken a touch more     */
+.room-card.reserved .btn-outline:hover {
+    background-color: #d1d5db !important;
+    border-color: #6b7280 !important;
+}
+/* More space between info rows */
+.room-card .card-details {
+    gap: 0.5rem; /* space between Single / Multi / Capacity rows */
+    padding-bottom: 0.5rem;
+}
+
+    .room-card .card-details .space-y-2 > * + * {
+        margin-top: 0.625rem; /* slightly wider row spacing */
+    }
+
+/* More space above the button block */
+.room-card .card-actions {
+    padding-top: 1.25rem; /* was 0.875rem */
+    gap: 0.625rem; /* slightly more gap between btn rows */
+    border-top: 1px solid #f3f4f6; /* subtle separator line */
+}
+
+/* Give the card itself a taller minimum so short-content cards
+   don't look squished next to taller occupied/reserved ones */
+.room-card.available,
+.room-card.maintenance {
+    min-height: 340px;
+}

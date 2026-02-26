@@ -8,33 +8,31 @@ namespace Station_Pro.Controllers
     {
         // ─── In-memory stores ─────────────────────────────────────────────────
         private static int _nextRoomId = 9;
-        private static int _nextReservationId = 2;   // seed uses ID 1
+        private static int _nextReservationId = 2;
 
         // ✅ Room session IDs start at 1000 so they never collide with
-        //    DashboardController device session IDs (which are small ints: 1, 2, 3…)
-        //    Seed data uses 1001, 1002 → _nextRoomSessionId starts at 1003
+        //    DashboardController device session IDs (small ints: 1, 2, 3…)
         private static int _nextRoomSessionId = 1003;
 
         private static List<RoomDto> _rooms = new()
         {
-            new RoomDto { Id = 1, Name = "VIP Room 1",      HasAC = true,  HourlyRate = 100.00m, Capacity = 4,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 2 },
-            new RoomDto { Id = 2, Name = "VIP Room 2",      HasAC = true,  HourlyRate = 120.00m, Capacity = 6,  IsActive = true,  Status = "Occupied",    CurrentOccupancy = 4, DeviceCount = 3,
-                          SessionStartTime = DateTime.UtcNow.AddMinutes(-47), SessionClientName = "Ahmed Ali",   ActiveSessionId = 1001 },
-            new RoomDto { Id = 3, Name = "Standard Room A", HasAC = false, HourlyRate =  60.00m, Capacity = 3,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 1 },
-            new RoomDto { Id = 4, Name = "Standard Room B", HasAC = false, HourlyRate =  60.00m, Capacity = 3,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 1 },
-            new RoomDto { Id = 5, Name = "Premium Lounge",  HasAC = true,  HourlyRate = 150.00m, Capacity = 8,  IsActive = true,  Status = "Occupied",    CurrentOccupancy = 6, DeviceCount = 4,
-                          SessionStartTime = DateTime.UtcNow.AddMinutes(-23), SessionClientName = "Omar Hassan", ActiveSessionId = 1002 },
-            new RoomDto { Id = 6, Name = "Party Room",      HasAC = true,  HourlyRate = 200.00m, Capacity = 10, IsActive = true,  Status = "Reserved",    CurrentOccupancy = 0, DeviceCount = 5,
+            new RoomDto { Id = 1, Name = "VIP Room 1",      HasAC = true,  SingleHourlyRate = 100.00m, MultiHourlyRate = 160.00m, Capacity = 4,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 2 },
+            new RoomDto { Id = 2, Name = "VIP Room 2",      HasAC = true,  SingleHourlyRate = 120.00m, MultiHourlyRate = 190.00m, Capacity = 6,  IsActive = true,  Status = "Occupied",    CurrentOccupancy = 4, DeviceCount = 3,
+                          SessionStartTime = DateTime.UtcNow.AddMinutes(-47), SessionClientName = "Ahmed Ali",   ActiveSessionId = 1001, SessionType = "Multi",  HourlyRate = 190.00m },
+            new RoomDto { Id = 3, Name = "Standard Room A", HasAC = false, SingleHourlyRate =  60.00m, MultiHourlyRate = 100.00m, Capacity = 3,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 1 },
+            new RoomDto { Id = 4, Name = "Standard Room B", HasAC = false, SingleHourlyRate =  60.00m, MultiHourlyRate = 100.00m, Capacity = 3,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 1 },
+            new RoomDto { Id = 5, Name = "Premium Lounge",  HasAC = true,  SingleHourlyRate = 150.00m, MultiHourlyRate = 240.00m, Capacity = 8,  IsActive = true,  Status = "Occupied",    CurrentOccupancy = 2, DeviceCount = 4,
+                          SessionStartTime = DateTime.UtcNow.AddMinutes(-23), SessionClientName = "Omar Hassan", ActiveSessionId = 1002, SessionType = "Single", HourlyRate = 150.00m },
+            new RoomDto { Id = 6, Name = "Party Room",      HasAC = true,  SingleHourlyRate = 200.00m, MultiHourlyRate = 320.00m, Capacity = 10, IsActive = true,  Status = "Reserved",    CurrentOccupancy = 0, DeviceCount = 5,
                           ReservationClientName = "Sara Mohamed", ReservationTime = DateTime.UtcNow.AddHours(2), ReservationNotes = "Birthday party" },
-            new RoomDto { Id = 7, Name = "Gaming Pod 1",    HasAC = false, HourlyRate =  40.00m, Capacity = 2,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 1 },
-            new RoomDto { Id = 8, Name = "Conference Room", HasAC = true,  HourlyRate =  80.00m, Capacity = 12, IsActive = false, Status = "Maintenance", CurrentOccupancy = 0, DeviceCount = 2 },
+            new RoomDto { Id = 7, Name = "Gaming Pod 1",    HasAC = false, SingleHourlyRate =  40.00m, MultiHourlyRate =  65.00m, Capacity = 2,  IsActive = true,  Status = "Available",   CurrentOccupancy = 0, DeviceCount = 1 },
+            new RoomDto { Id = 8, Name = "Conference Room", HasAC = true,  SingleHourlyRate =  80.00m, MultiHourlyRate = 130.00m, Capacity = 12, IsActive = false, Status = "Maintenance", CurrentOccupancy = 0, DeviceCount = 2 },
         };
 
-        // ✅ Session IDs match the ActiveSessionId values set in _rooms above
         private static List<RoomSessionDto> _sessions = new()
         {
-            new RoomSessionDto { Id = 1001, RoomId = 2, ClientName = "Ahmed Ali",   GuestCount = 4, StartTime = DateTime.UtcNow.AddMinutes(-47), HourlyRate = 120.00m, IsActive = true },
-            new RoomSessionDto { Id = 1002, RoomId = 5, ClientName = "Omar Hassan", GuestCount = 6, StartTime = DateTime.UtcNow.AddMinutes(-23), HourlyRate = 150.00m, IsActive = true },
+            new RoomSessionDto { Id = 1001, RoomId = 2, ClientName = "Ahmed Ali",   GuestCount = 4, SessionType = "Multi",  StartTime = DateTime.UtcNow.AddMinutes(-47), HourlyRate = 190.00m, IsActive = true },
+            new RoomSessionDto { Id = 1002, RoomId = 5, ClientName = "Omar Hassan", GuestCount = 2, SessionType = "Single", StartTime = DateTime.UtcNow.AddMinutes(-23), HourlyRate = 150.00m, IsActive = true },
         };
 
         private static List<RoomReservationDto> _reservations = new()
@@ -42,7 +40,7 @@ namespace Station_Pro.Controllers
             new RoomReservationDto { Id = 1, RoomId = 6, ClientName = "Sara Mohamed", Phone = "01012345678", ReservationTime = DateTime.UtcNow.AddHours(2), Notes = "Birthday party" },
         };
 
-        // ─── Static helpers (used by SessionController) ───────────────────────
+        // ─── Static helpers ───────────────────────────────────────────────────
 
         public static List<RoomSessionDto> GetActiveSessions()
             => _sessions.Where(s => s.IsActive).ToList();
@@ -61,6 +59,11 @@ namespace Station_Pro.Controllers
         {
             room.Id = _nextRoomId++;
             room.Status = "Available";
+            // Back-compat: if only HourlyRate was posted, mirror it to both
+            if (room.SingleHourlyRate == 0 && room.HourlyRate > 0)
+                room.SingleHourlyRate = room.HourlyRate;
+            if (room.MultiHourlyRate == 0 && room.SingleHourlyRate > 0)
+                room.MultiHourlyRate = room.SingleHourlyRate;
             _rooms.Add(room);
             return PartialView("_RoomCard", room);
         }
@@ -81,7 +84,10 @@ namespace Station_Pro.Controllers
 
             room.Name = updatedRoom.Name;
             room.HasAC = updatedRoom.HasAC;
-            room.HourlyRate = updatedRoom.HourlyRate;
+            room.SingleHourlyRate = updatedRoom.SingleHourlyRate;
+            room.MultiHourlyRate = updatedRoom.MultiHourlyRate;
+            // Keep legacy HourlyRate in sync with single rate
+            room.HourlyRate = updatedRoom.SingleHourlyRate;
             room.Capacity = updatedRoom.Capacity;
             room.DeviceCount = updatedRoom.DeviceCount;
             room.IsActive = updatedRoom.IsActive;
@@ -111,21 +117,38 @@ namespace Station_Pro.Controllers
             if (room == null) return NotFound(new { message = "Room not found." });
             if (room.Status != "Available")
                 return BadRequest(new { message = $"Room is currently {room.Status}." });
-            if (request.GuestCount < 1 || request.GuestCount > room.Capacity)
-                return BadRequest(new { message = $"Guest count must be between 1 and {room.Capacity}." });
 
-            // ✅ UTC — _RoomCard.cshtml outputs with "O" format (already UTC),
-            //    so new Date(startTime) in JS gets the exact same moment.
+            // ── Validate session type and guest count ─────────────────────────
+            var sessionType = request.SessionType ?? "Single";
+            int maxGuests;
+            decimal chosenRate;
+
+            if (sessionType == "Multi")
+            {
+                maxGuests = 4;
+                chosenRate = room.MultiHourlyRate;
+            }
+            else
+            {
+                maxGuests = 2;
+                chosenRate = room.SingleHourlyRate;
+                sessionType = "Single";
+            }
+
+            if (request.GuestCount < 1 || request.GuestCount > maxGuests)
+                return BadRequest(new { message = $"Guest count for a {sessionType} session must be between 1 and {maxGuests}." });
+
             var startTime = DateTime.UtcNow;
 
             var session = new RoomSessionDto
             {
-                Id = _nextRoomSessionId++,   // ✅ uses room-specific counter (1003, 1004…)
+                Id = _nextRoomSessionId++,
                 RoomId = room.Id,
                 ClientName = request.ClientName,
                 GuestCount = request.GuestCount,
+                SessionType = sessionType,
                 StartTime = startTime,
-                HourlyRate = room.HourlyRate,
+                HourlyRate = chosenRate,
                 IsActive = true
             };
             _sessions.Add(session);
@@ -135,6 +158,8 @@ namespace Station_Pro.Controllers
             room.SessionStartTime = startTime;
             room.SessionClientName = request.ClientName;
             room.ActiveSessionId = session.Id;
+            room.SessionType = sessionType;
+            room.HourlyRate = chosenRate;   // live rate for card display
 
             return Ok(new
             {
@@ -143,7 +168,8 @@ namespace Station_Pro.Controllers
                 startTime = startTime.ToString("O"),
                 clientName = request.ClientName,
                 guestCount = request.GuestCount,
-                hourlyRate = room.HourlyRate
+                sessionType = sessionType,
+                hourlyRate = chosenRate
             });
         }
 
@@ -166,6 +192,8 @@ namespace Station_Pro.Controllers
             room.SessionStartTime = null;
             room.SessionClientName = null;
             room.ActiveSessionId = null;
+            room.SessionType = null;
+            room.HourlyRate = 0;
 
             DashboardController.AddCompletedSession(new SessionReportDto
             {
@@ -188,6 +216,7 @@ namespace Station_Pro.Controllers
                 success = true,
                 sessionId = session.Id,
                 clientName = session.ClientName,
+                sessionType = session.SessionType,
                 duration = FormatDuration(duration),
                 totalCost = session.TotalCost,
                 hourlyRate = session.HourlyRate
@@ -209,6 +238,7 @@ namespace Station_Pro.Controllers
                 roomId = session.RoomId,
                 clientName = session.ClientName,
                 guestCount = session.GuestCount,
+                sessionType = session.SessionType,
                 startTime = session.StartTime.ToString("O"),
                 hourlyRate = session.HourlyRate,
                 currentCost = cost,
@@ -275,7 +305,9 @@ namespace Station_Pro.Controllers
             var reservation = _reservations.FirstOrDefault(r => r.RoomId == roomId);
             if (reservation == null) return NotFound(new { message = "Reservation not found." });
 
+            // Default check-in from reservation → Single session
             var startTime = DateTime.UtcNow;
+            var chosenRate = room.SingleHourlyRate;
 
             var session = new RoomSessionDto
             {
@@ -283,8 +315,9 @@ namespace Station_Pro.Controllers
                 RoomId = room.Id,
                 ClientName = reservation.ClientName,
                 GuestCount = 1,
+                SessionType = "Single",
                 StartTime = startTime,
-                HourlyRate = room.HourlyRate,
+                HourlyRate = chosenRate,
                 IsActive = true
             };
             _sessions.Add(session);
@@ -295,6 +328,8 @@ namespace Station_Pro.Controllers
             room.SessionStartTime = startTime;
             room.SessionClientName = reservation.ClientName;
             room.ActiveSessionId = session.Id;
+            room.SessionType = "Single";
+            room.HourlyRate = chosenRate;
             room.ReservationClientName = null;
             room.ReservationTime = null;
             room.ReservationNotes = null;
@@ -305,7 +340,8 @@ namespace Station_Pro.Controllers
                 sessionId = session.Id,
                 startTime = startTime.ToString("O"),
                 clientName = session.ClientName,
-                hourlyRate = room.HourlyRate
+                sessionType = "Single",
+                hourlyRate = chosenRate
             });
         }
 

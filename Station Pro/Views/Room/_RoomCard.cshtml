@@ -35,12 +35,24 @@
         _ => "status-maintenance"
     };
 
-    // SessionStartTime is already stored as UTC in RoomController.
-    // Output directly with "O" format — DO NOT call ToUniversalTime() again
-    // or the offset gets doubled and the timer shows the wrong elapsed time.
+    // SessionStartTime is already UTC — output with "O", do NOT call ToUniversalTime() again
     var startTimeIso = Model.SessionStartTime.HasValue
         ? Model.SessionStartTime.Value.ToString("O")
         : string.Empty;
+
+    // Snapshotted rate for the active session (drives the live cost timer)
+    var activeRate = Model.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    // Rates passed to JS buttons — invariant culture so JS parseFloat works
+    var singleRateJs = Model.SingleHourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var multiRateJs = Model.MultiHourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    // Session type badge (occupied card)
+    var sessionTypeLabel = Model.SessionType ?? "Single";
+    var sessionTypeBadgeCss = sessionTypeLabel == "Multi"
+        ? "bg-purple-100 text-purple-700"
+        : "bg-blue-100 text-blue-700";
+    var sessionTypeIcon = sessionTypeLabel == "Multi" ? "fa-users" : "fa-user";
 }
 
 <div class="room-card @statusClass fade-in"
@@ -49,7 +61,7 @@
      data-room-id="@Model.Id"
      id="room-card-@Model.Id">
 
-    <!-- ── Header ──────────────────────────────────────────────────── -->
+    <!-- ── Header ──────────────────────────────────────────────────────────── -->
     <div class="flex justify-between items-start mb-4">
         <div class="flex items-center space-x-3">
             <div class="@iconBgClass p-3 rounded-xl">
@@ -61,8 +73,7 @@
                     @if (Model.HasAC)
                     {
                         <span class="text-xs text-blue-600 flex items-center">
-                            <i class="fas fa-wind mr-1"></i>
-                            @Localizer["AC"]
+                            <i class="fas fa-wind mr-1"></i>@Localizer["AC"]
                         </span>
                     }
                     <span class="text-xs text-gray-500">
@@ -72,39 +83,61 @@
                 </div>
             </div>
         </div>
-
-        <span class="status-badge @statusBadgeClass">
-            @Localizer[Model.Status]
-        </span>
+        <span class="status-badge @statusBadgeClass">@Localizer[Model.Status]</span>
     </div>
 
-    <!-- ── Static Details ───────────────────────────────────────────── -->
-    <div class="border-t border-gray-100 pt-4 mb-4 space-y-3">
-        <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600">@Localizer["HourlyRate"]</span>
-            <span class="text-lg font-bold text-blue-600">@Model.HourlyRate.ToString("C")</span>
+    <!-- ── Rate & Capacity Details ─────────────────────────────────────────── -->
+    <div class="card-details border-t border-gray-100 pt-4 mb-4 space-y-2">
+
+        <!-- Single rate row -->
+        <div class="flex justify-between items-center px-1">
+            <span class="text-sm text-gray-500 flex items-center gap-1.5">
+                <i class="fas fa-user text-blue-500 text-xs"></i> Single
+            </span>
+            <span class="text-sm font-bold text-blue-600">@Model.SingleHourlyRate.ToString("C")</span>
         </div>
 
-        <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600">
+        <!-- Multi rate row -->
+        <div class="flex justify-between items-center px-1 rounded-lg @(Model.Status == "Available" ? "bg-purple-50 py-1" : "")">
+            <span class="text-sm text-gray-500 flex items-center gap-1.5">
+                <i class="fas fa-users text-purple-500 text-xs"></i> Multi
+            </span>
+            <span class="text-sm font-bold text-purple-600">@Model.MultiHourlyRate.ToString("C")</span>
+        </div>
+
+        <!-- Capacity -->
+        <div class="flex justify-between items-center px-1">
+            <span class="text-sm text-gray-500">
                 <i class="fas fa-users mr-1"></i>@Localizer["Capacity"]
             </span>
             <span class="text-sm font-bold text-gray-900">@Model.Capacity @Localizer["People"]</span>
         </div>
 
-        <!-- ── Occupied: live timer block ──────────────────────────── -->
+        <!-- ── Occupied: live timer block ──────────────────────────────────── -->
         @if (Model.Status == "Occupied" && Model.SessionStartTime.HasValue && Model.ActiveSessionId.HasValue)
         {
-            <div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500">
+            <div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500 mt-1">
 
-                <!-- Client & occupancy -->
+                <!-- Client + session-type pill -->
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-gray-600 font-medium">
-                        <i class="fas fa-user mr-1 text-red-500"></i>
-                        @(Model.SessionClientName ?? "Guest")
-                    </span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-xs text-gray-600 font-medium">
+                            <i class="fas fa-user mr-1 text-red-500"></i>@(Model.SessionClientName ?? "Guest")
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-bold @sessionTypeBadgeCss">
+                            <i class="fas @sessionTypeIcon"></i> @sessionTypeLabel
+                        </span>
+                    </div>
                     <span class="text-xs font-bold text-red-600">
                         @Model.CurrentOccupancy / @Model.Capacity guests
+                    </span>
+                </div>
+
+                <!-- Active rate -->
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-gray-500"><i class="fas fa-tag mr-1"></i>Rate</span>
+                    <span class="text-xs font-bold @(sessionTypeLabel == "Multi" ? "text-purple-700" : "text-blue-700")">
+                        @Model.HourlyRate.ToString("C")/hr
                     </span>
                 </div>
 
@@ -115,30 +148,22 @@
                 </div>
 
                 <!-- Live timer
-                     id="timer-X"            → session-timer.js uses this to READ data-start-time
-                     class="timer-display-X"  → session-timer.js uses this to WRITE the updated time
-                     Both roles on the same element since it IS the visible timer here.
+                     id="timer-X"           → session-timer.js reads data-start-time
+                     class="timer-display-X" → session-timer.js writes the elapsed time
                 -->
                 <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-500">
-                        <i class="fas fa-clock mr-1"></i>Duration
-                    </span>
+                    <span class="text-xs text-gray-500"><i class="fas fa-clock mr-1"></i>Duration</span>
                     <span class="font-mono font-bold text-red-700 text-sm timer-display-@Model.ActiveSessionId"
                           id="timer-@Model.ActiveSessionId"
                           data-start-time="@startTimeIso"
-                          data-hourly-rate="@Model.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                          data-hourly-rate="@activeRate">
                         00:00:00
                     </span>
                 </div>
 
-                <!-- Running cost
-                     id="cost-X"            → kept for backward compatibility
-                     class="cost-display-X"  → session-timer.js uses this to WRITE the updated cost
-                -->
+                <!-- Running cost -->
                 <div class="flex justify-between items-center mt-1">
-                    <span class="text-xs text-gray-500">
-                        <i class="fas fa-coins mr-1"></i>Running cost
-                    </span>
+                    <span class="text-xs text-gray-500"><i class="fas fa-coins mr-1"></i>Running cost</span>
                     <span class="font-bold text-green-700 text-sm cost-display-@Model.ActiveSessionId"
                           id="cost-@Model.ActiveSessionId">
                         EGP 0.00
@@ -147,14 +172,13 @@
             </div>
         }
 
-        <!-- ── Reserved: reservation info block ────────────────────── -->
+        <!-- ── Reserved block ──────────────────────────────────────────────── -->
         @if (Model.Status == "Reserved")
         {
             <div class="bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-500">
                 <div class="flex justify-between items-center mb-1">
                     <span class="text-xs text-gray-600 font-medium">
-                        <i class="fas fa-user mr-1 text-yellow-600"></i>
-                        @(Model.ReservationClientName ?? "Client")
+                        <i class="fas fa-user mr-1 text-yellow-600"></i>@(Model.ReservationClientName ?? "Client")
                     </span>
                     <span class="text-xs font-bold text-yellow-700">Reserved</span>
                 </div>
@@ -167,65 +191,104 @@
                 }
                 @if (!string.IsNullOrEmpty(Model.ReservationNotes))
                 {
-                    <div class="text-xs text-gray-400 mt-1 italic truncate">
-                        @Model.ReservationNotes
-                    </div>
+                    <div class="text-xs text-gray-400 mt-1 italic truncate">@Model.ReservationNotes</div>
                 }
             </div>
         }
     </div>
 
-    <!-- ── Action Buttons ────────────────────────────────────────────── -->
-    <div class="flex gap-2 mt-auto pt-2">
+    <!-- ── Action Buttons ──────────────────────────────────────────────────── -->
+    <div class="card-actions">
         @if (Model.Status == "Available")
         {
-            <button onclick="openBookingModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))', @Model.Capacity, '@Model.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture)')"
-                    class="btn btn-success flex-1">
-                <i class="fas fa-door-open"></i>
-                <span>Book Now</span>
-            </button>
-            <button onclick="openReserveModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
-                    class="btn btn-warning flex-1"
-                    title="Reserve">
-                <i class="fas fa-calendar-plus"></i>
-                <span>Reserve</span>
-            </button>
+            <!-- Row 1: Single | Multi — equal halves -->
+            <div class="btn-row">
+                <button onclick="openQuickBookModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))', 'Single', '@singleRateJs', 2)"
+                        class="btn btn-success btn-session">
+                    <i class="fas fa-user"></i>
+                    <span>Single</span>
+                </button>
+                <button onclick="openQuickBookModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))', 'Multi', '@multiRateJs', 4)"
+                        class="btn btn-multi btn-session">
+                    <i class="fas fa-users"></i>
+                    <span>Multi</span>
+                </button>
+            </div>
+            <!-- Row 2: Reserve (stretches) + Edit + Delete -->
+            <div class="btn-row">
+                <button onclick="openReserveModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                        class="btn btn-warning btn-utility">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Reserve</span>
+                </button>
+                <button onclick="editRoom(@Model.Id)" class="btn btn-outline btn-icon-only" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteRoom(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                        class="btn btn-danger btn-icon-only" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         }
         else if (Model.Status == "Occupied" && Model.ActiveSessionId.HasValue)
         {
-            <button onclick="openEndSessionModal(@Model.Id, @Model.ActiveSessionId.Value, '@Html.Raw(Model.Name.Replace("'", "\\'"))', '@Html.Raw((Model.SessionClientName ?? "Guest").Replace("'", "\\'"))')"
-                    class="btn btn-danger flex-1">
-                <i class="fas fa-stop-circle"></i>
-                <span>End Session</span>
-            </button>
+            <div class="btn-row">
+                <button onclick="openEndSessionModal(@Model.Id, @Model.ActiveSessionId.Value, '@Html.Raw(Model.Name.Replace("'", "\\'"))', '@Html.Raw((Model.SessionClientName ?? "Guest").Replace("'", "\\'"))')"
+                        class="btn btn-danger btn-utility">
+                    <i class="fas fa-stop-circle"></i>
+                    <span>End Session</span>
+                </button>
+                <button onclick="editRoom(@Model.Id)" class="btn btn-outline btn-icon-only" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteRoom(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                        class="btn btn-danger btn-icon-only" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         }
         else if (Model.Status == "Reserved")
         {
-            <button onclick="activateReservation(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
-                    class="btn btn-success flex-1">
-                <i class="fas fa-check-circle"></i>
-                <span>Check In</span>
-            </button>
-            <button onclick="cancelReservation(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
-                    class="btn btn-secondary flex-shrink-0">
-                <i class="fas fa-calendar-times"></i>
-                <span>Cancel</span>
-            </button>
+            <!-- Row 1: Check In | Cancel -->
+            <div class="btn-row">
+                <button onclick="activateReservation(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                        class="btn btn-success btn-session">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Check In</span>
+                </button>
+                <button onclick="cancelReservation(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                        class="btn btn-secondary btn-session">
+                    <i class="fas fa-calendar-times"></i>
+                    <span>Cancel</span>
+                </button>
+            </div>
+            <!-- Row 2: Edit (stretches) | Delete -->
+            <div class="btn-row">
+                <button onclick="editRoom(@Model.Id)" class="btn btn-outline btn-utility" title="Edit">
+                    <i class="fas fa-edit"></i>
+                    <span>Edit</span>
+                </button>
+                <button onclick="deleteRoom(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                        class="btn btn-danger btn-icon-only" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         }
         else
         {
-            <button class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
-                <i class="fas fa-tools"></i>
-                <span>Maintenance</span>
-            </button>
+            <div class="btn-row">
+                <button class="btn btn-secondary btn-utility opacity-50 cursor-not-allowed" disabled>
+                    <i class="fas fa-tools"></i>
+                    <span>Maintenance</span>
+                </button>
+                <button onclick="editRoom(@Model.Id)" class="btn btn-outline btn-icon-only" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteRoom(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
+                        class="btn btn-danger btn-icon-only" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         }
-
-        <button onclick="editRoom(@Model.Id)" class="btn btn-outline" title="Edit">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button onclick="deleteRoom(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
-                class="btn btn-danger" title="Delete">
-            <i class="fas fa-trash"></i>
-        </button>
     </div>
 </div>
