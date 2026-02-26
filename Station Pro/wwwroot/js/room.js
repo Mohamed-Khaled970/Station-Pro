@@ -5,6 +5,14 @@
 // It scans for id="timer-{sessionId}" elements on load and after smartRestart().
 
 // ============================================
+// i18n helper — falls back to key if missing
+// Translations are injected by the Razor view via window.RoomI18n
+// ============================================
+function t(key) {
+    return (window.RoomI18n && window.RoomI18n[key]) ? window.RoomI18n[key] : key;
+}
+
+// ============================================
 // MODAL HELPERS
 // ============================================
 
@@ -50,23 +58,14 @@ function closeReceiptModal() {
 
 // ============================================
 // QUICK BOOK MODAL
-// Called directly from the Single / Multi buttons on each room card.
-//
-// @param {number} roomId
-// @param {string} roomName
-// @param {string} sessionType   "Single" | "Multi"
-// @param {string} hourlyRate    invariant-culture decimal string
-// @param {number} maxGuests     2 for Single, 4 for Multi
 // ============================================
 
 function openQuickBookModal(roomId, roomName, sessionType, hourlyRate, maxGuests) {
-    // Populate hidden fields
     document.getElementById('qb-room-id').value = roomId;
     document.getElementById('qb-session-type').value = sessionType;
     document.getElementById('qb-hourly-rate').value = hourlyRate;
     document.getElementById('qb-max-guests').value = maxGuests;
 
-    // Header styling — blue for Single, purple for Multi
     const isMulti = sessionType === 'Multi';
     const iconWrap = document.getElementById('qb-icon-wrap');
     const typeLabel = document.getElementById('qb-type-label');
@@ -77,7 +76,8 @@ function openQuickBookModal(roomId, roomName, sessionType, hourlyRate, maxGuests
 
     iconWrap.className = `w-10 h-10 rounded-xl flex items-center justify-center ${isMulti ? 'bg-purple-100' : 'bg-green-100'}`;
     iconWrap.innerHTML = `<i class="fas ${isMulti ? 'fa-users text-purple-600' : 'fa-user text-green-600'} text-lg"></i>`;
-    typeLabel.textContent = `${sessionType} Session`;
+
+    typeLabel.textContent = isMulti ? t('MultiSession') : t('SingleSession');
     typeLabel.className = `text-xl font-bold ${isMulti ? 'text-purple-700' : 'text-gray-900'}`;
     roomLabel.textContent = roomName;
 
@@ -89,15 +89,13 @@ function openQuickBookModal(roomId, roomName, sessionType, hourlyRate, maxGuests
 
     guestInput.max = maxGuests;
     guestInput.value = 1;
-    guestMaxNote.textContent = `Max ${maxGuests} ${maxGuests === 1 ? 'person' : 'persons'}`;
+    guestMaxNote.textContent = t('MaxPersons').replace('{0}', maxGuests);
 
-    // Submit button colour
     const submitBtn = document.getElementById('qb-submit-btn');
     submitBtn.className = `btn ${isMulti ? 'btn-multi' : 'btn-success'}`;
-    submitBtn.innerHTML = `<i class="fas fa-play mr-2"></i>Start ${sessionType} Session`;
+    submitBtn.innerHTML = `<i class="fas fa-play mr-2"></i>${isMulti ? t('StartMultiSession') : t('StartSingleSession')}`;
 
     openModal('quick-book-modal');
-    // Focus client name for fast keyboard entry
     setTimeout(() => document.getElementById('qb-client-name')?.focus(), 100);
 }
 
@@ -116,7 +114,7 @@ function setupQuickBookForm() {
 
         if (!clientName) return;
         if (guestCount < 1 || guestCount > maxGuests) {
-            showErrorNotification(`Guest count must be between 1 and ${maxGuests} for a ${sessionType} session.`);
+            showToast('error', t('GuestCountError').replace('{max}', maxGuests).replace('{type}', sessionType));
             return;
         }
 
@@ -130,19 +128,17 @@ function setupQuickBookForm() {
             if (res.ok) {
                 const data = await res.json();
                 closeModal('quick-book-modal');
-                // Refresh card → timerManager.smartRestart() picks up the new timer element
                 await refreshRoomCard(roomId);
-                showSuccessNotification(
-                    'Session Started! 🎉',
-                    `${clientName}'s ${data.sessionType} session is live. Timer is running.`,
-                    'fa-play-circle'
+                showToast('success',
+                    t('SessionStartedMsg').replace('{client}', clientName).replace('{type}', data.sessionType),
+                    t('SessionStartedTitle')
                 );
             } else {
                 const err = await res.json().catch(() => ({}));
-                showErrorNotification(err.message || 'Failed to start session.');
+                showToast('error', err.message || t('FailedStartSession'));
             }
         } catch {
-            showErrorNotification('Network error. Please try again.');
+            showToast('error', t('NetworkError'));
         }
     });
 }
@@ -156,8 +152,7 @@ function openReserveModal(roomId, roomName) {
     document.getElementById('reserve-room-name-label').textContent = roomName;
 
     const dt = new Date(Date.now() + 60 * 60 * 1000);
-    const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000)
-        .toISOString().slice(0, 16);
+    const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     document.getElementById('reserve-datetime').value = local;
 
     openModal('reserve-room-modal');
@@ -182,29 +177,22 @@ function setupReserveRoomForm() {
             const res = await fetch('/Room/Reserve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    roomId,
-                    clientName,
-                    phone,
-                    reservationTime: new Date(dt).toISOString(),
-                    notes
-                })
+                body: JSON.stringify({ roomId, clientName, phone, reservationTime: new Date(dt).toISOString(), notes })
             });
 
             if (res.ok) {
                 closeModal('reserve-room-modal');
                 await refreshRoomCard(roomId);
-                showSuccessNotification(
-                    'Room Reserved! 📅',
-                    `${clientName}'s reservation has been confirmed.`,
-                    'fa-calendar-check'
+                showToast('success',
+                    t('RoomReservedMsg').replace('{client}', clientName),
+                    t('RoomReservedTitle')
                 );
             } else {
                 const err = await res.json().catch(() => ({}));
-                showErrorNotification(err.message || 'Failed to create reservation.');
+                showToast('error', err.message || t('FailedReserve'));
             }
         } catch {
-            showErrorNotification('Network error. Please try again.');
+            showToast('error', t('NetworkError'));
         }
     });
 }
@@ -247,14 +235,14 @@ async function confirmEndSession() {
             if (receiptRes.ok) {
                 showReceiptModal(await receiptRes.text());
             } else {
-                showSuccessNotification('Session Ended ✅', 'The room is now available.', 'fa-check-circle');
+                showToast('success', t('SessionEndedMsg'), t('SessionEndedTitle'));
             }
         } else {
             const err = await res.json().catch(() => ({}));
-            showErrorNotification(err.message || 'Failed to end session.');
+            showToast('error', err.message || t('FailedEndSession'));
         }
     } catch {
-        showErrorNotification('Network error. Please try again.');
+        showToast('error', t('NetworkError'));
     }
 }
 
@@ -264,15 +252,18 @@ async function confirmEndSession() {
 
 function cancelReservation(roomId, roomName) {
     showDeleteConfirmation(
-        `cancel the reservation for "${roomName}"`,
-        'The room will become available immediately.',
+        t('CancelReservationAction').replace('{room}', roomName),
+        t('RoomWillBeAvailableImmediately'),
         async () => {
             const res = await fetch(`/Room/CancelReservation?roomId=${roomId}`, { method: 'POST' });
             if (res.ok) {
                 await refreshRoomCard(roomId);
-                showSuccessNotification('Reservation Cancelled', `${roomName} is now available.`, 'fa-calendar-times');
+                showToast('success',
+                    t('ReservationCancelledMsg').replace('{room}', roomName),
+                    t('ReservationCancelledTitle')
+                );
             } else {
-                showErrorNotification('Failed to cancel reservation.');
+                showToast('error', t('FailedCancelReservation'));
             }
         }
     );
@@ -284,17 +275,16 @@ async function activateReservation(roomId, roomName) {
         if (res.ok) {
             const data = await res.json();
             await refreshRoomCard(roomId);
-            showSuccessNotification(
-                'Checked In! 🎉',
-                `${data.clientName} is now checked in to ${roomName}. Timer started.`,
-                'fa-check-circle'
+            showToast('success',
+                t('CheckedInMsg').replace('{client}', data.clientName).replace('{room}', roomName),
+                t('CheckedInTitle')
             );
         } else {
             const err = await res.json().catch(() => ({}));
-            showErrorNotification(err.message || 'Failed to check in.');
+            showToast('error', err.message || t('FailedCheckIn'));
         }
     } catch {
-        showErrorNotification('Network error. Please try again.');
+        showToast('error', t('NetworkError'));
     }
 }
 
@@ -341,7 +331,7 @@ async function editRoom(roomId) {
         document.getElementById('edit-room-active').checked = room.isActive;
         openModal('edit-room-modal');
     } catch {
-        showErrorNotification('Failed to load room details.');
+        showToast('error', t('FailedLoadRoom'));
     }
 }
 
@@ -372,12 +362,12 @@ function setupEditRoomForm() {
             if (res.ok) {
                 closeModal('edit-room-modal');
                 await refreshRoomCard(parseInt(roomId));
-                showSuccessNotification('Room Updated! ✨', 'Room details saved successfully.', 'fa-edit');
+                showToast('success', t('RoomUpdatedMsg'), t('RoomUpdatedTitle'));
             } else {
-                showErrorNotification('Failed to update room.');
+                showToast('error', t('FailedUpdateRoom'));
             }
         } catch {
-            showErrorNotification('Network error. Please try again.');
+            showToast('error', t('NetworkError'));
         }
     });
 }
@@ -388,25 +378,31 @@ function setupEditRoomForm() {
 
 function deleteRoom(roomId, roomName) {
     showDeleteConfirmation(
-        `delete "${roomName}"`,
-        'This action cannot be undone.',
+        t('DeleteRoomAction').replace('{room}', roomName),
+        t('ActionCannotBeUndone'),
         async () => {
             const res = await fetch(`/Room/Delete/${roomId}`, { method: 'DELETE' });
             if (res.ok) {
                 const card = document.querySelector(`[data-room-id="${roomId}"]`);
                 if (card) {
-                    card.style.transition = 'all .3s ease';
+                    card.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
                     card.style.opacity = '0';
-                    card.style.transform = 'scale(0.9)';
-                    setTimeout(() => { card.remove(); closeDeletingOverlay(); }, 300);
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        card.remove();
+                        closeDeletingOverlay(); // ← FIX: was missing from this branch
+                    }, 200);
                 } else {
-                    closeDeletingOverlay();
+                    closeDeletingOverlay(); // ← FIX: was never called when card not found
                 }
-                showSuccessNotification('Room Deleted 🗑️', `"${roomName}" has been removed.`, 'fa-check-circle');
+                showToast('success',
+                    t('RoomDeletedMsg').replace('{room}', roomName),
+                    t('RoomDeletedTitle')
+                );
             } else {
-                closeDeletingOverlay();
+                closeDeletingOverlay(); // ← FIX: always close overlay on error too
                 const err = await res.json().catch(() => ({}));
-                showErrorNotification(err.message || 'Cannot delete this room.');
+                showToast('error', err.message || t('FailedDeleteRoom'));
             }
         }
     );
@@ -418,10 +414,8 @@ function deleteRoom(roomId, roomName) {
 
 function handleRoomAdded() {
     closeModal('add-room-modal');
-    if (window.timerManager) {
-        setTimeout(() => window.timerManager.smartRestart(), 50);
-    }
-    showSuccessNotification('Room Added! 🎉', 'Your new room is ready for bookings.', 'fa-door-open');
+    if (window.timerManager) setTimeout(() => window.timerManager.smartRestart(), 50);
+    showToast('success', t('RoomAddedMsg'), t('RoomAddedTitle'));
     document.getElementById('add-room-form')?.reset();
 }
 
@@ -459,8 +453,8 @@ function updateNoResultsMessage(visibleCount) {
             el.className = 'col-span-full text-center py-12';
             el.innerHTML = `
                 <i class="fas fa-search text-gray-300 text-5xl mb-4 block"></i>
-                <p class="text-gray-600 font-medium">No rooms found</p>
-                <p class="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>`;
+                <p class="text-gray-600 font-medium">${t('NoRoomsFound')}</p>
+                <p class="text-gray-400 text-sm mt-2">${t('TryAdjustingFilters')}</p>`;
             document.getElementById('rooms-grid').appendChild(el);
         }
     } else {
@@ -484,25 +478,23 @@ function showDeleteConfirmation(actionLabel, warningText, onConfirm) {
                 <div class="delete-confirmation-icon-circle">
                     <i class="fas fa-exclamation-triangle delete-confirmation-icon"></i>
                 </div>
-                <div class="warning-pulse"></div>
             </div>
-            <h3 class="delete-confirmation-title">Are you sure?</h3>
-            <p class="delete-confirmation-message">You are about to <strong>${actionLabel}</strong>.</p>
+            <h3 class="delete-confirmation-title">${t('AreYouSure')}</h3>
+            <p class="delete-confirmation-message">${t('YouAreAboutTo')} <strong>${actionLabel}</strong>.</p>
             <p class="delete-confirmation-warning">
                 <i class="fas fa-info-circle mr-1"></i>${warningText}
             </p>
             <div class="delete-confirmation-actions">
                 <button onclick="closeDeleteConfirmation()" class="delete-confirmation-btn-cancel">
-                    <i class="fas fa-times mr-2"></i>Cancel
+                    <i class="fas fa-times mr-2"></i>${t('Cancel')}
                 </button>
                 <button id="delete-confirm-btn" class="delete-confirmation-btn-delete">
-                    <i class="fas fa-check mr-2"></i>Confirm
+                    <i class="fas fa-check mr-2"></i>${t('Confirm')}
                 </button>
             </div>
         </div>`;
 
     document.body.appendChild(modal);
-    setTimeout(() => modal.classList.add('show'), 10);
 
     document.getElementById('delete-confirm-btn').addEventListener('click', async () => {
         closeDeleteConfirmation();
@@ -519,7 +511,10 @@ function showDeleteConfirmation(actionLabel, warningText, onConfirm) {
 
 function closeDeleteConfirmation() {
     const m = document.getElementById('delete-confirmation');
-    if (m) { m.classList.remove('show'); m.classList.add('hide'); setTimeout(() => m.remove(), 300); }
+    if (m) {
+        m.classList.add('hide');
+        setTimeout(() => m.remove(), 200);
+    }
 }
 
 function showDeletingOverlay() {
@@ -528,110 +523,79 @@ function showDeletingOverlay() {
     el.className = 'deleting-overlay';
     el.innerHTML = `<div class="deleting-spinner-wrapper">
         <div class="deleting-spinner"></div>
-        <p class="deleting-text">Processing...</p>
+        <p class="deleting-text">${t('Processing')}</p>
     </div>`;
     document.body.appendChild(el);
-    setTimeout(() => el.classList.add('show'), 10);
 }
 
 function closeDeletingOverlay() {
     const el = document.getElementById('deleting-overlay');
-    if (el) { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }
-}
-
-// ============================================
-// SUCCESS / ERROR NOTIFICATIONS
-// ============================================
-
-let _successTimeout = null;
-
-function showSuccessNotification(title, message, icon = 'fa-check-circle') {
-    document.getElementById('success-notification')?.remove();
-    clearTimeout(_successTimeout);
-
-    const el = document.createElement('div');
-    el.id = 'success-notification';
-    el.className = 'success-notification-overlay';
-    el.innerHTML = `
-        <div class="success-notification-content">
-            <div class="confetti-container" id="confetti-container"></div>
-            <div class="success-notification-icon-wrapper">
-                <div class="success-notification-icon-circle">
-                    <i class="fas ${icon} success-notification-icon"></i>
-                </div>
-                <div class="sparkle sparkle-1">✨</div>
-                <div class="sparkle sparkle-2">⭐</div>
-                <div class="sparkle sparkle-3">✨</div>
-                <div class="sparkle sparkle-4">⭐</div>
-            </div>
-            <h3 class="success-notification-title">${title}</h3>
-            <p class="success-notification-message">${message}</p>
-            <div class="success-progress-bar"><div class="success-progress-fill"></div></div>
-            <div class="success-notification-actions">
-                <button onclick="closeSuccessNotification()" class="success-notification-btn-primary">
-                    <i class="fas fa-check mr-2"></i><span>Awesome!</span>
-                </button>
-            </div>
-        </div>`;
-    document.body.appendChild(el);
-    setTimeout(() => { el.classList.add('show'); createConfetti(); }, 10);
-    _successTimeout = setTimeout(closeSuccessNotification, 5000);
-}
-
-function createConfetti() {
-    const container = document.getElementById('confetti-container');
-    if (!container) return;
-    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-    const shapes = ['circle', 'square'];
-    for (let i = 0; i < 40; i++) {
-        setTimeout(() => {
-            const el = document.createElement('div');
-            el.className = `confetti confetti-${shapes[i % 2]}`;
-            el.style.left = Math.random() * 100 + '%';
-            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            el.style.animationDelay = Math.random() * 0.3 + 's';
-            el.style.animationDuration = (Math.random() * 2 + 2) + 's';
-            container.appendChild(el);
-            setTimeout(() => el.remove(), 4000);
-        }, i * 30);
+    if (el) {
+        el.classList.add('hide');
+        setTimeout(() => el.remove(), 200);
     }
 }
 
-function closeSuccessNotification() {
-    clearTimeout(_successTimeout);
-    const el = document.getElementById('success-notification');
-    if (el) { el.classList.remove('show'); el.classList.add('hide'); setTimeout(() => el.remove(), 400); }
-}
+// ============================================
+// CENTERED NOTIFICATIONS
+// showToast(type, message, title?)
+// type: 'success' | 'error' | 'warning' | 'info'
+// ============================================
 
-function showErrorNotification(msg) {
-    document.getElementById('error-notification')?.remove();
+let _notifTimer = null;
+
+function showToast(type, message, title) {
+    // Remove any existing notification
+    document.getElementById('room-notification')?.remove();
+    clearTimeout(_notifTimer);
+
+    const cfg = {
+        success: { icon: 'fa-check-circle', circleCss: 'notif-circle-success', iconCss: 'notif-icon-success', btnCss: 'notif-btn-success' },
+        error: { icon: 'fa-times-circle', circleCss: 'notif-circle-error', iconCss: 'notif-icon-error', btnCss: 'notif-btn-error' },
+        warning: { icon: 'fa-exclamation-circle', circleCss: 'notif-circle-warning', iconCss: 'notif-icon-warning', btnCss: 'notif-btn-warning' },
+        info: { icon: 'fa-info-circle', circleCss: 'notif-circle-info', iconCss: 'notif-icon-info', btnCss: 'notif-btn-info' },
+    };
+    const c = cfg[type] || cfg.info;
+
     const el = document.createElement('div');
-    el.id = 'error-notification';
-    el.className = 'error-notification-overlay';
+    el.id = 'room-notification';
+    el.className = 'room-notif-overlay';
     el.innerHTML = `
-        <div class="error-notification-content">
-            <div class="error-notification-icon-wrapper">
-                <div class="error-notification-icon-circle">
-                    <i class="fas fa-times-circle error-notification-icon"></i>
-                </div>
+        <div class="room-notif-card">
+            <div class="room-notif-circle ${c.circleCss}">
+                <i class="fas ${c.icon} ${c.iconCss}"></i>
             </div>
-            <h3 class="error-notification-title">Something went wrong</h3>
-            <p class="error-notification-message">${msg}</p>
-            <div class="error-notification-actions">
-                <button onclick="closeErrorNotification()" class="error-notification-btn">
-                    <i class="fas fa-check mr-2"></i>Got it
-                </button>
-            </div>
+            ${title ? `<h3 class="room-notif-title">${title}</h3>` : ''}
+            <p class="room-notif-message">${message}</p>
+            <div class="room-notif-progress"><div class="room-notif-bar ${c.btnCss}-bar"></div></div>
+            <button class="room-notif-btn ${c.btnCss}" onclick="closeNotification()">
+                <i class="fas fa-check mr-2"></i>${t('Awesome') || 'OK'}
+            </button>
         </div>`;
+
     document.body.appendChild(el);
-    setTimeout(() => el.classList.add('show'), 10);
-    setTimeout(closeErrorNotification, 5000);
+
+    // Click backdrop to close
+    el.addEventListener('click', e => { if (e.target === el) closeNotification(); });
+
+    // Auto-close after 5s
+    _notifTimer = setTimeout(closeNotification, 5000);
 }
 
-function closeErrorNotification() {
-    const el = document.getElementById('error-notification');
-    if (el) { el.classList.remove('show'); el.classList.add('hide'); setTimeout(() => el.remove(), 300); }
+function closeNotification() {
+    clearTimeout(_notifTimer);
+    const el = document.getElementById('room-notification');
+    if (el) {
+        el.classList.add('hide');
+        setTimeout(() => el.remove(), 220);
+    }
 }
+
+// Legacy wrappers — keep these so nothing else breaks
+function showSuccessNotification(title, message) { showToast('success', message, title); }
+function closeSuccessNotification() { closeNotification(); }
+function showErrorNotification(msg) { showToast('error', msg); }
+function closeErrorNotification() { closeNotification(); }
 
 // ============================================
 // UTILITIES
@@ -662,9 +626,8 @@ function setupKeyboardShortcuts() {
         }
 
         if (e.key === 'Escape') {
-            closeSuccessNotification();
+            closeNotification();
             closeDeleteConfirmation();
-            closeErrorNotification();
             closeReceiptModal();
             document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m => closeModal(m.id));
         }
@@ -680,5 +643,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEditRoomForm();
     setupReserveRoomForm();
     setupKeyboardShortcuts();
-    // Timers are started by session-timer.js on DOMContentLoaded
 });

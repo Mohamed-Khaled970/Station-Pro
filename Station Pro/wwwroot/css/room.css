@@ -1,10 +1,94 @@
 ﻿/* wwwroot/css/room.css */
 
 /* ============================================ */
-/* ROOM PAGE STYLES */
+/* SHARED KEYFRAMES                             */
 /* ============================================ */
 
-/* Filter Buttons */
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideDown {
+    to {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(110%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(110%);
+    }
+}
+
+@keyframes toastProgress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes toastProgress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+/* ============================================ */
+/* FILTER BUTTONS                               */
+/* ============================================ */
+
 .filter-btn {
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -12,7 +96,7 @@
     background: white;
     font-weight: 600;
     font-size: 0.875rem;
-    transition: all 0.2s ease;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
     cursor: pointer;
     color: #6b7280;
 }
@@ -27,16 +111,19 @@
         background: #3b82f6;
         border-color: #3b82f6;
         color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
     }
 
-/* Room Card Base */
+/* ============================================ */
+/* ROOM CARD                                    */
+/* ============================================ */
+
 .room-card {
     background: white;
     border-radius: 16px;
     padding: 1.5rem;
     border: 2px solid #e5e7eb;
-    transition: all 0.3s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -51,107 +138,106 @@
         left: 0;
         width: 4px;
         height: 100%;
-        transition: transform 0.3s ease;
     }
 
     .room-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
 
-    /* Room Card States */
     .room-card.available {
         border-color: #d1fae5;
-        background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        background: #fafffe;
     }
-
-        .room-card.available::before {
-            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
-        }
-
-        .room-card.available:hover {
-            border-color: #10b981;
-            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.2);
-        }
 
     .room-card.occupied {
         border-color: #fecaca;
-        background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+        background: #fffafa;
     }
-
-        .room-card.occupied::before {
-            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-        }
-
-        .room-card.occupied:hover {
-            border-color: #ef4444;
-            box-shadow: 0 12px 32px rgba(239, 68, 68, 0.2);
-        }
 
     .room-card.reserved {
         border-color: #fde68a;
-        background: linear-gradient(135deg, #ffffff 0%, #fefce8 100%);
+        background: #fffefd;
     }
-
-        .room-card.reserved::before {
-            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
-        }
-
-        .room-card.reserved:hover {
-            border-color: #f59e0b;
-            box-shadow: 0 12px 32px rgba(245, 158, 11, 0.2);
-        }
 
     .room-card.maintenance {
         border-color: #e5e7eb;
-        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-        opacity: 0.7;
+        background: #fafafa;
+        opacity: .7;
     }
 
-        .room-card.maintenance::before {
-            background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
-        }
+    .room-card.available::before {
+        background: #10b981;
+    }
 
-    /* Hide filtered rooms */
+    .room-card.occupied::before {
+        background: #ef4444;
+    }
+
+    .room-card.reserved::before {
+        background: #f59e0b;
+    }
+
+    .room-card.maintenance::before {
+        background: #9ca3af;
+    }
+
+    .room-card.available:hover {
+        border-color: #10b981;
+        box-shadow: 0 8px 20px rgba(16,185,129,.12);
+    }
+
+    .room-card.occupied:hover {
+        border-color: #ef4444;
+        box-shadow: 0 8px 20px rgba(239,68,68,.12);
+    }
+
+    .room-card.reserved:hover {
+        border-color: #f59e0b;
+        box-shadow: 0 8px 20px rgba(245,158,11,.12);
+    }
+
     .room-card.hidden {
         display: none;
     }
 
-/* Status Badges */
+/* ============================================ */
+/* STATUS BADGES                                */
+/* ============================================ */
+
 .status-badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.375rem 0.75rem;
+    padding: 0.3rem 0.7rem;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.4px;
 }
 
 .status-available {
-    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    background: #d1fae5;
     color: #065f46;
 }
 
 .status-occupied {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    background: #fee2e2;
     color: #991b1b;
 }
 
 .status-reserved {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    background: #fef3c7;
     color: #92400e;
 }
 
 .status-maintenance {
-    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    background: #e5e7eb;
     color: #1f2937;
 }
 
 /* ============================================ */
-/* ROOMS GRID - EQUAL HEIGHT CARDS */
+/* GRID                                         */
 /* ============================================ */
 
 #rooms-grid {
@@ -174,22 +260,15 @@
 }
 
 /* ============================================ */
-/* ROOM CARD ACTION BUTTONS */
+/* BUTTONS                                      */
 /* ============================================ */
 
-/* Push buttons to bottom */
-.room-card > div:last-child {
-    margin-top: auto;
-    padding-top: 1rem;
-}
-
-/* Base button styles for room cards */
 .room-card .btn {
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     font-weight: 600;
     border-radius: 10px;
-    transition: all 0.2s ease;
+    transition: background 0.15s, transform 0.12s, box-shadow 0.12s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -205,562 +284,383 @@
         margin: 0;
     }
 
-/* Button container */
-.room-card .flex.gap-2 {
-    display: flex;
-    gap: 0.5rem;
-    align-items: stretch;
-}
-
-/* Primary action button (Book Now, Occupied, etc.) */
-.room-card .btn-success,
-.room-card .btn-secondary {
-    flex: 1;
-    min-width: 0; /* Allow flex shrinking */
-}
-
-    .room-card .btn-success span,
-    .room-card .btn-secondary span {
-        display: inline;
-    }
-
-/* Icon-only buttons (Edit, Delete) */
 .room-card .btn-outline,
 .room-card .btn-danger {
-    flex: 0 0 auto;
-    width: 42px;
-    min-width: 42px;
-    padding: 0.625rem;
+    flex: unset;
+    width: unset;
+    min-width: unset;
+    padding: 0.625rem 1rem;
+}
+
+.room-card > div:last-child {
+    margin-top: unset;
+    padding-top: unset;
+}
+
+.card-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+    .card-details .space-y-2 > * + * {
+        margin-top: 0.625rem;
+    }
+
+.card-actions {
+    margin-top: 0;
+    padding-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+    .card-actions .btn-row {
+        display: flex;
+        gap: 0.375rem;
+        align-items: stretch;
+        width: 100%;
+        flex-wrap: nowrap;
+        min-width: 0;
+    }
+
+    .card-actions .btn-session,
+    .card-actions .btn-utility {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+        .card-actions .btn-session span,
+        .card-actions .btn-utility span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+        }
+
+    .card-actions .btn-icon-only {
+        flex: 0 0 38px !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        padding: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+.room-card .btn-outline {
+    background: white;
+    border: 2px solid #d1d5db;
+    color: #6b7280;
 }
 
     .room-card .btn-outline:hover {
-        background-color: #f3f4f6;
+        background: #e5e7eb;
         border-color: #9ca3af;
-        transform: translateY(-2px);
+        color: #374151;
+        transform: translateY(-1px);
     }
+
+.room-card.reserved .btn-outline:hover {
+    background: #d1d5db;
+    border-color: #6b7280;
+}
+
+.room-card .btn-danger {
+    background: #ef4444;
+    color: white;
+}
 
     .room-card .btn-danger:hover {
-        background-color: #dc2626;
-        transform: translateY(-2px);
+        background: #dc2626;
+        transform: translateY(-1px);
     }
 
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(245,158,11,.25);
+}
+
+    .btn-warning:hover {
+        background: #d97706;
+        transform: translateY(-1px);
+    }
+
+.btn-multi {
+    background: #7c3aed !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: background 0.15s, transform 0.12s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 42px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+    .btn-multi:hover {
+        background: #6d28d9 !important;
+        transform: translateY(-1px);
+    }
+
+    .btn-multi i {
+        font-size: 0.875rem;
+    }
+
+.room-card.available,
+.room-card.maintenance {
+    min-height: 340px;
+}
+
 /* ============================================ */
-/* ENHANCED SUCCESS NOTIFICATION */
+/* CENTERED NOTIFICATION MODAL                  */
+/* Matches device.css success popup style       */
 /* ============================================ */
 
-.success-notification-overlay {
+.room-notif-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.45);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
     opacity: 0;
-    transition: opacity 0.4s ease;
+    animation: fadeIn 0.18s ease forwards;
 }
 
-    .success-notification-overlay.show {
-        opacity: 1;
+    .room-notif-overlay.hide {
+        animation: fadeOut 0.2s ease forwards;
     }
 
-    .success-notification-overlay.hide {
-        opacity: 0;
-    }
-
-.success-notification-content {
+.room-notif-card {
     background: white;
-    border-radius: 28px;
-    padding: 3rem 2rem 2rem;
-    max-width: 480px;
+    border-radius: 20px;
+    padding: 2rem 1.75rem 1.75rem;
+    max-width: 400px;
     width: 100%;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-    transform: scale(0.8) translateY(40px) rotateX(10deg);
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
     text-align: center;
-    position: relative;
-    overflow: hidden;
+    animation: slideUp 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
-.success-notification-overlay.show .success-notification-content {
-    transform: scale(1) translateY(0) rotateX(0deg);
+.room-notif-overlay.hide .room-notif-card {
+    animation: slideDown 0.2s ease forwards;
 }
 
-.success-notification-overlay.hide .success-notification-content {
-    transform: scale(0.8) translateY(40px);
-}
-
-/* Confetti Container */
-.confetti-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.confetti {
-    position: absolute;
-    top: -10px;
-    width: 10px;
-    height: 10px;
-    opacity: 0;
-    animation: confetti-fall 3s ease-out forwards;
-}
-
-.confetti-circle {
-    border-radius: 50%;
-}
-
-.confetti-square {
-    transform: rotate(45deg);
-}
-
-@keyframes confetti-fall {
-    0% {
-        opacity: 1;
-        transform: translateY(0) rotate(0deg);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translateY(600px) rotate(720deg);
-    }
-}
-
-/* Icon Wrapper */
-.success-notification-icon-wrapper {
-    position: relative;
-    width: 140px;
-    height: 140px;
-    margin: 0 auto 2rem;
-}
-
-.success-notification-icon-circle {
-    width: 140px;
-    height: 140px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+/* Icon circle */
+.room-notif-circle {
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 15px 50px rgba(16, 185, 129, 0.5);
-    animation: successPulse 2s ease infinite, successBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
+    margin: 0 auto 1.25rem;
 }
 
-    .success-notification-icon-circle::before {
-        content: '';
-        position: absolute;
-        inset: -10px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        opacity: 0.3;
-        animation: ripple 2s ease-out infinite;
+    .room-notif-circle i {
+        font-size: 2.25rem;
+        color: white;
     }
 
-@keyframes ripple {
-    0% {
-        transform: scale(1);
-        opacity: 0.3;
-    }
-
-    100% {
-        transform: scale(1.5);
-        opacity: 0;
-    }
+.notif-circle-success {
+    background: #10b981;
+    box-shadow: 0 4px 16px rgba(16,185,129,.35);
 }
 
-@keyframes successBounce {
-    0% {
-        transform: scale(0) rotate(-180deg);
-    }
-
-    60% {
-        transform: scale(1.2) rotate(10deg);
-    }
-
-    100% {
-        transform: scale(1) rotate(0deg);
-    }
+.notif-circle-error {
+    background: #ef4444;
+    box-shadow: 0 4px 16px rgba(239,68,68,.35);
 }
 
-.success-notification-icon {
-    font-size: 4rem;
+.notif-circle-warning {
+    background: #f59e0b;
+    box-shadow: 0 4px 16px rgba(245,158,11,.35);
+}
+
+.notif-circle-info {
+    background: #3b82f6;
+    box-shadow: 0 4px 16px rgba(59,130,246,.35);
+}
+
+/* These aren't used for circle text color but keep for legacy */
+.notif-icon-success,
+.notif-icon-error,
+.notif-icon-warning,
+.notif-icon-info {
     color: white;
-    animation: successIconScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
-/* Sparkle Effects */
-.sparkle {
-    position: absolute;
-    font-size: 1.5rem;
-    animation: sparkleFloat 2s ease-in-out infinite;
+/* Title & message */
+.room-notif-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
 }
 
-.sparkle-1 {
-    top: 0;
-    left: 10%;
-    animation-delay: 0s;
-}
-
-.sparkle-2 {
-    top: 10%;
-    right: 10%;
-    animation-delay: 0.3s;
-}
-
-.sparkle-3 {
-    bottom: 10%;
-    left: 5%;
-    animation-delay: 0.6s;
-}
-
-.sparkle-4 {
-    bottom: 0;
-    right: 5%;
-    animation-delay: 0.9s;
-}
-
-@keyframes sparkleFloat {
-    0%, 100% {
-        transform: translateY(0) scale(0.8) rotate(0deg);
-        opacity: 0.5;
-    }
-
-    50% {
-        transform: translateY(-20px) scale(1.2) rotate(180deg);
-        opacity: 1;
-    }
-}
-
-@keyframes successPulse {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 15px 50px rgba(16, 185, 129, 0.5);
-    }
-
-    50% {
-        transform: scale(1.08);
-        box-shadow: 0 20px 60px rgba(16, 185, 129, 0.7);
-    }
-}
-
-@keyframes successIconScale {
-    0% {
-        transform: scale(0) rotate(-180deg);
-        opacity: 0;
-    }
-
-    50% {
-        transform: scale(1.3) rotate(10deg);
-    }
-
-    100% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-    }
-}
-
-.success-notification-title {
-    font-size: 2rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.75rem;
-    line-height: 1.2;
-    animation: titleSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
-}
-
-@keyframes titleSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.success-notification-message {
-    font-size: 1.05rem;
+.room-notif-message {
+    font-size: 0.92rem;
     color: #6b7280;
-    margin-bottom: 2rem;
-    line-height: 1.7;
-    animation: messageSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
 }
 
-@keyframes messageSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Progress Bar */
-.success-progress-bar {
+/* Progress bar */
+.room-notif-progress {
     width: 100%;
-    height: 4px;
+    height: 3px;
     background: #e5e7eb;
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
 }
 
-.success-progress-fill {
+.room-notif-bar {
     height: 100%;
-    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
     border-radius: 2px;
-    animation: progressFill 5s linear forwards;
+    animation: toastProgress 5s linear forwards;
 }
 
-@keyframes progressFill {
-    0% {
-        width: 100%;
-    }
-
-    100% {
-        width: 0%;
-    }
+.notif-btn-success-bar {
+    background: #10b981;
 }
 
-.success-notification-actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    animation: buttonSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s both;
+.notif-btn-error-bar {
+    background: #ef4444;
 }
 
-@keyframes buttonSlideIn {
-    0% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.9);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.notif-btn-warning-bar {
+    background: #f59e0b;
 }
 
-.success-notification-btn-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    padding: 1rem 2.5rem;
-    border-radius: 14px;
-    font-weight: 800;
-    font-size: 1.05rem;
+.notif-btn-info-bar {
+    background: #3b82f6;
+}
+
+/* Button */
+.room-notif-btn {
+    padding: 0.7rem 2rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    transition: filter 0.15s, transform 0.12s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    overflow: hidden;
+    color: white;
 }
 
-    .success-notification-btn-primary::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
+    .room-notif-btn:hover {
+        filter: brightness(0.92);
+        transform: translateY(-1px);
     }
 
-    .success-notification-btn-primary:hover::before {
-        width: 300px;
-        height: 300px;
-    }
+.notif-btn-success {
+    background: #10b981;
+}
 
-    .success-notification-btn-primary:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.6);
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    }
+.notif-btn-error {
+    background: #ef4444;
+}
 
-    .success-notification-btn-primary:active {
-        transform: translateY(-1px) scale(1.02);
-    }
+.notif-btn-warning {
+    background: #f59e0b;
+}
 
-    .success-notification-btn-primary span {
-        position: relative;
-        z-index: 1;
-    }
+.notif-btn-info {
+    background: #3b82f6;
+}
 
 /* ============================================ */
-/* DELETE CONFIRMATION MODAL */
+/* DELETE CONFIRMATION                          */
 /* ============================================ */
 
 .delete-confirmation-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    animation: fadeIn 0.2s ease forwards;
 }
 
-    .delete-confirmation-overlay.show {
-        opacity: 1;
-    }
-
     .delete-confirmation-overlay.hide {
-        opacity: 0;
+        animation: fadeOut 0.2s ease forwards;
     }
 
 .delete-confirmation-content {
     background: white;
-    border-radius: 24px;
-    padding: 2.5rem 2rem 2rem;
-    max-width: 440px;
+    border-radius: 20px;
+    padding: 2rem 1.75rem 1.75rem;
+    max-width: 400px;
     width: 100%;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    transform: scale(0.9) translateY(20px);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
     text-align: center;
-    position: relative;
-}
-
-.delete-confirmation-overlay.show .delete-confirmation-content {
-    transform: scale(1) translateY(0);
+    animation: slideUp 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
 .delete-confirmation-overlay.hide .delete-confirmation-content {
-    transform: scale(0.9) translateY(20px);
+    animation: slideDown 0.2s ease forwards;
 }
 
-/* Warning Icon */
 .delete-confirmation-icon-wrapper {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 1.5rem;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1.25rem;
 }
 
 .delete-confirmation-icon-circle {
-    width: 120px;
-    height: 120px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    width: 72px;
+    height: 72px;
+    background: #ef4444;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 40px rgba(239, 68, 68, 0.4);
-    animation: warningShake 0.6s ease, warningPulse 2s ease infinite;
-    position: relative;
-    z-index: 2;
-}
-
-.warning-pulse {
-    position: absolute;
-    inset: -8px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    opacity: 0.3;
-    animation: warningRipple 2s ease-out infinite;
-}
-
-@keyframes warningShake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-
-    10%, 30%, 50%, 70%, 90% {
-        transform: translateX(-8px);
-    }
-
-    20%, 40%, 60%, 80% {
-        transform: translateX(8px);
-    }
-}
-
-@keyframes warningPulse {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 12px 40px rgba(239, 68, 68, 0.4);
-    }
-
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 15px 50px rgba(239, 68, 68, 0.6);
-    }
-}
-
-@keyframes warningRipple {
-    0% {
-        transform: scale(1);
-        opacity: 0.3;
-    }
-
-    100% {
-        transform: scale(1.4);
-        opacity: 0;
-    }
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
 }
 
 .delete-confirmation-icon {
-    font-size: 3.5rem;
+    font-size: 2rem;
     color: white;
-    animation: iconBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-
-@keyframes iconBounce {
-    0% {
-        transform: scale(0) rotate(-45deg);
-        opacity: 0;
-    }
-
-    60% {
-        transform: scale(1.2) rotate(5deg);
-    }
-
-    100% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-    }
 }
 
 .delete-confirmation-title {
-    font-size: 1.75rem;
-    font-weight: 900;
-    color: #1f2937;
-    margin-bottom: 0.75rem;
-    animation: titleSlideUp 0.5s ease 0.3s both;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 0.5rem;
 }
 
 .delete-confirmation-message {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #6b7280;
     margin-bottom: 0.75rem;
     line-height: 1.6;
-    animation: messageSlideUp 0.5s ease 0.4s both;
 }
 
     .delete-confirmation-message strong {
@@ -769,81 +669,32 @@
     }
 
 .delete-confirmation-warning {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     color: #ef4444;
     background: #fef2f2;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    border-left: 4px solid #ef4444;
-    margin-bottom: 2rem;
-    animation: warningSlideUp 0.5s ease 0.5s both;
-}
-
-@keyframes titleSlideUp {
-    0% {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes messageSlideUp {
-    0% {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes warningSlideUp {
-    0% {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border-left: 3px solid #ef4444;
+    margin-bottom: 1.5rem;
+    text-align: left;
 }
 
 .delete-confirmation-actions {
     display: flex;
-    gap: 0.75rem;
-    animation: actionsSlideUp 0.5s ease 0.6s both;
-}
-
-@keyframes actionsSlideUp {
-    0% {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    gap: 0.625rem;
 }
 
 .delete-confirmation-btn-cancel {
     flex: 1;
     background: white;
     color: #6b7280;
-    padding: 0.875rem 1.5rem;
-    border-radius: 12px;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     border: 2px solid #e5e7eb;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.15s, border-color 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -852,76 +703,47 @@
     .delete-confirmation-btn-cancel:hover {
         background: #f9fafb;
         border-color: #d1d5db;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
 .delete-confirmation-btn-delete {
     flex: 1;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: #ef4444;
     color: white;
-    padding: 0.875rem 1.5rem;
-    border-radius: 12px;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    transition: background 0.15s, transform 0.12s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    overflow: hidden;
 }
 
-    .delete-confirmation-btn-delete::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        transition: width 0.5s, height 0.5s;
-    }
-
-    .delete-confirmation-btn-delete:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-
     .delete-confirmation-btn-delete:hover {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-    }
-
-    .delete-confirmation-btn-delete:active {
-        transform: translateY(0) scale(0.98);
+        background: #dc2626;
+        transform: translateY(-1px);
     }
 
 /* ============================================ */
-/* DELETING OVERLAY */
+/* DELETING OVERLAY                             */
 /* ============================================ */
 
 .deleting-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.45);
     z-index: 9998;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    animation: fadeIn 0.2s ease forwards;
 }
 
-    .deleting-overlay.show {
-        opacity: 1;
+    .deleting-overlay.hide {
+        animation: fadeOut 0.2s ease forwards;
     }
 
 .deleting-spinner-wrapper {
@@ -929,164 +751,38 @@
 }
 
 .deleting-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(239, 68, 68, 0.2);
-    border-top-color: #ef4444;
+    width: 44px;
+    height: 44px;
+    border: 3px solid rgba(255,255,255,.25);
+    border-top-color: white;
     border-radius: 50%;
-    margin: 0 auto 1rem;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    margin: 0 auto 0.875rem;
+    animation: spin 0.7s linear infinite;
 }
 
 .deleting-text {
     color: white;
-    font-size: 1rem;
-    font-weight: 600;
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
-}
-
-/* ============================================ */
-/* ERROR NOTIFICATION */
-/* ============================================ */
-
-.error-notification-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-    .error-notification-overlay.show {
-        opacity: 1;
-    }
-
-    .error-notification-overlay.hide {
-        opacity: 0;
-    }
-
-.error-notification-content {
-    background: white;
-    border-radius: 24px;
-    padding: 2.5rem 2rem 2rem;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    transform: scale(0.9);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    text-align: center;
-}
-
-.error-notification-overlay.show .error-notification-content {
-    transform: scale(1);
-}
-
-.error-notification-overlay.hide .error-notification-content {
-    transform: scale(0.9);
-}
-
-.error-notification-icon-wrapper {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 1.5rem;
-}
-
-.error-notification-icon-circle {
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
-    animation: errorShake 0.5s ease;
-}
-
-@keyframes errorShake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-
-    25% {
-        transform: translateX(-10px);
-    }
-
-    75% {
-        transform: translateX(10px);
-    }
-}
-
-.error-notification-icon {
-    font-size: 3rem;
-    color: white;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-
-.error-notification-title {
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: #1f2937;
-    margin-bottom: 0.75rem;
-}
-
-.error-notification-message {
-    font-size: 1rem;
-    color: #6b7280;
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-
-.error-notification-actions {
-    display: flex;
-    justify-content: center;
-}
-
-.error-notification-btn {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    padding: 0.875rem 2rem;
-    border-radius: 12px;
-    font-weight: 700;
     font-size: 0.95rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    font-weight: 600;
 }
 
-    .error-notification-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    }
+/* ============================================ */
+/* NUMBER INPUT                                 */
+/* ============================================ */
 
-/* Hide number input arrows */
+.relative input[type="number"],
+.relative input.form-input[type="number"] {
+    padding-right: 5.5rem;
+}
+
+.relative input[type="text"].has-suffix {
+    padding-right: 5.5rem;
+}
+
+/* ============================================ */
+/* MISC                                         */
+/* ============================================ */
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -1098,8 +794,12 @@ input[type="number"] {
     appearance: textfield;
 }
 
+.fade-in {
+    animation: fadeIn 0.2s ease both;
+}
+
 /* ============================================ */
-/* RESPONSIVE - MOBILE OPTIMIZATIONS */
+/* RESPONSIVE                                   */
 /* ============================================ */
 
 @media (max-width: 768px) {
@@ -1117,90 +817,23 @@ input[type="number"] {
         padding: 0.25rem 0.5rem;
     }
 
-    /* Mobile button adjustments */
     .room-card .btn {
         padding: 0.5rem 0.75rem;
         font-size: 0.8125rem;
         min-height: 38px;
-        gap: 0.375rem;
     }
 
-        .room-card .btn i {
-            font-size: 0.75rem;
-        }
-
-        .room-card .btn span {
-            font-size: 0.8125rem;
-        }
-
-    /* Button container - tighter spacing on mobile */
-    .room-card .flex.gap-2 {
-        gap: 0.375rem;
+    .card-actions .btn-icon-only {
+        flex: 0 0 36px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
     }
 
-    /* Icon-only buttons on mobile */
-    .room-card .btn-outline,
-    .room-card .btn-danger {
-        width: 38px;
-        min-width: 38px;
-        padding: 0.5rem;
-    }
-
-    .success-notification-content {
-        padding: 2.5rem 1.5rem 1.5rem;
-    }
-
-    .success-notification-icon-wrapper {
-        width: 110px;
-        height: 110px;
-    }
-
-    .success-notification-icon-circle {
-        width: 110px;
-        height: 110px;
-    }
-
-    .success-notification-icon {
-        font-size: 3.5rem;
-    }
-
-    .success-notification-title {
-        font-size: 1.5rem;
-    }
-
-    .success-notification-message {
-        font-size: 0.9rem;
-    }
-
-    .success-notification-btn-primary {
-        padding: 0.875rem 2rem;
-        font-size: 0.95rem;
-    }
-
-    .delete-confirmation-content {
-        padding: 2rem 1.5rem 1.5rem;
-    }
-
-    .delete-confirmation-icon-wrapper {
-        width: 100px;
-        height: 100px;
-    }
-
-    .delete-confirmation-icon-circle {
-        width: 100px;
-        height: 100px;
-    }
-
-    .delete-confirmation-icon {
-        font-size: 3rem;
-    }
-
-    .delete-confirmation-title {
-        font-size: 1.5rem;
-    }
-
-    .delete-confirmation-message {
-        font-size: 0.9rem;
+    .btn-multi {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+        min-height: 38px;
     }
 
     .delete-confirmation-actions {
@@ -1211,451 +844,39 @@ input[type="number"] {
     .delete-confirmation-btn-delete {
         width: 100%;
     }
+
+    .room-notif-card {
+        padding: 1.5rem 1.25rem 1.25rem;
+    }
 }
 
-/* Tablet view adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
     .room-card .btn {
         padding: 0.5625rem 0.9375rem;
         font-size: 0.8438rem;
     }
 
-    .room-card .btn-outline,
-    .room-card .btn-danger {
-        width: 40px;
-        min-width: 40px;
+    .card-actions .btn-icon-only {
+        flex: 0 0 40px !important;
+        width: 40px !important;
+        min-width: 40px !important;
+        max-width: 40px !important;
     }
 }
 
 /* ============================================ */
-/* PRINT STYLES */
+/* PRINT                                        */
 /* ============================================ */
 
 @media print {
-    .filter-btn,
-    .btn,
-    nav,
-    .success-notification-overlay,
+    .filter-btn, .btn, nav,
+    .toast-container,
     .delete-confirmation-overlay,
-    .error-notification-overlay,
     .deleting-overlay {
         display: none !important;
     }
 
     .room-card {
         break-inside: avoid;
-        page-break-inside: avoid;
     }
-}
-
-
-/* Warning button (Reserve) */
-.btn-warning {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-}
-
-    .btn-warning:hover {
-        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
-    }
-
-/* Room live timer pulse */
-.room-timer {
-    animation: timerTick 1s ease-in-out infinite;
-}
-
-@keyframes timerTick {
-    0%, 100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.75;
-    }
-}
-
-/* Occupied card timer section */
-.room-card.occupied .bg-red-50 {
-    animation: none; /* keep timer block stable */
-}
-
-/* Card action row: make Reserve button slightly smaller text */
-.room-card .btn-warning span {
-    font-size: 0.8125rem;
-}
-
-/* Available card — two action buttons side by side */
-.room-card.available .flex.gap-2 .btn-success,
-.room-card.available .flex.gap-2 .btn-warning {
-    flex: 1;
-}
-
-/* End Session button — full width primary action */
-.room-card.occupied .flex.gap-2 .btn-danger:first-child {
-    flex: 1;
-}
-
-.session-type-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.875rem 1rem;
-    border-radius: 14px;
-    border: 2px solid #e5e7eb;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    user-select: none;
-}
-
-    .session-type-card:hover {
-        border-color: #93c5fd;
-        background: #eff6ff;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-    }
-
-    .session-type-card.selected {
-        border-color: #3b82f6;
-        background: #eff6ff;
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-    }
-
-/* Multi card selected state — purple */
-#type-multi-card.selected {
-    border-color: #7c3aed;
-    background: #f5f3ff;
-    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
-}
-
-#type-multi-card:hover {
-    border-color: #a78bfa;
-    background: #f5f3ff;
-}
-
-.session-type-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 1rem;
-}
-
-.session-type-label {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: #1f2937;
-    line-height: 1.2;
-}
-
-.session-type-sub {
-    font-size: 0.7rem;
-    color: #9ca3af;
-    margin-top: 2px;
-}
-
-.session-type-rate {
-    margin-left: auto;
-    font-size: 0.8125rem;
-    font-weight: 800;
-    color: #3b82f6;
-    white-space: nowrap;
-}
-
-#type-multi-card .session-type-rate {
-    color: #7c3aed;
-}
-
-/* Selected checkmark indicator */
-.session-type-card.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 6px;
-    right: 8px;
-    font-size: 0.625rem;
-    font-weight: 900;
-    color: #3b82f6;
-    background: #dbeafe;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 16px;
-    text-align: center;
-}
-
-#type-multi-card.selected::after {
-    color: #7c3aed;
-    background: #ede9fe;
-}
-
-
-/* ============================================
-   APPEND THIS ENTIRE BLOCK TO THE BOTTOM
-   OF YOUR EXISTING wwwroot/css/room.css
-   ============================================ */
-
-/* ── Multi session button (purple) ────────────────────────────────────────── */
-.btn-multi {
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: 42px;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-    .btn-multi:hover {
-        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
-    }
-
-    .btn-multi i {
-        font-size: 0.875rem;
-    }
-
-/* ── Icon-only buttons (Edit, Delete, Reserve on available cards) ──────────── */
-.btn-icon-only {
-    flex: 0 0 auto !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    padding: 0.625rem !important;
-}
-
-/* Override the room-card flex-1 that would otherwise stretch icon buttons */
-.room-card .btn-icon-only {
-    flex: 0 0 auto;
-    width: 42px;
-    min-width: 42px;
-}
-
-/* ── Available card: Single + Multi buttons side-by-side ──────────────────── */
-.room-card.available .btn-success,
-.room-card.available .btn-multi {
-    flex: 1;
-    min-width: 0;
-}
-
-/* ── Mobile tweaks ─────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-    .btn-multi {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8125rem;
-        min-height: 38px;
-    }
-
-    .btn-icon-only {
-        width: 38px !important;
-        min-width: 38px !important;
-        padding: 0.5rem !important;
-    }
-}
-
-/* ── 1. Reset old conflicting rules ────────────────────────────── */
-
-/* OLD: made ALL btn-outline & btn-danger fixed 42px squares       */
-.room-card .btn-outline,
-.room-card .btn-danger {
-    flex: unset;
-    width: unset;
-    min-width: unset;
-    padding: 0.625rem 1rem;
-}
-
-/* OLD: pushed last div with margin-top:auto — interferes now      */
-.room-card > div:last-child {
-    margin-top: unset;
-    padding-top: unset;
-}
-
-/* ── 2. Equal card heights — buttons always at the same baseline ─ */
-
-/* The details block (.card-details) grows to fill all free space  */
-/* between the header row and the action buttons.                  */
-/* Cards with less content (Available) will stretch the details    */
-/* section to match taller cards (Occupied/Reserved) in same row.  */
-.room-card .card-details {
-    flex: 1; /* grow to fill available height   */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    margin-bottom: 0; /* card-actions handles its own gap */
-}
-
-/* card-actions sits right after card-details — no extra push needed */
-.room-card .card-actions {
-    margin-top: 0;
-    padding-top: 0.875rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-    /* ── 3. Button rows ─────────────────────────────────────────────── */
-
-    .room-card .card-actions .btn-row {
-        display: flex;
-        gap: 0.5rem;
-        align-items: stretch;
-        width: 100%;
-    }
-
-    /* Session buttons (Single / Multi / Check In / Cancel) — 50/50    */
-    .room-card .card-actions .btn-session {
-        flex: 1 1 0;
-        min-width: 0;
-    }
-
-    /* Utility buttons (Reserve / End Session / Edit-stretch)          */
-    .room-card .card-actions .btn-utility {
-        flex: 1 1 0;
-        min-width: 0;
-    }
-
-    /* Icon-only squares (Edit, Delete) — fixed 42 px                  */
-    .room-card .card-actions .btn-icon-only {
-        flex: 0 0 42px !important;
-        width: 42px !important;
-        min-width: 42px !important;
-        max-width: 42px !important;
-        padding: 0 !important;
-    }
-
-/* ── 4. Multi button — purple ───────────────────────────────────── */
-.btn-multi {
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
-    color: white !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: 42px;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-    .btn-multi:hover {
-        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4) !important;
-    }
-
-/* ── 5. Mobile ──────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-    .room-card .card-actions .btn-icon-only {
-        flex: 0 0 38px !important;
-        width: 38px !important;
-        min-width: 38px !important;
-        max-width: 38px !important;
-    }
-}
-/* ── FIX 1: Button rows — prevent overlap on narrow cards ─────────── */
-
-/* Allow text to wrap or shrink gracefully */
-.room-card .card-actions .btn-row {
-    gap: 0.375rem; /* tighter gap so buttons have more room      */
-    flex-wrap: nowrap; /* keep on one line but let flex do its job    */
-    min-width: 0;
-}
-
-/* Session & utility buttons: allow shrinking, clip text with ellipsis */
-.room-card .card-actions .btn-session,
-.room-card .card-actions .btn-utility {
-    flex: 1 1 0;
-    min-width: 0;
-    overflow: hidden;
-}
-
-    .room-card .card-actions .btn-session span,
-    .room-card .card-actions .btn-utility span {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        display: block;
-    }
-
-/* Icon-only buttons: never shrink below 38px, never grow */
-.room-card .card-actions .btn-icon-only {
-    flex: 0 0 38px !important;
-    width: 38px !important;
-    min-width: 38px !important;
-    max-width: 38px !important;
-    padding: 0 !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ── FIX 2: Edit (btn-outline) hover — visible on Reserved (yellow bg) */
-
-/* Global outline button hover — darker so it reads on any card color  */
-.room-card .btn-outline {
-    background-color: white;
-    border: 2px solid #d1d5db;
-    color: #6b7280;
-}
-
-    .room-card .btn-outline:hover {
-        background-color: #e5e7eb !important; /* medium gray, readable everywhere */
-        border-color: #9ca3af !important;
-        color: #374151 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-    }
-
-/* Specifically on reserved (yellow bg) cards, darken a touch more     */
-.room-card.reserved .btn-outline:hover {
-    background-color: #d1d5db !important;
-    border-color: #6b7280 !important;
-}
-/* More space between info rows */
-.room-card .card-details {
-    gap: 0.5rem; /* space between Single / Multi / Capacity rows */
-    padding-bottom: 0.5rem;
-}
-
-    .room-card .card-details .space-y-2 > * + * {
-        margin-top: 0.625rem; /* slightly wider row spacing */
-    }
-
-/* More space above the button block */
-.room-card .card-actions {
-    padding-top: 1.25rem; /* was 0.875rem */
-    gap: 0.625rem; /* slightly more gap between btn rows */
-    border-top: 1px solid #f3f4f6; /* subtle separator line */
-}
-
-/* Give the card itself a taller minimum so short-content cards
-   don't look squished next to taller occupied/reserved ones */
-.room-card.available,
-.room-card.maintenance {
-    min-height: 340px;
 }
