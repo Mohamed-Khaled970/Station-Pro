@@ -1,5 +1,6 @@
 ﻿@model SessionPageViewModel
 @using Microsoft.Extensions.Localization
+@using StationPro.Application.Enums
 @using StationPro.Controllers
 @using StationPro
 @inject IStringLocalizer<SharedResources> Localizer
@@ -175,7 +176,7 @@
             *@
                 @foreach (var session in Model.Sessions)
                 {
-                    @if (session.Status == "Active")
+                    @if (session.Status == SessionStatus.Active)
                     {
                         <span class="hidden"
                               id="timer-@session.Id"
@@ -204,17 +205,17 @@
                             {
                                 <tr class="hover:bg-gray-50 transition-colors">
 
-                                    <!-- Device -->
+                                    <!-- Device / Source -->
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <div class="bg-blue-100 p-2 rounded-lg">
                                                 <i class="fas fa-gamepad text-blue-600"></i>
                                             </div>
                                             <div>
-                                                <p class="font-semibold text-gray-900">@session.DeviceName</p>
+                                                <p class="font-semibold text-gray-900">@session.SourceName</p>
                                                 <div class="flex items-center gap-2 text-xs text-gray-500">
-                                                    <span>@session.DeviceType</span>
-                                                    @if (session.SessionType == "multi")
+                                                    <span>@session.SourceCategory</span>
+                                                    @if (session.SessionType == SessionType.Multi)
                                                     {
                                                         <span class="text-purple-600 font-semibold">• Multi-Session</span>
                                                     }
@@ -251,7 +252,7 @@
 
                                     <!-- Duration — display element uses CSS class, NOT id -->
                                     <td class="px-6 py-4">
-                                        @if (session.Status == "Active")
+                                        @if (session.Status == SessionStatus.Active)
                                         {
                                             <span class="font-mono font-semibold text-blue-600 timer-display-@session.Id">
                                                 @session.DurationFormatted
@@ -268,12 +269,12 @@
                                     <!-- Cost — display element uses CSS class, NOT id -->
                                     <td class="px-6 py-4">
                                         <div>
-                                            @if (session.Status == "Active")
+                                            @if (session.Status == SessionStatus.Active)
                                             {
                                                 <span class="font-bold text-green-600 cost-display-@session.Id">
-                                                    @session.TotalCost.ToString("C")
+                                                    @session.RunningCost.ToString("C")
                                                 </span>
-                                                @if (session.SessionType == "multi")
+                                                @if (session.SessionType == SessionType.Multi)
                                                 {
                                                     <span class="block text-xs text-purple-600 font-semibold mt-1">
                                                         Multi: @session.HourlyRate.ToString("C")/hr
@@ -291,7 +292,7 @@
                                                 <span class="font-bold text-green-600">
                                                     @session.TotalCost.ToString("C")
                                                 </span>
-                                                @if (session.SessionType == "multi")
+                                                @if (session.SessionType == SessionType.Multi)
                                                 {
                                                     <span class="block text-xs text-purple-600 font-semibold mt-1">
                                                         Multi: @session.HourlyRate.ToString("C")/hr
@@ -309,7 +310,7 @@
 
                                     <!-- Status -->
                                     <td class="px-6 py-4">
-                                        @if (session.Status == "Active")
+                                        @if (session.Status == SessionStatus.Active)
                                         {
                                             <span class="status-badge status-active">
                                                 <i class="fas fa-circle text-xs mr-1"></i>
@@ -333,7 +334,7 @@
                                                     title="@Localizer["ViewDetails"]">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            @if (session.Status == "Completed")
+                                            @if (session.Status == SessionStatus.Completed)
                                             {
                                                 <button onclick="printReceipt(@session.Id)"
                                                         class="btn btn-sm btn-secondary"
@@ -341,9 +342,9 @@
                                                     <i class="fas fa-print"></i>
                                                 </button>
                                             }
-                                            else if (session.Status == "Active")
+                                            else if (session.Status == SessionStatus.Active)
                                             {
-                                                <button onclick="endSessionFromList(@session.Id, '@session.DeviceName', '@session.DurationFormatted', '@session.TotalCost.ToString("C")')"
+                                                <button onclick="endSessionFromList(@session.Id, '@session.SourceName', '@session.DurationFormatted', '@session.RunningCost.ToString("C")')"
                                                         class="btn btn-sm btn-danger"
                                                         title="@Localizer["EndSession"]">
                                                     <i class="fas fa-stop"></i>
@@ -369,17 +370,17 @@
                                         <i class="fas fa-gamepad text-blue-600"></i>
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-gray-900">@session.DeviceName</p>
+                                        <p class="font-semibold text-gray-900">@session.SourceName</p>
                                         <div class="flex items-center gap-2 text-xs text-gray-500">
                                             <span>@session.StartTime.ToString("MMM dd, h:mm tt")</span>
-                                            @if (session.SessionType == "multi")
+                                            @if (session.SessionType == SessionType.Multi)
                                             {
                                                 <span class="text-purple-600 font-semibold">• Multi</span>
                                             }
                                         </div>
                                     </div>
                                 </div>
-                                @if (session.Status == "Active")
+                                @if (session.Status == SessionStatus.Active)
                                 {
                                     <span class="status-badge status-active">@Localizer["Active"]</span>
                                 }
@@ -398,7 +399,7 @@
                                 <!-- Duration — same class as desktop, JS updates both -->
                                 <div>
                                     <p class="text-gray-500">@Localizer["Duration"]</p>
-                                    @if (session.Status == "Active")
+                                    @if (session.Status == SessionStatus.Active)
                                     {
                                         <p class="font-mono font-semibold text-blue-600 timer-display-@session.Id">
                                             @session.DurationFormatted
@@ -413,17 +414,17 @@
                                 <!-- Cost — same class as desktop, JS updates both -->
                                 <div>
                                     <p class="text-gray-500">@Localizer["Cost"]</p>
-                                    @if (session.Status == "Active")
+                                    @if (session.Status == SessionStatus.Active)
                                     {
                                         <p class="font-bold text-green-600 cost-display-@session.Id">
-                                            @session.TotalCost.ToString("C")
+                                            @session.RunningCost.ToString("C")
                                         </p>
                                     }
                                     else
                                     {
                                         <p class="font-bold text-green-600">@session.TotalCost.ToString("C")</p>
                                     }
-                                    @if (session.SessionType == "multi")
+                                    @if (session.SessionType == SessionType.Multi)
                                     {
                                         <p class="text-xs text-purple-600 font-semibold">Multi Rate</p>
                                     }
@@ -441,16 +442,16 @@
                                     <i class="fas fa-eye mr-1"></i>
                                     @Localizer["ViewDetails"]
                                 </button>
-                                @if (session.Status == "Completed")
+                                @if (session.Status == SessionStatus.Completed)
                                 {
                                     <button onclick="printReceipt(@session.Id)"
                                             class="btn btn-sm btn-secondary">
                                         <i class="fas fa-print"></i>
                                     </button>
                                 }
-                                else if (session.Status == "Active")
+                                else if (session.Status == SessionStatus.Active)
                                 {
-                                    <button onclick="endSessionFromList(@session.Id, '@session.DeviceName', '@session.DurationFormatted', '@session.TotalCost.ToString("C")')"
+                                    <button onclick="endSessionFromList(@session.Id, '@session.SourceName', '@session.DurationFormatted', '@session.RunningCost.ToString("C")')"
                                             class="btn btn-sm btn-danger">
                                         <i class="fas fa-stop mr-1"></i>
                                         @Localizer["End"]

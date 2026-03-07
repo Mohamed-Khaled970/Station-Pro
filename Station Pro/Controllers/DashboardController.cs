@@ -1,488 +1,248 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StationPro.Application.DTOs;
+using StationPro.Application.Interfaces;
 using StationPro.Domain.Entities;
+
+using StationPro.Application.Enums;
+using StationPro.Application.Interfaces.InMemory;
+using StationPro.Filters;
 
 namespace Station_Pro.Controllers.Station_Pro.Controllers
 {
+    [SubscriptionRequired]
     public class DashboardController : Controller
     {
-        // Static sessions list to track active sessions
-        private static List<SessionDto> _activeSessions = GenerateInitialSessions();
+        private readonly ISessionService _sessions;
 
-        // NEW: Static list to store completed sessions
-        private static List<SessionReportDto> _completedSessions = new List<SessionReportDto>();
+        public DashboardController(ISessionService sessions)
+        {
+            _sessions = sessions;
+        }
 
-        // Main Dashboard Index
+        // ─── Static helpers kept for backward compat ──────────────────────────
+        // SessionController and RoomController call these.
+        // They now just proxy to SessionStore instead of owning private lists.
+
+        public static List<UnifiedSessionDto> GetActiveSessions()
+            => SessionStore.GetActive()
+               .Where(s => s.SourceType == SessionSourceType.Device)
+               .ToList();
+
+        public static List<UnifiedSessionDto> GetCompletedSessions()
+            => SessionStore.GetAll()
+               .Where(s => s.Status == SessionStatus.Completed)
+               .ToList();
+
+        // These two are kept so old call sites compile without changes.
+        // They are no-ops now — SessionStore is the single store.
+        public static void AddActiveSession(SessionDto session) { }
+        public static void AddCompletedSession(SessionReportDto session) { }
+
+        // ─── Views ────────────────────────────────────────────────────────────
+
         public IActionResult Index()
         {
+            var allToday = SessionStore.GetAll()
+                .Where(s => s.StartTime.Date == DateTime.Today)
+                .ToList();
+
             var stats = new DashboardStatsDto
             {
                 TodayRevenue = CalculateTodayRevenue(),
-                TotalSessions = _activeSessions.Count + _completedSessions.Count,
-                ActiveDevices = _activeSessions.Count,
-                TotalDevices = 12,
-                ActiveSessions = _activeSessions.Count,
-                AverageSessionCost = 106.54m
+                TotalSessions = allToday.Count,
+                ActiveSessions = allToday.Count(s => s.Status == SessionStatus.Active),
+                ActiveDevices = allToday.Count(s => s.Status == SessionStatus.Active
+                                                       && s.SourceType == SessionSourceType.Device),
+                TotalDevices = DeviceStore.GetAll().Count,
+                AverageSessionCost = CalculateAverageCost()
             };
 
             return View(stats);
         }
 
-        // Live Stats (for HTMX auto-refresh)
         public IActionResult LiveStats()
         {
             var stats = new DashboardStatsDto
             {
                 TodayRevenue = CalculateTodayRevenue(),
-                TotalSessions = _activeSessions.Count + _completedSessions.Count,
-                ActiveDevices = _activeSessions.Count,
-                TotalDevices = 12,
-                ActiveSessions = _activeSessions.Count,
+                TotalSessions = SessionStore.GetAll().Count(s => s.StartTime.Date == DateTime.Today),
+                ActiveSessions = SessionStore.GetActive().Count,
+                ActiveDevices = SessionStore.GetActive().Count(s => s.SourceType == SessionSourceType.Device),
+                TotalDevices = DeviceStore.GetAll().Count,
                 AverageSessionCost = CalculateAverageCost()
             };
 
             return PartialView("_DashboardStats", stats);
         }
 
-        // Active Sessions (for HTMX auto-refresh)
         public IActionResult ActiveSessions()
         {
-            // Update durations and costs for all active sessions
-            foreach (var session in _activeSessions)
-            {
-                var elapsed = DateTime.Now - session.StartTime;
-                session.Duration = elapsed;
-                session.TotalCost = (decimal)(elapsed.TotalHours * (double)session.HourlyRate);
-            }
+            // Build SessionDto list from UnifiedSessionDto for the active sessions partial
+            // (the _ActiveSessions partial still uses the old SessionDto model)
+            var active = SessionStore.GetActive()
+                .Where(s => s.SourceType == SessionSourceType.Device)
+                .Select(s => new SessionDto
+                {
+                    Id = s.Id,
+                    DeviceId = s.DeviceId ?? 0,
+                    DeviceName = s.SourceName,
+                    CustomerName = s.CustomerName,
+                    CustomerPhone = s.CustomerPhone,
+                    StartTime = s.StartTime,
+                    HourlyRate = s.HourlyRate,
+                    Status = s.Status.ToString(),
+                    Duration = s.Duration,
+                    TotalCost = s.RunningCost,
+                    SessionType = s.SessionType.ToString().ToLower()
+                })
+                .ToList();
 
-            return PartialView("_ActiveSessions", _activeSessions);
+            return PartialView("_ActiveSessions", active);
         }
 
-        // Device Cards (for HTMX auto-refresh) - UPDATED WITH MULTI-SESSION SUPPORT
         public IActionResult DeviceCards()
         {
-            var devices = new List<DeviceDto>();
+            var allDevices = DeviceStore.GetAll();
+            var activeSessions = SessionStore.GetActive()
+                .Where(s => s.SourceType == SessionSourceType.Device)
+                .ToList();
 
-            // Add devices that are in use
-            foreach (var session in _activeSessions)
+            // Attach active session snapshots to device DTOs
+            foreach (var device in allDevices)
             {
-                devices.Add(new DeviceDto
+                var running = activeSessions.FirstOrDefault(s => s.DeviceId == device.Id);
+                if (running != null)
                 {
-                    Id = session.DeviceId,
-                    Name = session.DeviceName,
-                    Type = GetDeviceType(session.DeviceName),
-                    SingleSessionRate = session.HourlyRate,
-                    MultiSessionRate = GetMultiSessionRate(session.DeviceName), // NEW
-                    SupportsMultiSession = SupportsMultiSession(session.DeviceName), // NEW
-                    IsAvailable = false,
-                    Status = "In Use",
-                    CurrentSession = session
-                });
-            }
-
-            // Add available devices with multi-session support
-            var usedDeviceIds = _activeSessions.Select(s => s.DeviceId).ToList();
-
-            if (!usedDeviceIds.Contains(3))
-            {
-                devices.Add(new DeviceDto
-                {
-                    Id = 3,
-                    Name = "PS4 - Station 1",
-                    Type = DeviceType.PS4,
-                    SingleSessionRate = 40,
-                    MultiSessionRate = 60, // Multi-session rate
-                    SupportsMultiSession = true, // Enable multi-session
-                    IsAvailable = true,
-                    Status = "Available",
-                    CurrentSession = null
-                });
-            }
-
-            if (!usedDeviceIds.Contains(6))
-            {
-                devices.Add(new DeviceDto
-                {
-                    Id = 6,
-                    Name = "Xbox One",
-                    Type = DeviceType.Xbox,
-                    SingleSessionRate = 40,
-                    MultiSessionRate = 70, // Multi-session rate
-                    SupportsMultiSession = true, // Enable multi-session
-                    IsAvailable = true,
-                    Status = "Available",
-                    CurrentSession = null
-                });
-            }
-
-            if (!usedDeviceIds.Contains(8))
-            {
-                devices.Add(new DeviceDto
-                {
-                    Id = 8,
-                    Name = "Gaming PC - Standard",
-                    Type = DeviceType.PC,
-                    SingleSessionRate = 40,
-                    MultiSessionRate = null, // No multi-session for this device
-                    SupportsMultiSession = false,
-                    IsAvailable = true,
-                    Status = "Available",
-                    CurrentSession = null
-                });
-            }
-
-            // Add more available devices...
-            for (int i = 9; i <= 12; i++)
-            {
-                if (!usedDeviceIds.Contains(i))
-                {
-                    devices.Add(new DeviceDto
+                    device.DeviceStatus = DeviceStatus.InUse;
+                    device.ActiveSessionId = running.Id;
+                    device.CurrentSession = new SessionDto
                     {
-                        Id = i,
-                        Name = $"Device {i}",
-                        Type = DeviceType.PS4,
-                        SingleSessionRate = 40,
-                        MultiSessionRate = 60, // Add multi-session support
-                        SupportsMultiSession = true,
-                        IsAvailable = true,
-                        Status = "Available",
-                        CurrentSession = null
-                    });
+                        Id = running.Id,
+                        DeviceId = running.DeviceId ?? 0,
+                        DeviceName = running.SourceName,
+                        CustomerName = running.CustomerName,
+                        CustomerPhone = running.CustomerPhone,
+                        StartTime = running.StartTime,
+                        HourlyRate = running.HourlyRate,
+                        Status = "Active",
+                        Duration = running.Duration,
+                        TotalCost = running.RunningCost,
+                        SessionType = running.SessionType.ToString().ToLower()
+                    };
+                }
+                else
+                {
+                    device.DeviceStatus = DeviceStatus.Available;
+                    device.ActiveSessionId = null;
+                    device.CurrentSession = null;
                 }
             }
 
-            return PartialView("_DeviceCards", devices);
+            return PartialView("_DeviceCards", allDevices);
         }
 
-        // NEW: Helper method to determine if device supports multi-session
-        private bool SupportsMultiSession(string deviceName)
-        {
-            // You can customize this logic based on your business rules
-            // For example, only PlayStation and Xbox devices support multi-session
-            return deviceName.Contains("PS5") ||
-                   deviceName.Contains("PS4") ||
-                   deviceName.Contains("Xbox");
-        }
-
-        // NEW: Helper method to get multi-session rate
-        private decimal? GetMultiSessionRate(string deviceName)
-        {
-            if (!SupportsMultiSession(deviceName))
-                return null;
-
-            // Define multi-session rates based on device type
-            if (deviceName.Contains("PS5")) return 75m;
-            if (deviceName.Contains("PS4")) return 60m;
-            if (deviceName.Contains("Xbox")) return 70m;
-
-            return null;
-        }
-
-        // ============================================
-        // END SESSION - Main endpoint (UPDATED)
-        // ============================================
+        // ─── End session ──────────────────────────────────────────────────────
 
         [HttpPost]
         public IActionResult End(int sessionId, int paymentMethod = 1)
         {
-            var session = _activeSessions.FirstOrDefault(s => s.Id == sessionId);
+            var session = _sessions.GetById(sessionId);
+            if (session == null || !session.IsActive)
+                return NotFound(new { success = false, message = "Active device session not found." });
 
-            if (session == null)
+            var device = DeviceStore.GetById(session.DeviceId!.Value);
+            if (device == null)
+                return NotFound(new { success = false, message = "Device not found." });
+
+            try
             {
-                return NotFound(new { success = false, message = "Session not found" });
+                _sessions.EndDeviceSession(sessionId, paymentMethod, device);
+                DeviceStore.Update(device);
+
+                var receipt = _sessions.GetReceipt(sessionId);
+                return PartialView("_SessionReceipt", receipt);
             }
-
-            // Calculate final values
-            session.EndTime = DateTime.Now;
-            var duration = session.EndTime.Value - session.StartTime;
-            var totalCost = (decimal)(duration.TotalHours * (double)session.HourlyRate);
-
-            // Create receipt data
-            var receipt = new SessionReceiptDto
+            catch (InvalidOperationException ex)
             {
-                SessionId = session.Id,
-                DeviceName = session.DeviceName,
-                CustomerName = session.CustomerName ?? "Guest",
-                StartTime = session.StartTime,
-                EndTime = session.EndTime.Value,
-                Duration = duration,
-                DurationFormatted = $"{(int)duration.TotalHours:00}:{duration.Minutes:00}:{duration.Seconds:00}",
-                HourlyRate = session.HourlyRate,
-                TotalCost = totalCost,
-                PaymentMethod = paymentMethod == 1 ? "Cash" : "Card",
-                CompletedAt = DateTime.Now
-            };
-
-            // NEW: Save completed session to the completed sessions list
-            var completedSession = new SessionReportDto
-            {
-                Id = session.Id,
-                DeviceName = session.DeviceName,
-                DeviceType = GetDeviceType(session.DeviceName).ToString(),
-                CustomerName = session.CustomerName,
-                StartTime = session.StartTime,
-                EndTime = session.EndTime.Value,
-                Duration = duration,
-                DurationFormatted = receipt.DurationFormatted,
-                HourlyRate = session.HourlyRate,
-                TotalCost = totalCost,
-                Status = "Completed",
-                PaymentMethod = paymentMethod == 1 ? "Cash" : "Card"
-            };
-
-            _completedSessions.Add(completedSession);
-
-            // Remove from active sessions
-            _activeSessions.Remove(session);
-
-            // Return the receipt partial view for display in modal
-            return PartialView("_SessionReceipt", receipt);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
 
-        // NEW: Method to get completed sessions (for ReportController)
-        public static List<SessionReportDto> GetCompletedSessions()
-        {
-            return _completedSessions;
-        }
-
-        public static List<SessionDto> GetActiveSessions()
-        {
-            return _activeSessions;
-        }
-
-        // ============================================
-        // HELPER METHODS
-        // ============================================
-
-        private static List<SessionDto> GenerateInitialSessions()
-        {
-            return new List<SessionDto>
-            {
-                new SessionDto
-                {
-                    Id = 1,
-                    DeviceId = 1,
-                    DeviceName = "PS5 - Station 1",
-                    CustomerName = "Ahmed Khaled",
-                    CustomerPhone = "01012345678",
-                    StartTime = DateTime.Now.AddHours(-2).AddMinutes(-45),
-                    HourlyRate = 50.00m,
-                    Status = "Active"
-                },
-                new SessionDto
-                {
-                    Id = 2,
-                    DeviceId = 4,
-                    DeviceName = "PS4 - Station 2",
-                    CustomerName = "Mohamed Hassan",
-                    CustomerPhone = "01123456789",
-                    StartTime = DateTime.Now.AddHours(-1).AddMinutes(-30),
-                    HourlyRate = 40.00m,
-                    Status = "Active"
-                },
-                new SessionDto
-                {
-                    Id = 3,
-                    DeviceId = 5,
-                    DeviceName = "Xbox Series X",
-                    CustomerName = null,
-                    CustomerPhone = null,
-                    StartTime = DateTime.Now.AddMinutes(-55),
-                    HourlyRate = 45.00m,
-                    Status = "Active"
-                },
-                new SessionDto
-                {
-                    Id = 4,
-                    DeviceId = 7,
-                    DeviceName = "Gaming PC - Ultimate",
-                    CustomerName = "Youssef Mahmoud",
-                    CustomerPhone = "01234567890",
-                    StartTime = DateTime.Now.AddMinutes(-40),
-                    HourlyRate = 60.00m,
-                    Status = "Active"
-                },
-                new SessionDto
-                {
-                    Id = 5,
-                    DeviceId = 2,
-                    DeviceName = "PS5 - Station 2",
-                    CustomerName = "Omar Ali",
-                    CustomerPhone = "01098765432",
-                    StartTime = DateTime.Now.AddMinutes(-20),
-                    HourlyRate = 50.00m,
-                    Status = "Active"
-                }
-            };
-        }
-
+        // ─── Quick start (from dashboard device card) ─────────────────────────
 
         [HttpPost]
         public IActionResult QuickStart(int deviceId, bool isMultiSession = false)
         {
+            var device = DeviceStore.GetById(deviceId);
+            if (device == null)
+                return BadRequest(new { success = false, message = "Device not found." });
+
+            if (!device.IsAvailable)
+                return BadRequest(new { success = false, message = "Device is already in use." });
+
+            if (isMultiSession && (!device.SupportsMultiSession || !device.MultiSessionRate.HasValue))
+                return BadRequest(new { success = false, message = "Device does not support multi-session." });
+
+
             try
             {
-                // Find the device from available devices
-                var device = GetAvailableDevice(deviceId);
-
-                if (device == null)
+                var request = new StartDeviceSessionRequest
                 {
-                    return BadRequest(new { success = false, message = "Device not found" });
-                }
-
-                if (!device.IsAvailable)
-                {
-                    return BadRequest(new { success = false, message = "Device is already in use" });
-                }
-
-                // Validate multi-session request
-                if (isMultiSession && (!device.SupportsMultiSession || !device.MultiSessionRate.HasValue))
-                {
-                    return BadRequest(new { success = false, message = "Device does not support multi-session" });
-                }
-
-                // Determine hourly rate
-                decimal hourlyRate = isMultiSession && device.MultiSessionRate.HasValue
-                    ? device.MultiSessionRate.Value
-                    : device.SingleSessionRate;
-
-                // Generate new session ID
-                int newSessionId = _activeSessions.Any()
-                    ? _activeSessions.Max(s => s.Id) + 1
-                    : 1;
-
-                // Create new session
-                var newSession = new SessionDto
-                {
-                    Id = newSessionId,
                     DeviceId = deviceId,
-                    DeviceName = device.Name,
-                    CustomerName = null, // Guest session
-                    CustomerPhone = null,
-                    StartTime = DateTime.Now,
-                    HourlyRate = hourlyRate,
-                    Status = "Active",
-                    Duration = TimeSpan.Zero,
-                    TotalCost = 0,
                     SessionType = isMultiSession ? "multi" : "single"
                 };
 
-                // Add to active sessions
-                _activeSessions.Add(newSession);
+                var result = _sessions.StartDeviceSession(request, device);
+                DeviceStore.Update(device);
 
-                // Create trigger data for JavaScript
                 var triggerData = new
                 {
                     sessionStarted = new
                     {
                         deviceName = device.Name,
                         sessionType = isMultiSession ? "multi" : "single",
-                        rate = hourlyRate
+                        rate = result.HourlyRate
                     }
                 };
 
-                // Set HTMX trigger header
-                Response.Headers.Append("HX-Trigger", System.Text.Json.JsonSerializer.Serialize(triggerData));
+                Response.Headers.Append(
+                    "HX-Trigger",
+                    System.Text.Json.JsonSerializer.Serialize(triggerData));
 
-                // Return updated active sessions view
-                return PartialView("_ActiveSessions", _activeSessions);
+                // ✅ FIX: Return active sessions (correct target), not device cards
+                // Device cards will refresh separately via the sessionStarted HX-Trigger event
+                return ActiveSessions();
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
-        // Helper method to get device information
-        private DeviceDto? GetAvailableDevice(int deviceId)
+
+        // ─── Private helpers ──────────────────────────────────────────────────
+
+        private static decimal CalculateTodayRevenue()
         {
-            // Check if device is currently in use
-            var activeSession = _activeSessions.FirstOrDefault(s => s.DeviceId == deviceId);
-            if (activeSession != null)
-            {
-                return null; // Device is in use
-            }
+            var today = DateTime.Today;
 
-            // Define available devices with their properties
-            var availableDevices = new Dictionary<int, DeviceDto>
-    {
-        { 1, new DeviceDto { Id = 1, Name = "PS5 - Station 1", Type = DeviceType.PS5, SingleSessionRate = 50, MultiSessionRate = 75, SupportsMultiSession = true, IsAvailable = true } },
-        { 2, new DeviceDto { Id = 2, Name = "PS5 - Station 2", Type = DeviceType.PS5, SingleSessionRate = 50, MultiSessionRate = 75, SupportsMultiSession = true, IsAvailable = true } },
-        { 3, new DeviceDto { Id = 3, Name = "PS4 - Station 1", Type = DeviceType.PS4, SingleSessionRate = 40, MultiSessionRate = 60, SupportsMultiSession = true, IsAvailable = true } },
-        { 4, new DeviceDto { Id = 4, Name = "PS4 - Station 2", Type = DeviceType.PS4, SingleSessionRate = 40, MultiSessionRate = 60, SupportsMultiSession = true, IsAvailable = true } },
-        { 5, new DeviceDto { Id = 5, Name = "Xbox Series X", Type = DeviceType.Xbox, SingleSessionRate = 45, MultiSessionRate = 70, SupportsMultiSession = true, IsAvailable = true } },
-        { 6, new DeviceDto { Id = 6, Name = "Xbox One", Type = DeviceType.Xbox, SingleSessionRate = 40, MultiSessionRate = 70, SupportsMultiSession = true, IsAvailable = true } },
-        { 7, new DeviceDto { Id = 7, Name = "Gaming PC - Ultimate", Type = DeviceType.PC, SingleSessionRate = 60, MultiSessionRate = null, SupportsMultiSession = false, IsAvailable = true } },
-        { 8, new DeviceDto { Id = 8, Name = "Gaming PC - Standard", Type = DeviceType.PC, SingleSessionRate = 55, MultiSessionRate = null, SupportsMultiSession = false, IsAvailable = true } },
-    };
-
-            // Add more devices (9-12)
-            for (int i = 9; i <= 12; i++)
-            {
-                availableDevices.Add(i, new DeviceDto
-                {
-                    Id = i,
-                    Name = $"Device {i}",
-                    Type = DeviceType.PS4,
-                    SingleSessionRate = 40,
-                    MultiSessionRate = 60,
-                    SupportsMultiSession = true,
-                    IsAvailable = true
-                });
-            }
-
-            return availableDevices.ContainsKey(deviceId) ? availableDevices[deviceId] : null;
-        }
-
-        public static void AddActiveSession(SessionDto session)
-        {
-            _activeSessions.Add(session);
-        }
-
-        // this function for Room page , to show the completed sessions in Session page 
-        // SessionController pulls its data from DashboardController.GetCompletedSessions().
-        public static void AddCompletedSession(SessionReportDto session)
-        {
-            _completedSessions.Add(session);
-        }
-        private decimal CalculateTodayRevenue()
-        {
-            // Calculate current active sessions value
-            decimal activeRevenue = 0;
-            foreach (var session in _activeSessions)
-            {
-                var duration = DateTime.Now - session.StartTime;
-                activeRevenue += (decimal)(duration.TotalHours * (double)session.HourlyRate);
-            }
-
-            // Add completed sessions revenue
-            decimal completedRevenue = _completedSessions
-                .Where(s => s.StartTime.Date == DateTime.Today)
+            var completed = SessionStore.GetAll()
+                .Where(s => s.StartTime.Date == today && s.Status == SessionStatus.Completed)
                 .Sum(s => s.TotalCost);
 
-            return activeRevenue + completedRevenue;
+            var active = SessionStore.GetActive()
+                .Where(s => s.StartTime.Date == today)
+                .Sum(s => Math.Round((decimal)s.Duration.TotalHours * s.HourlyRate, 2));
+
+            return completed + active;
         }
 
-        private decimal CalculateAverageCost()
+        private static decimal CalculateAverageCost()
         {
-            if (_activeSessions.Count == 0) return 0;
+            var active = SessionStore.GetActive().ToList();
+            if (!active.Any()) return 0;
 
-            decimal totalCost = 0;
-            foreach (var session in _activeSessions)
-            {
-                var duration = DateTime.Now - session.StartTime;
-                totalCost += (decimal)(duration.TotalHours * (double)session.HourlyRate);
-            }
-
-            return totalCost / _activeSessions.Count;
-        }
-
-        private DeviceType GetDeviceType(string deviceName)
-        {
-            if (deviceName.Contains("PS5")) return DeviceType.PS5;
-            if (deviceName.Contains("PS4")) return DeviceType.PS4;
-            if (deviceName.Contains("Xbox")) return DeviceType.Xbox;
-            if (deviceName.Contains("PC")) return DeviceType.PC;
-            return DeviceType.Other;
+            return active.Average(s =>
+                Math.Round((decimal)s.Duration.TotalHours * s.HourlyRate, 2));
         }
     }
 }

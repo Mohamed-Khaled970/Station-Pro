@@ -17,10 +17,8 @@ namespace StationPro.Infrastructure.Entities_Configurations
 
             builder.HasKey(t => t.Id);
             builder.Property(t => t.Name).IsRequired().HasMaxLength(200);
-            builder.Property(t => t.Subdomain).IsRequired().HasMaxLength(50);
             builder.Property(t => t.Email).IsRequired().HasMaxLength(100);
             builder.Property(t => t.PasswordHash).IsRequired();
-            builder.HasIndex(t => t.Subdomain).IsUnique();
             builder.HasIndex(t => t.Email).IsUnique();
 
             builder.HasMany(t => t.Devices)

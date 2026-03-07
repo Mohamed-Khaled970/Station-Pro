@@ -3,326 +3,128 @@
 
 using Microsoft.AspNetCore.Mvc;
 using StationPro.Application.DTOs;
+using StationPro.Application.Interfaces.InMemory;
+using StationPro.Application.Interfaces;
 using StationPro.Domain.Entities;
+using StationPro.Filters;
 
 namespace StationPro.Web.Controllers;
 
+[SubscriptionRequired]
 public class DeviceController : Controller
 {
-    // Static list to simulate database (temporary)
-    public static List<DeviceDto> _devices = GenerateDummyDevices();
+    private readonly ISessionService _sessions;
 
-    // ============================================
-    // INDEX - List All Devices
-    // ============================================
+    public DeviceController(ISessionService sessions)
+    {
+        _sessions = sessions;
+    }
+
+    // ─── View ─────────────────────────────────────────────────────────────
+
+    public IActionResult Index()
+        => View(DeviceStore.GetAll());
+
+    // ─── Device CRUD ──────────────────────────────────────────────────────
 
     [HttpGet]
-    public IActionResult Index()
-    {
-        return View(_devices);
-    }
-
-    // ============================================
-    // GET - Get Single Device (for Edit Modal)
-    // ============================================
-
-    [HttpGet("Device/Get/{id}")]
     public IActionResult Get(int id)
     {
-        var device = _devices.FirstOrDefault(d => d.Id == id);
-
-        if (device == null)
-        {
-            return NotFound(new { message = "Device not found" });
-        }
-
-        return Ok(device);
+        var device = DeviceStore.GetById(id);
+        return device == null ? NotFound() : Json(device);
     }
-
-    // ============================================
-    // CREATE - Add New Device
-    // ============================================
 
     [HttpPost]
-    public IActionResult Create([FromForm] CreateDeviceDto dto)
+    public IActionResult Create([FromBody] DeviceDto device)
     {
-        // Validate multi-session rate if enabled
-        if (dto.SupportsMultiSession && !dto.MultiSessionRate.HasValue)
-        {
-            return BadRequest(new { message = "Multi-session rate is required when multi-session is enabled" });
-        }
-
-        var newDevice = new DeviceDto
-        {
-            Id = _devices.Any() ? _devices.Max(d => d.Id) + 1 : 1,
-            Name = dto.Name,
-            Type = dto.Type,
-            SingleSessionRate = dto.SingleSessionRate,
-            MultiSessionRate = dto.MultiSessionRate,
-            SupportsMultiSession = dto.SupportsMultiSession,
-            IsAvailable = true,
-            Status = "Available",
-            CurrentSession = null
-        };
-
-        _devices.Add(newDevice);
-
-        return PartialView("_DeviceCard", newDevice);
+        var created = DeviceStore.Add(device);
+        return Ok(created);
     }
 
-    // ============================================
-    // UPDATE - Edit Existing Device
-    // ============================================
-
-    [HttpPut("Device/Update/{id}")]
-    public IActionResult Update(int id, [FromBody] UpdateDeviceDto dto)
+    [HttpPut]
+    public IActionResult Update(int id, [FromBody] DeviceDto updated)
     {
-        var device = _devices.FirstOrDefault(d => d.Id == id);
+        var device = DeviceStore.GetById(id);
+        if (device == null) return NotFound();
 
-        if (device == null)
-        {
-            return NotFound(new { message = "Device not found" });
-        }
+        device.Name = updated.Name;
+        device.Type = updated.Type;
+        device.SingleSessionRate = updated.SingleSessionRate;
+        device.MultiSessionRate = updated.MultiSessionRate;
+        device.SupportsMultiSession = updated.SupportsMultiSession;
+        device.IsActive = updated.IsActive;
 
-        // Validate multi-session
-        if (dto.SupportsMultiSession && !dto.MultiSessionRate.HasValue)
-        {
-            return BadRequest(new { message = "Multi-session rate is required when multi-session is enabled" });
-        }
-
-        device.Name = dto.Name;
-        device.SingleSessionRate = dto.SingleSessionRate;
-        device.MultiSessionRate = dto.MultiSessionRate;
-        device.SupportsMultiSession = dto.SupportsMultiSession;
-        device.IsAvailable = dto.IsActive;
-        device.Status = dto.Status.ToString();
-
-        return Ok(new { message = "Device updated successfully" });
+        DeviceStore.Update(device);
+        return Ok();
     }
 
-    // ============================================
-    // DELETE - Remove Device
-    // ============================================
-
-    [HttpDelete("Device/Delete/{id}")]
+    [HttpDelete]
     public IActionResult Delete(int id)
     {
-        var device = _devices.FirstOrDefault(d => d.Id == id);
+        var device = DeviceStore.GetById(id);
+        if (device == null) return NotFound();
 
-        if (device == null)
-        {
-            return NotFound(new { message = "Device not found" });
-        }
+        if (!device.IsAvailable)
+            return BadRequest(new { message = "Cannot delete a device that is currently in use." });
 
-        _devices.Remove(device);
-
-        return Ok(new { message = "Device deleted successfully" });
+        DeviceStore.Delete(id);
+        return Ok();
     }
 
-    // ============================================
-    // GENERATE DUMMY DATA with Single/Multi Rates
-    // ============================================
+    // ─── Session: Start ───────────────────────────────────────────────────
 
-    private static List<DeviceDto> GenerateDummyDevices()
+    [HttpPost]
+    public IActionResult StartSession([FromBody] StartDeviceSessionRequest request)
     {
-        return new List<DeviceDto>
+        var device = DeviceStore.GetById(request.DeviceId);
+        if (device == null)
+            return NotFound(new { success = false, message = "Device not found." });
+
+        if (!device.IsAvailable)
+            return BadRequest(new { success = false, message = "Device is not available." });
+
+        try
         {
-            // PS5 Devices with Multi-Session Support
-            new DeviceDto
-            {
-                Id = 1,
-                Name = "PS5 - 1",
-                Type = DeviceType.PS5,
-                SingleSessionRate = 50,
-                MultiSessionRate = 80,
-                SupportsMultiSession = true,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            },
-            new DeviceDto
-            {
-                Id = 2,
-                Name = "PS5 - 2",
-                Type = DeviceType.PS5,
-                SingleSessionRate = 50,
-                MultiSessionRate = 80,
-                SupportsMultiSession = true,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            },
-            
-            // In Use PS5 with Multi-Session
-            new DeviceDto
-            {
-                Id = 3,
-                Name = "PS5 - 3",
-                Type = DeviceType.PS5,
-                SingleSessionRate = 50,
-                MultiSessionRate = 80,
-                SupportsMultiSession = true,
-                IsAvailable = false,
-                Status = "In Use",
-                CurrentSession = new SessionDto
-                {
-                    Id = 1,
-                    DeviceId = 3,
-                    DeviceName = "PS5 - 3",
-                    CustomerName = "Ahmed Mohamed",
-                    StartTime = DateTime.Now.AddMinutes(-45),
-                    HourlyRate = 80, // Using multi-session rate
-                    TotalCost = 60m,
-                    Status = "Active",
-                    Duration = TimeSpan.FromMinutes(45)
-                }
-            },
-            
-            // PS4 Devices with Multi-Session
-            new DeviceDto
-            {
-                Id = 4,
-                Name = "PS4 - 1",
-                Type = DeviceType.PS4,
-                SingleSessionRate = 30,
-                MultiSessionRate = 50,
-                SupportsMultiSession = true,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            },
-            new DeviceDto
-            {
-                Id = 5,
-                Name = "PS4 - 2",
-                Type = DeviceType.PS4,
-                SingleSessionRate = 30,
-                MultiSessionRate = 50,
-                SupportsMultiSession = true,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            },
-            
-            // In Use PS4 with Single Session
-            new DeviceDto
-            {
-                Id = 6,
-                Name = "PS4 - 3",
-                Type = DeviceType.PS4,
-                SingleSessionRate = 30,
-                MultiSessionRate = 50,
-                SupportsMultiSession = true,
-                IsAvailable = false,
-                Status = "In Use",
-                CurrentSession = new SessionDto
-                {
-                    Id = 2,
-                    DeviceId = 6,
-                    DeviceName = "PS4 - 3",
-                    CustomerName = "Ali Hassan",
-                    StartTime = DateTime.Now.AddMinutes(-120),
-                    HourlyRate = 30, // Using single session rate
-                    TotalCost = 60m,
-                    Status = "Active",
-                    Duration = TimeSpan.FromMinutes(120)
-                }
-            },
-            
-            // Xbox with Multi-Session
-            new DeviceDto
-            {
-                Id = 7,
-                Name = "Xbox One",
-                Type = DeviceType.Xbox,
-                SingleSessionRate = 35,
-                MultiSessionRate = 60,
-                SupportsMultiSession = true,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            },
-            
-            // PC Gaming (Single Session Only)
-            new DeviceDto
-            {
-                Id = 8,
-                Name = "Gaming PC - 1",
-                Type = DeviceType.PC,
-                SingleSessionRate = 40,
-                MultiSessionRate = null,
-                SupportsMultiSession = false,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            },
-            
-            // Maintenance Device
-            new DeviceDto
-            {
-                Id = 9,
-                Name = "PS4 - 4",
-                Type = DeviceType.PS4,
-                SingleSessionRate = 30,
-                MultiSessionRate = 50,
-                SupportsMultiSession = true,
-                IsAvailable = false,
-                Status = "Maintenance",
-                CurrentSession = null
-            },
-            
-            // Ping Pong with Multi-Session
-            new DeviceDto
-            {
-                Id = 10,
-                Name = "Ping Pong Table",
-                Type = DeviceType.PingPong,
-                SingleSessionRate = 20,
-                MultiSessionRate = 35,
-                SupportsMultiSession = true,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            },
-            
-            // Pool Table with Multi-Session - In Use
-            new DeviceDto
-            {
-                Id = 11,
-                Name = "Pool Table",
-                Type = DeviceType.Pool,
-                SingleSessionRate = 25,
-                MultiSessionRate = 40,
-                SupportsMultiSession = true,
-                IsAvailable = false,
-                Status = "In Use",
-                CurrentSession = new SessionDto
-                {
-                    Id = 3,
-                    DeviceId = 11,
-                    DeviceName = "Pool Table",
-                    CustomerName = null,
-                    StartTime = DateTime.Now.AddMinutes(-30),
-                    HourlyRate = 40, // Using multi-session rate
-                    TotalCost = 20m,
-                    Status = "Active",
-                    Duration = TimeSpan.FromMinutes(30)
-                }
-            },
-            
-            // Billiards with Multi-Session
-            new DeviceDto
-            {
-                Id = 12,
-                Name = "Billiards Table",
-                Type = DeviceType.Billiards,
-                SingleSessionRate = 30,
-                MultiSessionRate = 50,
-                SupportsMultiSession = true,
-                IsAvailable = true,
-                Status = "Available",
-                CurrentSession = null
-            }
-        };
+            var result = _sessions.StartDeviceSession(request, device);
+            DeviceStore.Update(device);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
+    }
+
+    // ─── Session: End ─────────────────────────────────────────────────────
+
+    [HttpPost]
+    public IActionResult EndSession(int sessionId, int paymentMethod = 1)
+    {
+        var session = _sessions.GetById(sessionId);
+        if (session == null || !session.IsActive)
+            return NotFound(new { message = "Active session not found." });
+
+        var device = DeviceStore.GetById(session.DeviceId!.Value);
+        if (device == null) return NotFound(new { message = "Device not found." });
+
+        try
+        {
+            var result = _sessions.EndDeviceSession(sessionId, paymentMethod, device);
+            DeviceStore.Update(device);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    // ─── Card partial refresh ─────────────────────────────────────────────
+
+    [HttpGet]
+    public IActionResult CardPartial(int id)
+    {
+        var device = DeviceStore.GetById(id);
+        return device == null ? NotFound() : PartialView("_DeviceCard", device);
     }
 }

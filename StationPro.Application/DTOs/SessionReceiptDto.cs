@@ -12,6 +12,13 @@ namespace StationPro.Application.DTOs
         public int SessionId { get; set; }
         public string DeviceName { get; set; } = string.Empty;
         public string CustomerName { get; set; } = string.Empty;
+        public string SourceName { get; set; } = string.Empty;
+        public string SourceCategory { get; set; } = string.Empty;
+        public string SessionType { get; set; } = string.Empty;
+        public int GuestCount { get; set; } 
+
+
+
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public TimeSpan Duration { get; set; }

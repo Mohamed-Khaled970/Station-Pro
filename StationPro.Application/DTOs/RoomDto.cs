@@ -12,31 +12,27 @@ namespace StationPro.Application.DTOs
         public string Name { get; set; } = string.Empty;
         public bool HasAC { get; set; }
 
-        // ── Dual pricing ──────────────────────────────────────────────────────
-        /// <summary>Rate applied when session type is Single (≤ 2 persons).</summary>
+        // ── Pricing (replaces the single legacy HourlyRate) ───────────────────
         public decimal SingleHourlyRate { get; set; }
-
-        /// <summary>Rate applied when session type is Multi (≤ 4 persons).</summary>
         public decimal MultiHourlyRate { get; set; }
 
-        // Legacy property — kept so existing receipt / dashboard code that reads
-        // HourlyRate still compiles. It is populated by the controller from the
-        // active session's chosen rate and should NOT be stored on the room itself.
-        public decimal HourlyRate { get; set; }
-
-        public int Capacity { get; set; }
-        public bool IsActive { get; set; }
-        public string Status { get; set; } = "Available"; // Available, Occupied, Reserved, Maintenance
-        public int CurrentOccupancy { get; set; }
+        public int Capacity { get; set; } = 1;
         public int DeviceCount { get; set; }
+        public bool IsActive { get; set; } = true;
 
-        // Session info (populated when Occupied)
+        // ── Status ────────────────────────────────────────────────────────────
+        /// <summary>Available | Occupied | Reserved | Maintenance</summary>
+        public string Status { get; set; } = "Available";
+
+        // ── Active session snapshot (populated when Occupied) ─────────────────
+        public int? ActiveSessionId { get; set; }
         public DateTime? SessionStartTime { get; set; }
         public string? SessionClientName { get; set; }
-        public int? ActiveSessionId { get; set; }
-        public string? SessionType { get; set; }   // "Single" | "Multi"
+        public string? SessionType { get; set; }        // "Single" | "Multi"
+        public decimal HourlyRate { get; set; }         // Live rate for card display
+        public int CurrentOccupancy { get; set; }
 
-        // Reservation info (populated when Reserved)
+        // ── Reservation snapshot (populated when Reserved) ────────────────────
         public string? ReservationClientName { get; set; }
         public DateTime? ReservationTime { get; set; }
         public string? ReservationNotes { get; set; }

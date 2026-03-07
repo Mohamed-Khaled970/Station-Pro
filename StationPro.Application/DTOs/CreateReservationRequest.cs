@@ -10,8 +10,8 @@ namespace StationPro.Application.DTOs
     {
         public int RoomId { get; set; }
         public string ClientName { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
+        public string? Phone { get; set; }
         public DateTime ReservationTime { get; set; }
-        public string Notes { get; set; } = string.Empty;
+        public string? Notes { get; set; }
     }
 }

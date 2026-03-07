@@ -18,13 +18,16 @@ namespace StationPro.Application.DTOs.Subscriptions
         public decimal Amount { get; set; }
         public string PaymentMethod { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
-        public string TransactionReference { get; set; } = string.Empty;        
+        public string TransactionReference { get; set; } = string.Empty;
         public string PaymentProofUrl { get; set; } = string.Empty;
-        public string Notes { get; set; } = string.Empty;   
-        public string Status { get; set; } = string.Empty; // "Pending", "Approved", "Rejected"
+        public string? Notes { get; set; }
+
+        /// <summary>"Pending" | "Approved" | "Rejected"</summary>
+        public string Status { get; set; } = "Pending";
+
         public DateTime SubmittedDate { get; set; }
         public DateTime? ReviewedDate { get; set; }
-        public string ReviewedBy { get; set; } = string.Empty;
-        public string AdminNotes { get; set; } = string.Empty;  
+        public string? ReviewedBy { get; set; }
+        public string? AdminNotes { get; set; }   // rejection reason lives here
     }
 }

@@ -13,6 +13,6 @@ namespace StationPro.Application.DTOs
         public int CompletedSessions { get; set; }
         public decimal TotalRevenue { get; set; }
         public TimeSpan AverageDuration { get; set; }
-        public string MostPopularDevice { get; set; } = "";
+        public string MostPopularDevice { get; set; } = "N/A";
     }
 }

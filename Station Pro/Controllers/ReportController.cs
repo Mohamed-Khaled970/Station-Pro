@@ -1,14 +1,16 @@
 ﻿// StationPro.Web/Controllers/ReportController.cs
-// UPDATED VERSION - Uses real completed sessions from DashboardController
+// UPDATED VERSION - Maps UnifiedSessionDto → SessionReportDto
 
 using Microsoft.AspNetCore.Mvc;
 using StationPro.Application.DTOs;
+using StationPro.Application.Enums;
 using StationPro.Domain.Entities;
 using System.Text;
 using Station_Pro.Controllers.Station_Pro.Controllers;
+using StationPro.Filters;
 
 namespace StationPro.Web.Controllers;
-
+[SubscriptionRequired]
 public class ReportController : Controller
 {
     // ============================================
@@ -63,23 +65,21 @@ public class ReportController : Controller
     }
 
     // ============================================
-    // GENERATE REPORT DATA (UPDATED)
+    // GENERATE REPORT DATA
     // ============================================
 
     private CompleteReportDto GenerateReport(string period)
     {
         var (startDate, endDate) = GetDateRange(period);
 
-        // Get real completed sessions from DashboardController
-        var completedSessions = DashboardController.GetCompletedSessions();
-
-        // Filter sessions by date range
-        var sessions = completedSessions
+        // Fetch completed UnifiedSessionDto records and map to SessionReportDto
+        var sessions = DashboardController.GetCompletedSessions()
             .Where(s => s.StartTime >= startDate && s.StartTime <= endDate)
             .OrderByDescending(s => s.StartTime)
+            .Select(MapToReportDto)
             .ToList();
 
-        // If no real sessions, generate some dummy data for demonstration
+        // If no real sessions, fall back to dummy data for demonstration
         if (!sessions.Any())
         {
             sessions = GenerateDummySessions(startDate, endDate);
@@ -94,6 +94,31 @@ public class ReportController : Controller
             HourlyUsage = GenerateHourlyUsage(sessions)
         };
     }
+
+    // ============================================
+    // MAPPING — UnifiedSessionDto → SessionReportDto
+    // ============================================
+
+    private static SessionReportDto MapToReportDto(UnifiedSessionDto s) => new()
+    {
+        Id = s.Id,
+        DeviceName = s.SourceName,
+        DeviceType = s.SourceCategory,
+        CustomerName = s.CustomerName,
+        StartTime = s.StartTime,
+        EndTime = s.EndTime,
+        Duration = s.Duration,
+        DurationFormatted = s.DurationFormatted,
+        HourlyRate = s.HourlyRate,
+        TotalCost = s.TotalCost,
+        Status = s.Status.ToString(),          // "Completed" | "Cancelled"
+        PaymentMethod = s.PaymentMethod?.ToString() ?? "Cash",
+        SessionType = s.SessionType == SessionType.Multi ? "multi" : "single"
+    };
+
+    // ============================================
+    // HELPERS
+    // ============================================
 
     private (DateTime start, DateTime end) GetDateRange(string period)
     {
@@ -117,42 +142,41 @@ public class ReportController : Controller
         var customerNames = new[] { "Ahmed Mohamed", "Ali Hassan", "Mohamed Ahmed", "Omar Ibrahim", null, "Sarah Ali", null };
 
         var totalDays = (end - start).Days + 1;
-        var sessionsPerDay = 8; // Average 8 sessions per day
 
         for (int day = 0; day < totalDays; day++)
         {
             var currentDate = start.AddDays(day);
-            var numSessions = random.Next(5, sessionsPerDay + 3);
+            var numSessions = random.Next(5, 11);
 
             for (int i = 0; i < numSessions; i++)
             {
                 var deviceName = deviceNames[random.Next(deviceNames.Length)];
                 var hourlyRate = deviceName.Contains("PS5") ? 50m :
-                                deviceName.Contains("PS4") ? 30m :
-                                deviceName.Contains("Xbox") ? 35m : 25m;
+                                 deviceName.Contains("PS4") ? 30m :
+                                 deviceName.Contains("Xbox") ? 35m : 25m;
 
                 var startTime = currentDate.AddHours(random.Next(10, 22));
                 var durationMinutes = random.Next(30, 180);
                 var endTime = startTime.AddMinutes(durationMinutes);
                 var duration = TimeSpan.FromMinutes(durationMinutes);
-
-                var cost = (decimal)(duration.TotalHours) * hourlyRate;
+                var cost = Math.Round((decimal)duration.TotalHours * hourlyRate, 2);
 
                 sessions.Add(new SessionReportDto
                 {
                     Id = sessions.Count + 1,
                     DeviceName = deviceName,
                     DeviceType = deviceName.Contains("PS") ? "PlayStation" :
-                                deviceName.Contains("Xbox") ? "Xbox" : "Pool",
+                                        deviceName.Contains("Xbox") ? "Xbox" : "Pool",
                     CustomerName = customerNames[random.Next(customerNames.Length)],
                     StartTime = startTime,
                     EndTime = endTime,
                     Duration = duration,
                     DurationFormatted = $"{(int)duration.TotalHours:D2}:{duration.Minutes:D2}:{duration.Seconds:D2}",
                     HourlyRate = hourlyRate,
-                    TotalCost = Math.Round(cost, 2),
+                    TotalCost = cost,
                     Status = random.Next(100) < 95 ? "Completed" : "Cancelled",
-                    PaymentMethod = random.Next(100) < 80 ? "Cash" : random.Next(100) < 50 ? "Card" : "Online"
+                    PaymentMethod = random.Next(100) < 80 ? "Cash" : "Card",
+                    SessionType = random.Next(100) < 30 ? "multi" : "single"
                 });
             }
         }
@@ -174,11 +198,12 @@ public class ReportController : Controller
             TotalRevenue = completed.Sum(s => s.TotalCost),
             AverageSessionRevenue = completed.Any() ? completed.Average(s => s.TotalCost) : 0,
             TotalDuration = TimeSpan.FromMinutes(completed.Sum(s => s.Duration.TotalMinutes)),
-            AverageDuration = completed.Any() ?
-                TimeSpan.FromMinutes(completed.Average(s => s.Duration.TotalMinutes)) : TimeSpan.Zero,
+            AverageDuration = completed.Any()
+                                         ? TimeSpan.FromMinutes(completed.Average(s => s.Duration.TotalMinutes))
+                                         : TimeSpan.Zero,
             MostUsedDevice = completed.GroupBy(s => s.DeviceName)
-                .OrderByDescending(g => g.Count())
-                .FirstOrDefault()?.Key ?? "N/A",
+                                              .OrderByDescending(g => g.Count())
+                                              .FirstOrDefault()?.Key ?? "N/A",
             MostPopularTime = GetMostPopularTime(completed)
         };
     }
@@ -187,17 +212,17 @@ public class ReportController : Controller
     {
         if (!sessions.Any()) return "N/A";
 
-        var mostPopularHour = sessions
+        var h = sessions
             .GroupBy(s => s.StartTime.Hour)
             .OrderByDescending(g => g.Count())
             .FirstOrDefault()?.Key ?? 14;
 
-        var startHour = mostPopularHour % 12 == 0 ? 12 : mostPopularHour % 12;
-        var endHour = (mostPopularHour + 1) % 12 == 0 ? 12 : (mostPopularHour + 1) % 12;
-        var startPeriod = mostPopularHour < 12 ? "AM" : "PM";
-        var endPeriod = mostPopularHour + 1 < 12 ? "AM" : "PM";
+        var startH = h % 12 == 0 ? 12 : h % 12;
+        var endH = (h + 1) % 12 == 0 ? 12 : (h + 1) % 12;
+        var startAp = h < 12 ? "AM" : "PM";
+        var endAp = h + 1 < 12 ? "AM" : "PM";
 
-        return $"{startHour} {startPeriod} - {endHour} {endPeriod}";
+        return $"{startH} {startAp} - {endH} {endAp}";
     }
 
     private List<DailyRevenueDto> GenerateDailyRevenue(List<SessionReportDto> sessions)
@@ -220,7 +245,6 @@ public class ReportController : Controller
     private List<DevicePerformanceDto> GenerateDevicePerformance(List<SessionReportDto> sessions)
     {
         var completed = sessions.Where(s => s.Status == "Completed").ToList();
-
         if (!completed.Any()) return new List<DevicePerformanceDto>();
 
         return completed
@@ -242,7 +266,6 @@ public class ReportController : Controller
     private List<HourlyUsageDto> GenerateHourlyUsage(List<SessionReportDto> sessions)
     {
         var completed = sessions.Where(s => s.Status == "Completed").ToList();
-
         if (!completed.Any()) return new List<HourlyUsageDto>();
 
         return completed
@@ -251,7 +274,7 @@ public class ReportController : Controller
             {
                 Hour = g.Key,
                 TimeRange = $"{(g.Key % 12 == 0 ? 12 : g.Key % 12)} {(g.Key < 12 ? "AM" : "PM")} - " +
-                           $"{((g.Key + 1) % 12 == 0 ? 12 : (g.Key + 1) % 12)} {(g.Key + 1 < 12 ? "AM" : "PM")}",
+                              $"{((g.Key + 1) % 12 == 0 ? 12 : (g.Key + 1) % 12)} {(g.Key + 1 < 12 ? "AM" : "PM")}",
                 SessionCount = g.Count(),
                 Revenue = g.Sum(s => s.TotalCost)
             })

@@ -52,7 +52,7 @@ let selectedPaymentMethod = 1; // Default: Cash
 
 function endSessionFromList(sessionId, deviceName, duration, cost) {
     // Store the session ID
-    pendingSessionId = sessionId;
+    pendingSessionId = parseInt(sessionId);
 
     // Update confirmation modal with session details
     document.getElementById('confirm-device-name').textContent = deviceName;
@@ -97,25 +97,20 @@ async function confirmEndSession() {
     if (!pendingSessionId) return;
 
     try {
-        // Close confirmation modal
         closeEndSessionModal();
 
-        // Get current path (handle tenant URLs)
         const currentPath = window.location.pathname;
-        const basePath = currentPath.replace(/\/(session|Session).*/, '');
+        const basePath = currentPath.replace(/\/[Ss]ession.*/, '');
 
-        // Call the End endpoint
-        const response = await fetch(`${basePath}/Dashboard/End?sessionId=${pendingSessionId}&paymentMethod=${selectedPaymentMethod}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        //  FIX: call Session/End (handles both devices AND rooms)
+        // instead of Dashboard/End (devices only)
+        const response = await fetch(
+            `${basePath}/Session/End?sessionId=${parseInt(pendingSessionId)}&paymentMethod=${selectedPaymentMethod}`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        );
 
         if (response.ok) {
             const receiptHtml = await response.text();
-
-            // Show receipt modal
             const receiptContent = document.getElementById('receipt-content');
             const receiptModal = document.getElementById('receipt-modal');
 
@@ -125,22 +120,15 @@ async function confirmEndSession() {
                 document.body.style.overflow = 'hidden';
             }
 
-            // Show success toast and reload page
             showToast('Session ended successfully!', 'success');
-
-            // Reload page after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
+            setTimeout(() => window.location.reload(), 2000);
         } else {
             showToast('Failed to end session', 'error');
         }
     } catch (error) {
-        console.error('Error ending session:', error);
         showToast('An error occurred while ending the session', 'error');
     }
 }
-
 // ============================================
 // SESSION DETAILS
 // ============================================

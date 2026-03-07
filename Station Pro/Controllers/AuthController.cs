@@ -1,60 +1,81 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// =============================================================================
+// FILE: Station_Pro/Controllers/AuthController.cs  (UPDATED)
+//
+// Uses a static in-memory tenant list (mirrors AdminController._tenants pattern).
+// Register  → creates a Tenant object, adds to _tenants, saves to session.
+// Login     → looks up tenant by email + password, saves to session,
+//             routes to correct page based on subscription status.
+// Logout    → clears session.
+// =============================================================================
+
+using Microsoft.AspNetCore.Mvc;
 using StationPro.Application.DTOs.Auth;
+using StationPro.Controllers;            // AdminController._subscriptionRequests
+using StationPro.Domain.Entities;
 
 namespace Station_Pro.Controllers
 {
     public class AuthController : Controller
     {
-        private static  RegisterViewModel RegisterTestModel;
-        public IActionResult Index()
-        {
-            return View();
-        }
+        // =====================================================================
+        // IN-MEMORY TENANT STORE
+        // Same pattern as AdminController._tenants / _subscriptionRequests.
+        // Replace with EF Core + repository when you wire up the real DB.
+        // =====================================================================
+        public static readonly List<Tenant> _tenants = new();
+        private static int _nextTenantId = 10; // start at 10 to avoid clashing with admin sample data (ids 1-3)
 
-        // GET: Auth/Register
-        public IActionResult Register()
-        {
-            return View("Register");
-        }
+        // Test helper — kept for SubscriptionController.GetTenantModel() calls
+        private static RegisterViewModel? _lastRegisteredModel;
+        public static RegisterViewModel? GetTenantModel() => _lastRegisteredModel;
 
-        // POST: Auth/Register
+        // Convenience lookup used by SubscriptionController to fill TenantName/Email
+        public static Tenant? GetTenantById(int id)
+            => _tenants.FirstOrDefault(t => t.Id == id);
+
+        // =====================================================================
+
+        public IActionResult Index() => View();
+
+        // ── GET: Auth/Register ────────────────────────────────────────────────
+        public IActionResult Register() => View("Register");
+
+        // ── POST: Auth/Register ───────────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-
-
             try
             {
-                // TODO: Replace with your actual registration logic
-                // 1. Create user account
-                // var user = new ApplicationUser { ... };
-                // var result = await _userManager.CreateAsync(user, model.Password);
+                // Duplicate email check
+                if (_tenants.Any(t => t.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase)))
+                {
+                    ModelState.AddModelError("", "An account with this email already exists.");
+                    return View("Register", model);
+                }
 
-                // 2. Create tenant record
-                // var tenant = new Tenant
-                // {
-                //     Name = model.StoreName,
-                //     Email = model.Email,
-                //     PhoneNumber = model.PhoneNumber,
-                //     Subdomain = GenerateSubdomain(model.StoreName),
-                //     Plan = SubscriptionPlan.Free,
-                //     IsActive = true,
-                //     CreatedDate = DateTime.Now
-                // };
-                // _context.Tenants.Add(tenant);
-                // await _context.SaveChangesAsync();
+                // Build the tenant object and add it to the in-memory list
+                var tenant = new Tenant
+                {
+                    Id = ++_nextTenantId,
+                    Name = model.StoreName,
+                    Email = model.Email,
+                    PasswordHash = HashPassword(model.Password),
+                    Plan = SubscriptionPlan.Free,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                };
 
-                // 3. Sign in the user
-                // await _signInManager.SignInAsync(user, isPersistent: false);
-                RegisterTestModel = model;
-                // For demo purposes, using a mock tenant ID
-                int newTenantId = 1; // Replace with actual tenant.Id after creation
+                _tenants.Add(tenant);
+                _lastRegisteredModel = model;   // keep test helper in sync
 
-                TempData["Success"] = "Account created successfully! Please choose your subscription plan.";
+                // Persist TenantId so SubscriptionGuardFilter can read it
+                HttpContext.Session.SetInt32("TenantId", tenant.Id);
 
-                // 4. REDIRECT TO SUBSCRIPTION PAGE
-                return RedirectToAction("Subscribe", "Subscription", new { tenantId = newTenantId });
+                await HttpContext.Session.CommitAsync();
+
+                TempData["Success"] = "Account created! Please choose your subscription plan.";
+                return RedirectToAction("Subscribe", "Subscription", new { tenantId = tenant.Id });
             }
             catch (Exception ex)
             {
@@ -63,64 +84,76 @@ namespace Station_Pro.Controllers
             }
         }
 
-        //Helper Function for Test Only "Remove when implement the service and infrastructure layer"
-
-        public static RegisterViewModel GetTenantModel()
-        {
-            return RegisterTestModel;
-        }
-
-        // GET: Auth/Login
+        // ── GET: Auth/Login ───────────────────────────────────────────────────
         public IActionResult Login()
         {
+            // Already logged in? redirect away from login page
+            if (HttpContext.Session.GetInt32("TenantId").HasValue)
+                return RedirectToAction("Index", "Dashboard");
+
             return View("Login");
         }
 
-        // POST: Auth/Login
+        // ── POST: Auth/Login ──────────────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
+                return Json(new { success = false, message = "Invalid input." });
+
+            var tenant = _tenants.FirstOrDefault(t =>
+                t.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase));
+
+            if (tenant == null || !VerifyPassword(model.Password, tenant.PasswordHash))
+                return Json(new { success = false, message = "Invalid email or password." });
+
+            if (!tenant.IsActive)
+                return Json(new { success = false, message = "Account deactivated. Contact support." });
+
+            HttpContext.Session.SetInt32("TenantId", tenant.Id);
+
+            // ✅ Force session to commit before responding
+            await HttpContext.Session.CommitAsync();
+
+            var subscription = AdminController._subscriptionRequests
+                .Where(s => s.TenantId == tenant.Id)
+                .OrderByDescending(s => s.SubmittedDate)
+                .FirstOrDefault();
+
+            var redirectUrl = subscription?.Status switch
             {
-                return View("Login", model);
-            }
+                "Pending" => $"/Subscription/Pending?tenantId={tenant.Id}",
+                "Rejected" => $"/Subscription/Rejected?tenantId={tenant.Id}",
+                "Approved" => "/Dashboard/Index",
+                _ => $"/Subscription/Subscribe?tenantId={tenant.Id}"
+            };
 
-            // TODO: Add your login logic
-            // var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
-
-            // if (result.Succeeded)
-            // {
-            //     return RedirectToAction("Index", "Dashboard");
-            // }
-
-            ModelState.AddModelError("", "Invalid login attempt");
-            return View("Login", model);
+            return Json(new { success = true, redirectUrl });
         }
 
-        // POST: Auth/Logout
+        // ── POST: Auth/Logout ─────────────────────────────────────────────────
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            // await _signInManager.SignOutAsync();
+            HttpContext.Session.Clear();
             return RedirectToAction("Index", "Home");
         }
 
-        // Helper method to generate subdomain from store name
-        private string GenerateSubdomain(string storeName)
+        // ── Private helpers ───────────────────────────────────────────────────
+
+
+        /// <summary>
+        /// Demo-only password hash.
+        /// Replace with BCrypt or ASP.NET Identity PasswordHasher before production.
+        /// </summary>
+        private static string HashPassword(string password)
         {
-            // Convert to lowercase and replace spaces with hyphens
-            var subdomain = storeName.ToLower()
-                .Replace(" ", "-")
-                .Replace("_", "-");
-
-            // Remove special characters
-            subdomain = new string(subdomain.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
-
-            // Add random suffix to ensure uniqueness
-            subdomain += "-" + Guid.NewGuid().ToString().Substring(0, 6);
-
-            return subdomain;
+            var bytes = System.Text.Encoding.UTF8.GetBytes(password);
+            return Convert.ToBase64String(bytes) + "_demo";
         }
+
+        private static bool VerifyPassword(string password, string hash)
+            => HashPassword(password) == hash;
     }
 }

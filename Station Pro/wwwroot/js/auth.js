@@ -235,22 +235,24 @@ async function submitLoginForm(form) {
     const submitButton = form.querySelector('button[type="submit"]');
     const originalText = submitButton.innerHTML;
 
-    // Show loading state
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="fas fa-spinner spinner mr-2"></i>Logging in...';
 
     try {
         const formData = new FormData(form);
-        const response = await fetch('/login', {
+
+        const response = await fetch('/Auth/Login', {
             method: 'POST',
             body: formData
         });
 
-        const data = await response.json();
+        // Safe JSON parsing — won't crash on empty/HTML responses
+        const text = await response.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch { }
 
         if (response.ok && data.success) {
             showSuccess('Login successful! Redirecting...');
-
             setTimeout(() => {
                 window.location.href = data.redirectUrl || '/dashboard';
             }, 1000);

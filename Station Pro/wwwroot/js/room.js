@@ -255,20 +255,26 @@ function cancelReservation(roomId, roomName) {
         t('CancelReservationAction').replace('{room}', roomName),
         t('RoomWillBeAvailableImmediately'),
         async () => {
-            const res = await fetch(`/Room/CancelReservation?roomId=${roomId}`, { method: 'POST' });
-            if (res.ok) {
-                await refreshRoomCard(roomId);
-                showToast('success',
-                    t('ReservationCancelledMsg').replace('{room}', roomName),
-                    t('ReservationCancelledTitle')
-                );
-            } else {
-                showToast('error', t('FailedCancelReservation'));
+            try {
+                const res = await fetch(`/Room/CancelReservation?roomId=${roomId}`, { method: 'POST' });
+                if (res.ok) {
+                    await refreshRoomCard(roomId);
+                    closeDeletingOverlay(); // ✅ close AFTER card is refreshed
+                    showToast('success',
+                        t('ReservationCancelledMsg').replace('{room}', roomName),
+                        t('ReservationCancelledTitle')
+                    );
+                } else {
+                    closeDeletingOverlay();
+                    showToast('error', t('FailedCancelReservation'));
+                }
+            } catch {
+                closeDeletingOverlay();
+                showToast('error', t('NetworkError'));
             }
         }
     );
 }
-
 async function activateReservation(roomId, roomName) {
     try {
         const res = await fetch(`/Room/ActivateReservation?roomId=${roomId}`, { method: 'POST' });
@@ -518,9 +524,14 @@ function closeDeleteConfirmation() {
 }
 
 function showDeletingOverlay() {
+    // Remove any existing one first
+    document.getElementById('deleting-overlay')?.remove();
+
     const el = document.createElement('div');
     el.id = 'deleting-overlay';
     el.className = 'deleting-overlay';
+    el.setAttribute('hx-disable', '');        // ✅ prevents HTMX from touching it
+    el.setAttribute('data-htmx-disable', ''); // ✅ belt-and-suspenders
     el.innerHTML = `<div class="deleting-spinner-wrapper">
         <div class="deleting-spinner"></div>
         <p class="deleting-text">${t('Processing')}</p>
@@ -529,11 +540,9 @@ function showDeletingOverlay() {
 }
 
 function closeDeletingOverlay() {
+    // ✅ Remove synchronously — no setTimeout, no animation race condition
     const el = document.getElementById('deleting-overlay');
-    if (el) {
-        el.classList.add('hide');
-        setTimeout(() => el.remove(), 200);
-    }
+    if (el) el.remove();
 }
 
 // ============================================

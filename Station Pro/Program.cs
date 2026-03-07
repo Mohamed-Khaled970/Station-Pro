@@ -2,12 +2,16 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using Station_Pro;
 using StationPro;
+using StationPro.Application.Interfaces;
+using StationPro.Application.Interfaces.InMemory;
+using StationPro.Application.Services;
+using StationPro.Filters;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-
+builder.Services.AddSingleton<ISessionService, SessionService>();
 // ✅ Add Response Compression
 builder.Services.AddResponseCompression(options =>
 {
@@ -34,7 +38,10 @@ builder.Services.AddLocalization(options =>
     options.ResourcesPath = "Resources";
 });
 
-builder.Services.AddControllersWithViews()
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<SubscriptionGuardFilter>();
+})
     .AddViewLocalization()
     .AddDataAnnotationsLocalization(options =>
     {
@@ -43,7 +50,14 @@ builder.Services.AddControllersWithViews()
     });
 
 
-
+// ← ADD: session support (used by SubscriptionGuardFilter to read TenantId)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // ✅ Configure supported cultures
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -68,6 +82,9 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 var app = builder.Build();
 
+
+SessionStore.Seed();
+
 app.UseResponseCompression();
 
 // ✅ USE REQUEST LOCALIZATION (before routing!)
@@ -76,7 +93,7 @@ app.UseRequestLocalization();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
-
+app.UseSession();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
