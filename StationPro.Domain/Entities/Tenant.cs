@@ -18,7 +18,9 @@ namespace StationPro.Domain.Entities
         public string? EmailConfirmationToken { get; set; }
         public SubscriptionPlan Plan { get; set; } = SubscriptionPlan.Free;
         public DateTime? SubscriptionEndDate { get; set; }
-
+        // Password reset
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
         public ICollection<Device> Devices { get; set; } = new List<Device>();
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
         public ICollection<Session> Sessions { get; set; } = new List<Session>();

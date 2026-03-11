@@ -13,21 +13,46 @@ namespace StationPro.Infrastructure.Entities_Configurations
     {
         public void Configure(EntityTypeBuilder<Room> builder)
         {
-
             builder.HasKey(r => r.Id);
-            builder.Property(r => r.Name).IsRequired().HasMaxLength(100);
-            builder.HasIndex(r => r.TenantId);
 
-            builder.HasOne(r => r.Tenant)
-                 .WithMany(t => t.Rooms)
-                 .HasForeignKey(r => r.TenantId)
-                 .OnDelete(DeleteBehavior.Restrict); // مهم
+            builder.Property(r => r.Name)
+                   .IsRequired()
+                   .HasMaxLength(100);
 
-            builder.HasMany(r => r.Devices)
-                   .WithOne(d => d.Room)
-                   .HasForeignKey(d => d.RoomId)
-                   .OnDelete(DeleteBehavior.SetNull);
+            // Two rates instead of one
+            builder.Property(r => r.SingleHourlyRate)
+                   .IsRequired()
+                   .HasPrecision(18, 2)
+                   .HasComment("Rate per hour for a single-player room session");
 
+            builder.Property(r => r.MultiHourlyRate)
+                   .IsRequired()
+                   .HasPrecision(18, 2)
+                   .HasComment("Rate per hour for a multi-player room session");
+
+            builder.Property(r => r.Capacity)
+                   .IsRequired()
+                   .HasDefaultValue(1)
+                   .HasComment("Max number of players the room supports");
+
+            // DeviceCount is a denormalized counter — updated whenever a device
+            // is assigned/unassigned from this room. Avoids a COUNT query on hot paths.
+            builder.Property(r => r.DeviceCount)
+                   .IsRequired()
+                   .HasDefaultValue(0)
+                   .HasComment("Cached count of devices assigned to this room");
+
+            builder.Property(r => r.HasAC)
+                   .IsRequired()
+                   .HasDefaultValue(false);
+
+            builder.Property(r => r.IsActive)
+                   .IsRequired()
+                   .HasDefaultValue(true);
+
+            // ── Indexes ───────────────────────────────────────────────────────
+            builder.HasIndex(r => r.TenantId)
+                   .HasDatabaseName("IX_Rooms_TenantId");
         }
     }
 }

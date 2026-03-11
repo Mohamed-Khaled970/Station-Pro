@@ -2,83 +2,58 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using StationPro.Domain.Entities;
 
-namespace StationPro.Infrastructure.Data.Configurations
+namespace StationPro.Infrastructure.Entities_Configurations
 {
     public class DeviceConfiguration : IEntityTypeConfiguration<Device>
     {
         public void Configure(EntityTypeBuilder<Device> builder)
         {
-            // Primary Key
             builder.HasKey(d => d.Id);
 
-            // Properties
             builder.Property(d => d.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+                   .IsRequired()
+                   .HasMaxLength(100);
 
-            // Single Session Rate (Required)
-            builder.Property(d => d.SingleSessionRate)
-                .IsRequired()
-                .HasPrecision(18, 2)
-                .HasComment("Hourly rate for single-player sessions");
-
-            // Multi Session Rate (Optional - Nullable)
-            builder.Property(d => d.MultiSessionRate)
-                .HasPrecision(18, 2)
-                .HasComment("Hourly rate for multi-player sessions");
-
-            // Multi-Session Support Flag
-            builder.Property(d => d.SupportsMultiSession)
-                .IsRequired()
-                .HasDefaultValue(false)
-                .HasComment("Indicates if device supports multi-player sessions");
-
-            // Device Type
             builder.Property(d => d.Type)
-                .IsRequired()
-                .HasComment("Type of device (PS5, Xbox, Pool Table, etc.)");
+                   .HasConversion<int>()
+                   .IsRequired();
 
-            // Status
             builder.Property(d => d.Status)
-                .IsRequired()
-                .HasDefaultValue(DeviceStatus.Available)
-                .HasComment("Current status of the device");
+                   .HasConversion<int>()
+                   .IsRequired()
+                   .HasDefaultValue(DeviceStatus.Available);
 
-            // IsActive
+            builder.Property(d => d.SingleSessionRate)
+                   .IsRequired()
+                   .HasPrecision(18, 2);
+
+            // MultiSessionRate is nullable — only set when SupportsMultiSession = true
+            builder.Property(d => d.MultiSessionRate)
+                   .HasPrecision(18, 2);
+
+            builder.Property(d => d.SupportsMultiSession)
+                   .IsRequired()
+                   .HasDefaultValue(false);
+
             builder.Property(d => d.IsActive)
-                .IsRequired()
-                .HasDefaultValue(true);
+                   .IsRequired()
+                   .HasDefaultValue(true);
 
-            // Indexes
+            // ── Indexes ───────────────────────────────────────────────────────
             builder.HasIndex(d => d.TenantId)
-                .HasDatabaseName("IX_Devices_TenantId");
+                   .HasDatabaseName("IX_Devices_TenantId");
 
+            builder.HasIndex(d => new { d.TenantId, d.Status })
+                   .HasDatabaseName("IX_Devices_TenantId_Status");  // for dashboard queries
 
-            // Relationships
-
-            // Tenant Relationship (Required)
-            builder.HasOne(d => d.Tenant)
-                .WithMany(t => t.Devices)
-                .HasForeignKey(d => d.TenantId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
-
-            // Room Relationship (Optional)
+            // ── Room relationship (optional) ──────────────────────────────────
+            // Defined here because Room is the optional side.
+            // If a room is deleted, device becomes unassigned (RoomId = null).
             builder.HasOne(d => d.Room)
-                .WithMany(r => r.Devices)
-                .HasForeignKey(d => d.RoomId)
-                .OnDelete(DeleteBehavior.SetNull); // Set to null if room is deleted
-
-            // Sessions Relationship (One-to-Many)
-            builder.HasMany(d => d.Sessions)
-                .WithOne(s => s.Device)
-                .HasForeignKey(s => s.DeviceId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent deletion if sessions exist
-
-            // Table Configuration
-            builder.ToTable("Devices", schema: "dbo", t =>
-            {
-                t.HasComment("Gaming and recreational devices in the gaming station");
-            });
+                   .WithMany(r => r.Devices)
+                   .HasForeignKey(d => d.RoomId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
