@@ -87,12 +87,15 @@
 
                     <!-- Right: Logout + Menu -->
                     <div class="mobile-nav-right">
-                        <!-- Logout Button - Mobile -->
-                        <a href="/home/index"
-                           class="mobile-logout-btn text-red-600 hover:bg-red-50 transition-colors"
-                           title="@Localizer["Logout"]">
-                            <i class="fas fa-sign-out-alt mobile-logout-icon"></i>
-                        </a>
+                        <!-- REPLACE with: -->
+                        <form method="post" action="/Auth/Logout" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="mobile-logout-btn text-red-600 hover:bg-red-50 transition-colors"
+                                    title="@Localizer["Logout"]">
+                                <i class="fas fa-sign-out-alt mobile-logout-icon"></i>
+                            </button>
+                        </form>
 
                         <!-- Mobile Menu Button -->
                         <button class="p-2 text-gray-600" onclick="toggleMobileMenu()">
@@ -133,10 +136,14 @@
 
                 <!-- Desktop: Logout -->
                 <div class="hidden md:flex items-center @(isRtl ? "space-x-reverse" : "") space-x-3">
-                    <a href="/home/index" class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span class="font-medium">@Localizer["Logout"]</span>
-                    </a>
+                    <!-- REPLACE with: -->
+                    <form method="post" action="/Auth/Logout">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2 px-4 py-2 text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="font-medium">@Localizer["Logout"]</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

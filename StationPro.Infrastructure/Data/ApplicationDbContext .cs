@@ -32,6 +32,7 @@ namespace StationPro.Infrastructure.Data
         public DbSet<Session> Sessions { get; set; }
         public DbSet<SubscriptionRequest> SubscriptionRequests { get; set; }
         public DbSet<SubscriptionPlanLimits> SubscriptionPlanLimits { get; set; }
+        public DbSet<Admin> Admins => Set<Admin>();
 
         // ── Model configuration ───────────────────────────────────────────────
         protected override void OnModelCreating(ModelBuilder modelBuilder)

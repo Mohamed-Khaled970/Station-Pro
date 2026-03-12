@@ -27,6 +27,8 @@ builder.Services.AddInfrastructureService(builder.Configuration);
 // Use AddService<> inside AddControllersWithViews instead.
 builder.Services.AddScoped<SubscriptionGuardFilter>();
 
+builder.Services.AddScoped<AdminAuthFilter>();
+
 // ── Response compression ──────────────────────────────────────────────────────
 builder.Services.AddResponseCompression(options =>
 {
@@ -62,6 +64,7 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(8);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 // ── Supported cultures ────────────────────────────────────────────────────────

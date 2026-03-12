@@ -114,8 +114,8 @@ async function submitLoginForm(form) {
         try { data = JSON.parse(text); } catch { /* not JSON */ }
 
         if (response.ok && data.success) {
-            showSuccess('Login successful! Redirecting...');
-            setTimeout(() => { window.location.href = data.redirectUrl || '/Dashboard/Index'; }, 800);
+            // Replace current history entry so back button skips login
+            window.location.replace(data.redirectUrl || '/Dashboard/Index');
         } else {
             showError(data.message || 'Invalid email or password.');
             if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
@@ -217,3 +217,20 @@ function debounce(fn, wait) {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Reset login button in case user navigated back
+    const btn = document.querySelector('#login-form button[type="submit"]');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';  // match your localizer text
+    }
+
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) initializeLoginForm(loginForm);
+
+    const registerForm = document.querySelector('form:not(#login-form)');
+    if (registerForm) initializeRegisterValidation(registerForm);
+
+    document.querySelectorAll('.feature-card').forEach(c => c.classList.add('fade-in'));
+});

@@ -13,11 +13,13 @@ namespace Station_Pro.Controllers
     {
         private readonly IAuthService _auth;
         private readonly ISubscriptionRequestService _subscriptionRequest;
+        private readonly IAdminService _adminService;
 
-        public AuthController(IAuthService auth, ISubscriptionRequestService subscriptionRequest)
+        public AuthController(IAuthService auth, ISubscriptionRequestService subscriptionRequest, IAdminService adminService)
         {
             _auth = auth;
             _subscriptionRequest = subscriptionRequest;
+            _adminService = adminService;
         }
 
         // ── Register ──────────────────────────────────────────────────────────
@@ -65,6 +67,16 @@ namespace Station_Pro.Controllers
         {
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "Invalid input." });
+
+            var admin = await _adminService.TryToGetAdmin(model.Email);
+
+            if (admin != null && BCrypt.Net.BCrypt.Verify(model.Password, admin.PasswordHash))
+            {
+                HttpContext.Session.SetInt32("AdminId", admin.Id);
+                HttpContext.Session.SetString("AdminName", admin.Name);
+                await HttpContext.Session.CommitAsync();
+                return Json(new { success = true, redirectUrl = "/Admin/Index" });
+            }
 
             var (success, tenantId, error) = await _auth.LoginAsync(model.Email, model.Password);
 

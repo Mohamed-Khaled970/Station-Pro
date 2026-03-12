@@ -16,10 +16,12 @@ using StationPro.Application.DTOs.Subscriptions;
 using StationPro.Domain.Entities;
 using Station_Pro.Controllers;
 using StationPro.Application.Contracts.Repositories;
-using StationPro.Application.Contracts.Services;    // SubscriptionController.SyncApproval / SyncRejection
+using StationPro.Application.Contracts.Services;
+using StationPro.Filters;    // SubscriptionController.SyncApproval / SyncRejection
 
 namespace StationPro.Controllers
 {
+    [ServiceFilter(typeof(AdminAuthFilter))]
     public class AdminController : Controller
     {
         private readonly IAdminTenantRepository _adminRepo;

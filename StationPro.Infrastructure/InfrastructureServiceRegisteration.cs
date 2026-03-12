@@ -42,6 +42,8 @@ namespace StationPro.Infrastructure
             services.AddScoped<IEmailService, SmtpEmailService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ISubscriptionRequestService, SubscriptionRequestService>();
+            services.AddScoped<IAdminAuthenticationRepository, AdminAuthenticationRepository>();
+            services.AddScoped<IAdminService, AdminService>();
 
             return services;
         }
