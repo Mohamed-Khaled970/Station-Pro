@@ -12,7 +12,7 @@ namespace StationPro.Application.DTOs.Subscriptions
     {
         public int TenantId { get; set; }
         public string TenantName { get; set; } = string.Empty;
-        public string CurrentPlan { get; set; } = string.Empty;
+        public string CurrentPlan { get; set; } = "Free";
         public DateTime? CurrentSubscriptionEndDate { get; set; }
         public string PendingSubscriptionPlan { get; set; } = string.Empty;
 

@@ -1,357 +1,219 @@
-﻿// wwwroot/js/auth.js - Optimized for Performance
-
-// ============================================
-// FORM VALIDATION
-// ============================================
+﻿// =============================================================================
+// FILE: wwwroot/js/auth.js
+//
+// Register → plain form POST (controller returns redirect, not JSON)
+// Login    → AJAX fetch (controller returns JSON { success, redirectUrl })
+// =============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    const registerForm = document.getElementById('register-form');
+
+    // ── Login (AJAX) ──────────────────────────────────────────────────────────
     const loginForm = document.getElementById('login-form');
+    if (loginForm) initializeLoginForm(loginForm);
 
-    if (registerForm) {
-        initializeRegisterForm(registerForm);
-    }
+    // ── Register (plain POST + client validation only) ────────────────────────
+    const registerForm = document.querySelector('form:not(#login-form)');
+    if (registerForm) initializeRegisterValidation(registerForm);
 
-    if (loginForm) {
-        initializeLoginForm(loginForm);
-    }
-
-    // Simple fade-in for feature cards without animation delays
-    const cards = document.querySelectorAll('.feature-card');
-    cards.forEach(card => {
-        card.classList.add('fade-in');
-    });
+    // Feature card animations
+    document.querySelectorAll('.feature-card').forEach(c => c.classList.add('fade-in'));
 });
 
-// ============================================
-// REGISTER FORM
-// ============================================
+// =============================================================================
+// REGISTER — validation only, no fetch (controller returns redirect)
+// =============================================================================
 
-function initializeRegisterForm(form) {
-    const passwordInput = form.querySelector('#password');
-    const confirmPasswordInput = form.querySelector('#confirm-password');
+function initializeRegisterValidation(form) {
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm-password');
+    const phoneInput = form.querySelector('input[name="PhoneNumber"]');
 
-    // Password strength indicator with debounce
     if (passwordInput) {
-        passwordInput.addEventListener('input', debounce(() => {
-            checkPasswordStrength(passwordInput.value);
-        }, 200));
+        passwordInput.addEventListener('input', debounce(() =>
+            checkPasswordStrength(passwordInput.value), 200));
     }
 
-    // Confirm password validation
-    if (confirmPasswordInput) {
-        confirmPasswordInput.addEventListener('input', debounce(() => {
-            validatePasswordMatch(passwordInput.value, confirmPasswordInput.value);
-        }, 200));
+    if (confirmInput && passwordInput) {
+        confirmInput.addEventListener('input', debounce(() =>
+            validatePasswordMatch(passwordInput.value, confirmInput.value), 200));
     }
 
-    // Form submission
+    // Digits only, max 11
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 11) v = v.slice(0, 11);
+            e.target.value = v;
+        });
+    }
+
     form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (validateRegisterForm(form)) {
-            submitRegisterForm(form);
+        if (!validateRegisterForm(form)) {
+            e.preventDefault();
+        } else {
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating your store...';
+            }
         }
     });
 }
 
-// ============================================
-// LOGIN FORM
-// ============================================
+function validateRegisterForm(form) {
+    const password = form.querySelector('#password')?.value ?? '';
+    const confirm = form.querySelector('#confirm-password')?.value ?? '';
+    const terms = form.querySelector('#terms');
+
+    if (password.length < 6) {
+        showError('Password must be at least 6 characters.');
+        return false;
+    }
+    if (password !== confirm) {
+        showError('Passwords do not match.');
+        return false;
+    }
+    if (terms && !terms.checked) {
+        showError('Please accept the terms and conditions.');
+        return false;
+    }
+    return true;
+}
+
+// =============================================================================
+// LOGIN — AJAX
+// =============================================================================
 
 function initializeLoginForm(form) {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (validateLoginForm(form)) {
-            submitLoginForm(form);
-        }
+        if (validateLoginForm(form)) submitLoginForm(form);
     });
 }
 
-// ============================================
-// PASSWORD STRENGTH
-// ============================================
-
-function checkPasswordStrength(password) {
-    const strengthIndicator = document.getElementById('password-strength');
-    if (!strengthIndicator) {
-        const passwordInput = document.getElementById('password');
-        if (passwordInput && passwordInput.parentElement) {
-            const indicator = document.createElement('div');
-            indicator.id = 'password-strength';
-            indicator.className = 'password-strength';
-            indicator.innerHTML = '<div class="password-strength-bar"></div>';
-            passwordInput.parentElement.appendChild(indicator);
-        }
-    }
-
-    let strength = 0;
-    const bar = document.querySelector('.password-strength-bar');
-
-    if (!bar) return;
-
-    // Check length
-    if (password.length >= 8) strength++;
-    if (password.length >= 12) strength++;
-
-    // Check for numbers
-    if (/\d/.test(password)) strength++;
-
-    // Check for lowercase and uppercase
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-
-    // Check for special characters
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
-
-    // Update bar
-    bar.className = 'password-strength-bar';
-
-    if (strength <= 2) {
-        bar.classList.add('strength-weak');
-    } else if (strength <= 4) {
-        bar.classList.add('strength-medium');
-    } else {
-        bar.classList.add('strength-strong');
-    }
-}
-
-// ============================================
-// PASSWORD MATCH VALIDATION
-// ============================================
-
-function validatePasswordMatch(password, confirmPassword) {
-    const errorElement = document.getElementById('password-match-error');
-    const confirmInput = document.getElementById('confirm-password');
-
-    if (confirmPassword && password !== confirmPassword) {
-        errorElement?.classList.remove('hidden');
-        confirmInput?.classList.add('error');
-        return false;
-    } else {
-        errorElement?.classList.add('hidden');
-        confirmInput?.classList.remove('error');
-        return true;
-    }
-}
-
-// ============================================
-// VALIDATE REGISTER FORM
-// ============================================
-
-function validateRegisterForm(form) {
-    const formData = new FormData(form);
-    const password = formData.get('Password');
-    const confirmPassword = formData.get('ConfirmPassword');
-    const terms = form.querySelector('#terms');
-
-    let isValid = true;
-
-    // Check password match
-    if (password !== confirmPassword) {
-        showError('Passwords do not match');
-        isValid = false;
-    }
-
-    // Check password strength
-    if (password && password.length < 6) {
-        showError('Password must be at least 6 characters');
-        isValid = false;
-    }
-
-    // Check terms
-    if (terms && !terms.checked) {
-        showError('Please accept the terms and conditions');
-        isValid = false;
-    }
-
-    return isValid;
-}
-
-// ============================================
-// VALIDATE LOGIN FORM
-// ============================================
-
 function validateLoginForm(form) {
-    const email = form.querySelector('[name="Email"]').value;
-    const password = form.querySelector('[name="Password"]').value;
+    const email = form.querySelector('[name="Email"]')?.value ?? '';
+    const password = form.querySelector('[name="Password"]')?.value ?? '';
 
-    if (!email || !password) {
-        showError('Please fill in all fields');
-        return false;
-    }
-
-    if (!isValidEmail(email)) {
-        showError('Please enter a valid email address');
-        return false;
-    }
-
+    if (!email || !password) { showError('Please fill in all fields.'); return false; }
+    if (!isValidEmail(email)) { showError('Please enter a valid email address.'); return false; }
     return true;
 }
 
-// ============================================
-// SUBMIT REGISTER FORM
-// ============================================
-
-async function submitRegisterForm(form) {
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalText = submitButton.innerHTML;
-
-    // Show loading state
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner spinner mr-2"></i>Creating your store...';
-
-    try {
-        const formData = new FormData(form);
-        const response = await fetch('auth/register', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            showSuccess('Account created! Check your email to verify.');
-
-            setTimeout(() => {
-                window.location.href = '/verify-email-sent';
-            }, 2000);
-        } else {
-            showError(data.message || 'Registration failed. Please try again.');
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
-        showError('An error occurred. Please try again.');
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalText;
-    }
-}
-
-// ============================================
-// SUBMIT LOGIN FORM
-// ============================================
-
 async function submitLoginForm(form) {
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalText = submitButton.innerHTML;
+    const btn = form.querySelector('button[type="submit"]');
+    const origHtml = btn?.innerHTML ?? '';
 
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner spinner mr-2"></i>Logging in...';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging in...'; }
 
     try {
-        const formData = new FormData(form);
+        const response = await fetch('/Auth/Login', { method: 'POST', body: new FormData(form) });
 
-        const response = await fetch('/Auth/Login', {
-            method: 'POST',
-            body: formData
-        });
-
-        // Safe JSON parsing — won't crash on empty/HTML responses
         const text = await response.text();
         let data = {};
-        try { data = JSON.parse(text); } catch { }
+        try { data = JSON.parse(text); } catch { /* not JSON */ }
 
         if (response.ok && data.success) {
             showSuccess('Login successful! Redirecting...');
-            setTimeout(() => {
-                window.location.href = data.redirectUrl || '/dashboard';
-            }, 1000);
+            setTimeout(() => { window.location.href = data.redirectUrl || '/Dashboard/Index'; }, 800);
         } else {
-            showError(data.message || 'Invalid email or password');
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
+            showError(data.message || 'Invalid email or password.');
+            if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
         }
-    } catch (error) {
-        console.error('Login error:', error);
+    } catch (err) {
+        console.error('Login error:', err);
         showError('An error occurred. Please try again.');
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalText;
+        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
     }
 }
 
-// ============================================
+// =============================================================================
+// PASSWORD STRENGTH
+// =============================================================================
+
+function checkPasswordStrength(password) {
+    let indicator = document.getElementById('password-strength');
+    if (!indicator) {
+        const parent = document.getElementById('password')?.parentElement;
+        if (!parent) return;
+        indicator = document.createElement('div');
+        indicator.id = 'password-strength';
+        indicator.className = 'mt-2';
+        indicator.innerHTML = '<div class="password-strength-bar h-1 rounded-full transition-all duration-300"></div>';
+        parent.appendChild(indicator);
+    }
+
+    const bar = indicator.querySelector('.password-strength-bar');
+    if (!bar) return;
+
+    let s = 0;
+    if (password.length >= 6) s++;
+    if (password.length >= 10) s++;
+    if (/\d/.test(password)) s++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) s++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) s++;
+
+    bar.className = 'password-strength-bar h-1 rounded-full transition-all duration-300 ';
+    if (s <= 2) bar.className += 'bg-red-500 w-1/3';
+    else if (s <= 3) bar.className += 'bg-yellow-500 w-2/3';
+    else bar.className += 'bg-green-500 w-full';
+}
+
+function validatePasswordMatch(password, confirm) {
+    const error = document.getElementById('password-match-error');
+    const input = document.getElementById('confirm-password');
+    if (confirm && password !== confirm) {
+        error?.classList.remove('hidden');
+        input?.classList.add('border-red-500');
+        return false;
+    }
+    error?.classList.add('hidden');
+    input?.classList.remove('border-red-500');
+    return true;
+}
+
+// =============================================================================
 // TOGGLE PASSWORD VISIBILITY
-// ============================================
+// =============================================================================
 
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
-    const button = input?.nextElementSibling?.querySelector('i');
-
-    if (!input || !button) return;
-
-    if (input.type === 'password') {
-        input.type = 'text';
-        button.classList.remove('fa-eye');
-        button.classList.add('fa-eye-slash');
-    } else {
-        input.type = 'password';
-        button.classList.remove('fa-eye-slash');
-        button.classList.add('fa-eye');
-    }
+    const icon = input?.nextElementSibling?.querySelector('i');
+    if (!input || !icon) return;
+    const hidden = input.type === 'password';
+    input.type = hidden ? 'text' : 'password';
+    icon.classList.toggle('fa-eye', !hidden);
+    icon.classList.toggle('fa-eye-slash', hidden);
 }
 
-// ============================================
-// UTILITIES
-// ============================================
+// =============================================================================
+// TOAST NOTIFICATIONS
+// =============================================================================
 
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function showError(message) {
-    showToast(message, 'error');
-}
-
-function showSuccess(message) {
-    showToast(message, 'success');
-}
+function showError(msg) { showToast(msg, 'error'); }
+function showSuccess(msg) { showToast(msg, 'success'); }
 
 function showToast(message, type = 'success') {
-    // Remove existing toast
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) {
-        existingToast.remove();
-    }
-
-    // Create new toast
-    const toast = document.createElement('div');
-    toast.className = `toast-notification ${type}-message`;
-
+    document.querySelector('.toast-notification')?.remove();
+    const color = type === 'success' ? 'bg-green-600' : 'bg-red-600';
     const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-
-    toast.innerHTML = `
-        <i class="fas ${icon} text-xl"></i>
-        <span>${message}</span>
-    `;
-
+    const toast = document.createElement('div');
+    toast.className = `toast-notification fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl text-white shadow-xl ${color}`;
+    toast.innerHTML = `<i class="fas ${icon} text-xl"></i><span>${message}</span>`;
     document.body.appendChild(toast);
-
-    // Auto-remove after 5 seconds
     setTimeout(() => {
-        toast.classList.add('hide');
+        toast.style.cssText += 'opacity:0;transition:opacity 0.3s';
         setTimeout(() => toast.remove(), 300);
-    }, 5000);
+    }, 4000);
 }
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), wait);
-    };
-}
+// =============================================================================
+// UTILITIES
+// =============================================================================
 
-// ============================================
-// AUTO-FORMAT PHONE NUMBER
-// ============================================
+function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
 
-const phoneInput = document.querySelector('input[name="PhoneNumber"]');
-if (phoneInput) {
-    phoneInput.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 11) {
-            value = value.slice(0, 11);
-        }
-        e.target.value = value;
-    });
+function debounce(fn, wait) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
 }

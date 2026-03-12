@@ -2,6 +2,7 @@
 @using Microsoft.Extensions.Localization
 @using StationPro
 @inject IStringLocalizer<SharedResources> Localizer
+@model StationPro.Application.DTOs.Auth.RegisterViewModel
 
 @{
     ViewData["Title"] = Localizer["CreateStore"];
@@ -17,9 +18,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎮</text></svg>">
-    <link rel="alternate icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKNSURBVFiFzZdLaBNBGIC/2U2ym03TNG1TY6PGR1GqYKGCBw8ePHjx4MWTUkFEEAQRQfDgxYMIHrx48OLFgxcvnkTwICKCIIIgKFqrVWustTZN0yRNs5vdZHdmPGSbNE2yu0nFH5Zl/pn55p+Z/f8ZQkRgjKGUAgDGGBhjIIRACAEhBBhjEEIwxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxv8FIQTGGBhjEEIghEAIgRACAEIIQgiEEAgAhBCEEAgAhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEOL/4RdvXGMeM7OQHQAAAABJRU5ErkJggg==">
     <title>@ViewData["Title"] - @Localizer["StationPro"]</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -37,21 +36,15 @@
     <div class="max-w-6xl mx-auto">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
 
-            <!-- Left/Right Side - Branding & Features -->
+            <!-- Branding side -->
             <div class="text-white space-y-8 fade-in @(isRtl ? "lg:order-2" : "")">
                 <div>
                     <div class="inline-flex items-center justify-center w-20 h-20 icon-box rounded-3xl mb-6">
                         <i class="fas fa-gamepad text-white text-3xl"></i>
                     </div>
-                    <h1 class="text-5xl font-bold mb-4 leading-tight">
-                        @Localizer["LaunchYourGamingEmpire"]
-                    </h1>
-                    <p class="text-xl text-white/90 leading-relaxed">
-                        @Localizer["RegisterDescription"]
-                    </p>
+                    <h1 class="text-5xl font-bold mb-4 leading-tight">@Localizer["LaunchYourGamingEmpire"]</h1>
+                    <p class="text-xl text-white/90 leading-relaxed">@Localizer["RegisterDescription"]</p>
                 </div>
-
-                <!-- Feature Cards -->
                 <div class="space-y-4">
                     <div class="feature-card glass-card p-6 rounded-2xl">
                         <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-4">
@@ -66,7 +59,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="feature-card glass-card p-6 rounded-2xl">
                         <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-4">
                             <div class="flex-shrink-0">
@@ -80,7 +72,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="feature-card glass-card p-6 rounded-2xl">
                         <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-4">
                             <div class="flex-shrink-0">
@@ -95,25 +86,14 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Trust Badges -->
                 <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-8 pt-4">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold">14</div>
-                        <div class="text-sm text-white/80">@Localizer["DaysFree"]</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold">24/7</div>
-                        <div class="text-sm text-white/80">@Localizer["Support"]</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold">100%</div>
-                        <div class="text-sm text-white/80">@Localizer["Secure"]</div>
-                    </div>
+                    <div class="text-center"><div class="text-3xl font-bold">14</div><div class="text-sm text-white/80">@Localizer["DaysFree"]</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold">24/7</div><div class="text-sm text-white/80">@Localizer["Support"]</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold">100%</div><div class="text-sm text-white/80">@Localizer["Secure"]</div></div>
                 </div>
             </div>
 
-            <!-- Right/Left Side - Registration Form -->
+            <!-- Form side -->
             <div class="slide-up @(isRtl ? "lg:order-1" : "")" style="animation-delay: 0.2s">
                 <div class="glass-card rounded-3xl shadow-2xl p-10">
                     <div class="mb-8">
@@ -121,7 +101,25 @@
                         <p class="text-gray-600">@Localizer["RegisterSubtitle"]</p>
                     </div>
 
-                    <!-- CHANGED: Removed id="register-form" to prevent AJAX submission -->
+                    @* ── Global validation errors (e.g. "Email already exists") ── *@
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-0.5 flex-shrink-0"></i>
+                                <div class="text-sm text-red-700 space-y-1">
+                                    @foreach (var state in ViewData.ModelState.Values)
+                                    {
+                                        foreach (var error in state.Errors)
+                                        {
+                                            <p>@error.ErrorMessage</p>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
                     <form asp-action="Register" asp-controller="Auth" method="POST" class="space-y-6">
                         @Html.AntiForgeryToken()
 
@@ -130,11 +128,10 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-store text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["StoreName"]
                             </label>
-                            <input type="text"
-                                   name="StoreName"
-                                   class="form-input w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                   placeholder="@Localizer["StoreNamePlaceholder"]"
-                                   required>
+                            <input type="text" name="StoreName" value="@Model?.StoreName"
+                                   class="form-input w-full px-4 py-3.5 border @(ViewData.ModelState["StoreName"]?.Errors.Count > 0 ? "border-red-400" : "border-gray-300") rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                                   placeholder="@Localizer["StoreNamePlaceholder"]" required>
+                            <span asp-validation-for="StoreName" class="text-red-500 text-xs mt-1 block"></span>
                         </div>
 
                         <!-- Email -->
@@ -142,12 +139,10 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-envelope text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["EmailAddress"]
                             </label>
-                            <input type="email"
-                                   name="Email"
-                                   class="form-input w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                   placeholder="@Localizer["EmailPlaceholder"]"
-                                   dir="ltr"
-                                   required>
+                            <input type="email" name="Email" value="@Model?.Email"
+                                   class="form-input w-full px-4 py-3.5 border @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "border-red-400" : "border-gray-300") rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                                   placeholder="@Localizer["EmailPlaceholder"]" dir="ltr" required>
+                            <span asp-validation-for="Email" class="text-red-500 text-xs mt-1 block"></span>
                         </div>
 
                         <!-- Phone -->
@@ -155,12 +150,10 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-phone text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["PhoneNumber"]
                             </label>
-                            <input type="tel"
-                                   name="PhoneNumber"
-                                   class="form-input w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                   placeholder="@Localizer["PhonePlaceholder"]"
-                                   dir="ltr"
-                                   required>
+                            <input type="tel" name="PhoneNumber" value="@Model?.PhoneNumber"
+                                   class="form-input w-full px-4 py-3.5 border @(ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0 ? "border-red-400" : "border-gray-300") rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                                   placeholder="@Localizer["PhonePlaceholder"]" dir="ltr" required>
+                            <span asp-validation-for="PhoneNumber" class="text-red-500 text-xs mt-1 block"></span>
                         </div>
 
                         <!-- Password -->
@@ -169,20 +162,15 @@
                                 <i class="fas fa-lock text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["Password"]
                             </label>
                             <div class="relative">
-                                <input type="password"
-                                       name="Password"
-                                       id="password"
-                                       class="form-input w-full px-4 py-3.5 @(isRtl ? "pl-12" : "pr-12") border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                       placeholder="@Localizer["PasswordPlaceholder"]"
-                                       minlength="6"
-                                       dir="ltr"
-                                       required>
-                                <button type="button"
-                                        onclick="togglePassword('password')"
+                                <input type="password" name="Password" id="password"
+                                       class="form-input w-full px-4 py-3.5 @(isRtl ? "pl-12" : "pr-12") border @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "border-red-400" : "border-gray-300") rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                                       placeholder="@Localizer["PasswordPlaceholder"]" minlength="6" dir="ltr" required>
+                                <button type="button" onclick="togglePassword('password')"
                                         class="absolute @(isRtl ? "left-4" : "right-4") top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
+                            <span asp-validation-for="Password" class="text-red-500 text-xs mt-1 block"></span>
                         </div>
 
                         <!-- Confirm Password -->
@@ -191,47 +179,48 @@
                                 <i class="fas fa-lock text-indigo-600 @(isRtl ? "ml-2" : "mr-2")"></i>@Localizer["ConfirmPassword"]
                             </label>
                             <div class="relative">
-                                <input type="password"
-                                       name="ConfirmPassword"
-                                       id="confirm-password"
-                                       class="form-input w-full px-4 py-3.5 @(isRtl ? "pl-12" : "pr-12") border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
-                                       placeholder="@Localizer["PasswordPlaceholder"]"
-                                       dir="ltr"
-                                       required>
-                                <button type="button"
-                                        onclick="togglePassword('confirm-password')"
+                                <input type="password" name="ConfirmPassword" id="confirm-password"
+                                       class="form-input w-full px-4 py-3.5 @(isRtl ? "pl-12" : "pr-12") border @(ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "border-red-400" : "border-gray-300") rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                                       placeholder="@Localizer["PasswordPlaceholder"]" dir="ltr" required>
+                                <button type="button" onclick="togglePassword('confirm-password')"
                                         class="absolute @(isRtl ? "left-4" : "right-4") top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <p class="form-error hidden text-red-600 text-sm mt-1" id="password-match-error">@Localizer["PasswordMismatch"]</p>
+                            <p class="form-error hidden text-red-500 text-xs mt-1" id="password-match-error">@Localizer["PasswordMismatch"]</p>
+                            <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs mt-1 block"></span>
                         </div>
 
                         <!-- Terms -->
-                        <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-3">
-                            <input type="checkbox"
-                                   id="terms"
-                                   name="AcceptTerms"
-                                   class="mt-1 w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                                   required>
-                            <label for="terms" class="text-sm text-gray-600 leading-relaxed">
-                                @Localizer["AgreeToTerms"] <a href="#" class="text-indigo-600 hover:underline font-medium">@Localizer["TermsAndConditions"]</a>
-                                @Localizer["And"] <a href="#" class="text-indigo-600 hover:underline font-medium">@Localizer["PrivacyPolicy"]</a>
-                            </label>
+                        <div>
+                            <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-3">
+                                <input type="checkbox" id="terms" name="AcceptTerms" value="true"
+                                       class="mt-1 w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                @(Model?.AcceptTerms == true ? "checked" : "")>
+                                <label for="terms" class="text-sm text-gray-600 leading-relaxed">
+                                    @Localizer["AgreeToTerms"]
+                                    <a href="#" class="text-indigo-600 hover:underline font-medium">@Localizer["TermsAndConditions"]</a>
+                                    @Localizer["And"]
+                                    <a href="#" class="text-indigo-600 hover:underline font-medium">@Localizer["PrivacyPolicy"]</a>
+                                </label>
+                            </div>
+                            @* Show server-side error for AcceptTerms if present *@
+                            <span asp-validation-for="AcceptTerms" class="text-red-500 text-xs mt-1 block"></span>
                         </div>
 
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base shadow-lg">
+                        <!-- Submit -->
+                        <button type="submit" id="register-submit"
+                                class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base shadow-lg">
                             <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
                             @Localizer["CreateMyStore"]
                         </button>
                     </form>
 
-                    <!-- Login Link -->
                     <div class="mt-8 text-center">
                         <p class="text-gray-600">
                             @Localizer["AlreadyHaveAccount"]
-                            <a href="@Url.Action("Login", "Auth")" class="text-indigo-600 hover:text-indigo-700 font-semibold @(isRtl ? "mr-1" : "ml-1")">
+                            <a href="@Url.Action("Login", "Auth")"
+                               class="text-indigo-600 hover:text-indigo-700 font-semibold @(isRtl ? "mr-1" : "ml-1")">
                                 @Localizer["LoginHere"]
                             </a>
                         </p>
@@ -242,52 +231,67 @@
         </div>
     </div>
 
-    <!-- Keep auth.js for password visibility toggle only -->
     <script>
-        // Password visibility toggle
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
-            const button = input?.nextElementSibling?.querySelector('i');
-
-            if (!input || !button) return;
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                button.classList.remove('fa-eye');
-                button.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                button.classList.remove('fa-eye-slash');
-                button.classList.add('fa-eye');
-            }
+            const icon = input?.nextElementSibling?.querySelector('i');
+            if (!input || !icon) return;
+            const hidden = input.type === 'password';
+            input.type = hidden ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !hidden);
+            icon.classList.toggle('fa-eye-slash', hidden);
         }
 
-        // Password match validation
-        const confirmPassword = document.getElementById('confirm-password');
-        const password = document.getElementById('password');
-        const errorElement = document.getElementById('password-match-error');
-
-        if (confirmPassword && password) {
-            confirmPassword.addEventListener('input', function () {
-                if (this.value && password.value !== this.value) {
-                    errorElement?.classList.remove('hidden');
-                } else {
-                    errorElement?.classList.add('hidden');
-                }
+        // Live password match check
+        const confirmInput = document.getElementById('confirm-password');
+        const passwordInput = document.getElementById('password');
+        const matchError = document.getElementById('password-match-error');
+        if (confirmInput && passwordInput) {
+            confirmInput.addEventListener('input', () => {
+                const mismatch = confirmInput.value && passwordInput.value !== confirmInput.value;
+                matchError?.classList.toggle('hidden', !mismatch);
             });
         }
 
-        // Phone number formatting
+        // Phone: digits only, max 11
         const phoneInput = document.querySelector('input[name="PhoneNumber"]');
         if (phoneInput) {
             phoneInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length > 11) {
-                    value = value.slice(0, 11);
-                }
-                e.target.value = value;
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 11);
             });
         }
+
+        // Handle form submit: validate terms, then show loading state
+        document.querySelector('form[action*="Register"]')?.addEventListener('submit', function (e) {
+            const terms = document.getElementById('terms');
+
+            if (!terms?.checked) {
+                e.preventDefault();
+                let err = document.getElementById('terms-error');
+                if (!err) {
+                    err = document.createElement('p');
+                    err.id = 'terms-error';
+                    err.className = 'text-red-500 text-xs mt-1';
+                    err.textContent = 'You must accept the terms and conditions.';
+                    terms.closest('div').parentElement.appendChild(err);
+                }
+                terms.classList.add('border-red-400');
+                return;
+            }
+
+            // Terms checked — show loading state and allow submit through
+            const btn = document.getElementById('register-submit');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating your store...';
+            }
+        });
+
+        // Remove terms error when checked
+        document.getElementById('terms')?.addEventListener('change', function () {
+            document.getElementById('terms-error')?.remove();
+            this.classList.remove('border-red-400');
+        });
     </script>
 </body>
 </html>

@@ -12,7 +12,7 @@ using StationPro.Infrastructure.Data;
 namespace StationPro.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260311233124_AddAllTables")]
+    [Migration("20260312000252_AddAllTables")]
     partial class AddAllTables
     {
         /// <inheritdoc />
@@ -437,6 +437,10 @@ namespace StationPro.Infrastructure.Migrations
 
                     b.Property<DateTime?>("PasswordResetTokenExpiry")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Plan")
                         .HasColumnType("int");

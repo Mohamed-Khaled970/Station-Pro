@@ -14,249 +14,167 @@ using Microsoft.AspNetCore.Mvc;
 using StationPro.Application.DTOs.Admin;
 using StationPro.Application.DTOs.Subscriptions;
 using StationPro.Domain.Entities;
-using Station_Pro.Controllers;    // SubscriptionController.SyncApproval / SyncRejection
+using Station_Pro.Controllers;
+using StationPro.Application.Contracts.Repositories;
+using StationPro.Application.Contracts.Services;    // SubscriptionController.SyncApproval / SyncRejection
 
 namespace StationPro.Controllers
 {
     public class AdminController : Controller
     {
-        // Simulate tenant data (replace with actual database queries)
-        private static List<TenantAdminDto> _tenants = GenerateSampleTenants();
+        private readonly IAdminTenantRepository _adminRepo;
+        private readonly ISubscriptionRequestService _subService;
 
-        // Shared subscription requests storage.
-        // In production: use a database with proper repository pattern.
-        public static List<PendingSubscriptionDto> _subscriptionRequests = new List<PendingSubscriptionDto>
+        public AdminController(
+            IAdminTenantRepository adminRepo,
+            ISubscriptionRequestService subService)
         {
-            new PendingSubscriptionDto
-            {
-                Id = 1,
-                TenantId = 1,
-                TenantName = "Game Zone Cairo",
-                TenantEmail = "owner@gamezone.com",
-                Subdomain = "gamezone",
-                SubscriptionPlan = "Pro",
-                Amount = 79,
-                PaymentMethod = "VodafoneCash",
-                PhoneNumber = "01001234567",
-                TransactionReference = "VF123456789",
-                PaymentProofUrl = "https://via.placeholder.com/400x600/3b82f6/ffffff?text=Payment+Proof+1",
-                Notes = "Payment made on 20 Jan 2026",
-                Status = "Pending",
-                SubmittedDate = DateTime.Now.AddHours(-2),
-                ReviewedDate = null,
-                ReviewedBy = null,
-                AdminNotes = null
-            },
-            new PendingSubscriptionDto
-            {
-                Id = 2,
-                TenantId = 2,
-                TenantName = "PlayStation Hub",
-                TenantEmail = "admin@pshub.com",
-                Subdomain = "pshub",
-                SubscriptionPlan = "Basic",
-                Amount = 29,
-                PaymentMethod = "InstaPay",
-                PhoneNumber = "01112345678",
-                TransactionReference = "IP987654321",
-                PaymentProofUrl = "https://via.placeholder.com/400x600/10b981/ffffff?text=Payment+Proof+2",
-                Notes = null,
-                Status = "Pending",
-                SubmittedDate = DateTime.Now.AddHours(-5),
-                ReviewedDate = null,
-                ReviewedBy = null,
-                AdminNotes = null
-            }
-        };
+            _adminRepo = adminRepo;
+            _subService = subService;
+        }
 
         // ── Dashboard ─────────────────────────────────────────────────────────
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var stats = new AdminDashboardStatsDto
-            {
-                TotalTenants = _tenants.Count,
-                ActiveTenants = _tenants.Count(t => t.IsActive),
-                TotalRevenue = _tenants.Sum(t => t.TotalRevenue),
-                MonthlyRevenue = _tenants.Sum(t => t.MonthlyRevenue),
-                FreePlanCount = _tenants.Count(t => t.Plan == SubscriptionPlan.Free),
-                BasicPlanCount = _tenants.Count(t => t.Plan == SubscriptionPlan.Basic),
-                ProPlanCount = _tenants.Count(t => t.Plan == SubscriptionPlan.Pro),
-                EnterprisePlanCount = _tenants.Count(t => t.Plan == SubscriptionPlan.Enterprise),
-                PendingSubscriptionsCount = _subscriptionRequests.Count(s => s.Status == "Pending"),
-                ApprovedTodayCount = _subscriptionRequests.Count(s =>
-                                                s.Status == "Approved" &&
-                                                s.ReviewedDate?.Date == DateTime.Today),
-                RejectedTodayCount = _subscriptionRequests.Count(s =>
-                                                s.Status == "Rejected" &&
-                                                s.ReviewedDate?.Date == DateTime.Today),
-                PendingSubscriptionsTotal = _subscriptionRequests
-                                                .Where(s => s.Status == "Pending")
-                                                .Sum(s => s.Amount)
-            };
-
+            var stats = await _adminRepo.GetDashboardStatsAsync();
             return View(stats);
         }
 
-        // ── Tenants partial ───────────────────────────────────────────────────
-        public IActionResult Tenants()
+        // ── Tenants partial (HTMX) ────────────────────────────────────────────
+        public async Task<IActionResult> Tenants()
         {
-            return PartialView("_TenantsList", _tenants);
+            var tenants = await _adminRepo.GetAllTenantsAsync();
+            return PartialView("_TenantsList", tenants);
         }
 
-        // ── Toggle tenant status ──────────────────────────────────────────────
+        // ── Toggle tenant active status ───────────────────────────────────────
         [HttpPost]
-        public IActionResult ToggleTenantStatus(int tenantId)
+        public async Task<IActionResult> ToggleTenantStatus(int tenantId)
         {
-            var tenant = _tenants.FirstOrDefault(t => t.Id == tenantId);
-            if (tenant == null)
-                return NotFound(new { success = false, message = "Tenant not found" });
+            var ok = await _adminRepo.ToggleTenantStatusAsync(tenantId);
 
-            tenant.IsActive = !tenant.IsActive;
-            return Ok(new { success = true, isActive = tenant.IsActive });
+            if (!ok)
+                return NotFound(new { success = false, message = "Tenant not found." });
+
+            return Ok(new { success = true });
         }
 
         // ── Subscription request list ─────────────────────────────────────────
-        // GET: /Admin/PendingSubscriptions?filter=all|Pending|Approved|Rejected
-        public IActionResult PendingSubscriptions(string filter = "all")
+        // GET /Admin/PendingSubscriptions?filter=all|Pending|Approved|Rejected
+        public async Task<IActionResult> PendingSubscriptions(string filter = "all")
         {
-            var query = _subscriptionRequests.AsQueryable();
+            var all = await _subService.GetAllAsync();
 
-            if (!string.IsNullOrEmpty(filter) && filter != "all")
-                query = query.Where(s =>
-                    s.Status.Equals(filter, StringComparison.OrdinalIgnoreCase));
+            // Map domain entities → DTOs for the view
+            var dtos = all
+                .Where(r => filter == "all" ||
+                            r.Status.ToString().Equals(filter, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(r => r.SubmittedDate)
+                .Select(r => new PendingSubscriptionDto
+                {
+                    Id = r.Id,
+                    TenantId = r.TenantId,
+                    TenantName = r.Tenant?.Name ?? $"Tenant #{r.TenantId}",
+                    TenantEmail = r.Tenant?.Email ?? string.Empty,
+                    SubscriptionPlan = r.SubscriptionPlan.ToString(),
+                    Amount = r.Amount,
+                    PaymentMethod = r.PaymentMethod,
+                    PhoneNumber = r.PhoneNumber,
+                    TransactionReference = r.TransactionReference,
+                    PaymentProofUrl = r.PaymentProofPath,
+                    Notes = r.Notes,
+                    AdminNotes = r.AdminNotes,
+                    Status = r.Status.ToString(),
+                    SubmittedDate = r.SubmittedDate,
+                    ReviewedDate = r.ReviewedDate,
+                    ReviewedBy = r.ReviewedByUserId,
+                })
+                .ToList();
 
-            return View(query.OrderByDescending(s => s.SubmittedDate).ToList());
+            return View(dtos);
         }
 
         // ── Approve ───────────────────────────────────────────────────────────
+        // POST /Admin/ApproveSubscription?id=5
         [HttpPost]
-        public IActionResult ApproveSubscription(int id)
+        public async Task<IActionResult> ApproveSubscription(int id)
         {
-            var subscription = _subscriptionRequests.FirstOrDefault(s => s.Id == id);
+            var reviewedBy = HttpContext.Session.GetString("AdminName") ?? "Admin";
 
-            if (subscription == null)
-                return NotFound(new { success = false, message = "Subscription request not found" });
+            var (success, error) = await _subService.ApproveAsync(id, reviewedBy);
 
-            if (subscription.Status != "Pending")
-                return BadRequest(new { success = false, message = "This request has already been processed" });
+            if (!success)
+                return BadRequest(new { success = false, message = error });
 
-            // Update the shared admin list
-            subscription.Status = "Approved";
-            subscription.ReviewedDate = DateTime.Now;
-            subscription.ReviewedBy = "Admin User"; // Replace with HttpContext.User.Identity.Name
-
-            // Update the tenant's plan in the tenant list
-            var tenant = _tenants.FirstOrDefault(t => t.Id == subscription.TenantId);
-            if (tenant != null && Enum.TryParse<SubscriptionPlan>(subscription.SubscriptionPlan, out var plan))
-            {
-                tenant.Plan = plan;
-                tenant.SubscriptionEndDate = DateTime.Now.AddMonths(1);
-                tenant.IsActive = true;
-            }
-
-            // ── NEW: keep SubscriptionController._store in sync ───────────────
-            SubscriptionController.SyncApproval(subscription.TenantId, "Admin User");
-
-            // TODO: send email notification to tenant
-
-            return Ok(new { success = true, message = "Subscription approved successfully" });
+            return Ok(new { success = true, message = "Subscription approved and tenant activated." });
         }
 
         // ── Reject ────────────────────────────────────────────────────────────
+        // POST /Admin/RejectSubscription?id=5   body: { "reason": "..." }
         [HttpPost]
-        public IActionResult RejectSubscription(int id, [FromBody] RejectReasonDto dto)
+        public async Task<IActionResult> RejectSubscription(int id, [FromBody] RejectReasonDto dto)
         {
-            var subscription = _subscriptionRequests.FirstOrDefault(s => s.Id == id);
+            if (string.IsNullOrWhiteSpace(dto?.Reason))
+                return BadRequest(new { success = false, message = "Please provide a reason." });
 
-            if (subscription == null)
-                return NotFound(new { success = false, message = "Subscription request not found" });
+            var reviewedBy = HttpContext.Session.GetString("AdminName") ?? "Admin";
 
-            if (subscription.Status != "Pending")
-                return BadRequest(new { success = false, message = "This request has already been processed" });
+            var (success, error) = await _subService.RejectAsync(id, dto.Reason, reviewedBy);
 
-            if (string.IsNullOrWhiteSpace(dto.Reason))
-                return BadRequest(new { success = false, message = "Please provide a reason for rejection" });
+            if (!success)
+                return BadRequest(new { success = false, message = error });
 
-            // Update the shared admin list
-            subscription.Status = "Rejected";
-            subscription.ReviewedDate = DateTime.Now;
-            subscription.ReviewedBy = "Admin User";
-            subscription.AdminNotes = dto.Reason;   // rejection reason stored here
-
-            // ── NEW: keep SubscriptionController._store in sync ───────────────
-            SubscriptionController.SyncRejection(subscription.TenantId, dto.Reason, "Admin User");
-
-            // TODO: send email notification with rejection reason
-
-            return Ok(new { success = true, message = "Subscription rejected" });
+            return Ok(new { success = true, message = "Subscription rejected." });
         }
 
-        // ── Pending count (real-time badge update) ────────────────────────────
+        // ── Pending count (polled by JS badge) ────────────────────────────────
         [HttpGet]
-        public IActionResult GetPendingCount()
+        public async Task<IActionResult> GetPendingCount()
         {
-            var count = _subscriptionRequests.Count(s => s.Status == "Pending");
-            return Ok(new { count });
+            var all = await _subService.GetAllAsync();
+            var pending = all.Count(r => r.Status == SubscriptionRequestStatus.Pending);
+            return Ok(new { count = pending });
         }
 
-        // ── Manual plan change (testing / admin override) ─────────────────────
+        // ── Admin plan override (bypass subscription flow) ────────────────────
         [HttpPost]
-        public IActionResult UpdateSubscription(int tenantId, SubscriptionPlan plan)
+        public async Task<IActionResult> UpdateSubscription(int tenantId, SubscriptionPlan plan)
         {
-            var tenant = _tenants.FirstOrDefault(t => t.Id == tenantId);
-            if (tenant == null)
-                return NotFound(new { success = false, message = "Tenant not found" });
+            var ok = await _adminRepo.UpdateTenantPlanAsync(tenantId, plan);
 
-            tenant.Plan = plan;
-            tenant.SubscriptionEndDate = plan == SubscriptionPlan.Free
-                ? null
-                : DateTime.Now.AddMonths(1);
+            if (!ok)
+                return NotFound(new { success = false, message = "Tenant not found." });
 
             return Ok(new { success = true, plan = plan.ToString() });
         }
 
-        // ── Shared helper called by SubscriptionController ────────────────────
-        public static void AddSubscriptionRequest(PendingSubscriptionDto subscription)
-        {
-            _subscriptionRequests.Add(subscription);
-        }
 
-        // ── Sample data ───────────────────────────────────────────────────────
-        private static List<TenantAdminDto> GenerateSampleTenants()
+        [HttpGet]
+        public async Task<IActionResult> TenantDetails(int tenantId)
         {
-            return new List<TenantAdminDto>
+            var tenant = await _adminRepo.GetTenantAdminDtoAsync(tenantId);
+
+            if (tenant == null)
+                return NotFound(new { success = false, message = "Tenant not found." });
+
+            return Ok(new
             {
-                new TenantAdminDto
+                success = true,
+                tenant = new
                 {
-                    Id = 1, Name = "GameZone Cairo", Subdomain = "gamezone-cairo",
-                    Email = "admin@gamezone-cairo.com", IsActive = true,
-                    Plan = SubscriptionPlan.Pro,
-                    SubscriptionEndDate = DateTime.Now.AddMonths(1),
-                    TotalDevices = 12, TotalSessions = 450,
-                    TotalRevenue = 125000m, MonthlyRevenue = 45000m,
-                    JoinedDate = DateTime.Now.AddMonths(-6)
-                },
-                new TenantAdminDto
-                {
-                    Id = 2, Name = "PS Station Alex", Subdomain = "ps-station-alex",
-                    Email = "owner@psstation.com", IsActive = true,
-                    Plan = SubscriptionPlan.Basic,
-                    SubscriptionEndDate = DateTime.Now.AddDays(15),
-                    TotalDevices = 8, TotalSessions = 280,
-                    TotalRevenue = 75000m, MonthlyRevenue = 28000m,
-                    JoinedDate = DateTime.Now.AddMonths(-4)
-                },
-                new TenantAdminDto
-                {
-                    Id = 3, Name = "Ultimate Gaming Hub", Subdomain = "ultimate-gaming",
-                    Email = "info@ultimategaming.com", IsActive = true,
-                    Plan = SubscriptionPlan.Enterprise,
-                    SubscriptionEndDate = DateTime.Now.AddMonths(3),
-                    TotalDevices = 25, TotalSessions = 890,
-                    TotalRevenue = 310000m, MonthlyRevenue = 95000m,
-                    JoinedDate = DateTime.Now.AddMonths(-12)
+                    name = tenant.Name,
+                    email = tenant.Email,
+                    phoneNumber = tenant.PhoneNumber,
+                    plan = tenant.Plan.ToString(),
+                    isActive = tenant.IsActive,
+                    joinedDate = tenant.JoinedDate.ToString("MMM dd, yyyy"),
+                    subscriptionEndDate = tenant.SubscriptionEndDate?.ToString("MMM dd, yyyy"),
+                    totalDevices = tenant.TotalDevices,
+                    totalSessions = tenant.TotalSessions,
+                    totalRevenue = tenant.TotalRevenue,
+                    monthlyRevenue = tenant.MonthlyRevenue,
                 }
-            };
+            });
         }
     }
 }

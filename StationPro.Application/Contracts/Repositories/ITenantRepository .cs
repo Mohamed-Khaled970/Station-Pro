@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 
 namespace StationPro.Application.Contracts.Repositories
 {
-    public interface ITenantRepository : IRepository<Tenant>
+    public interface ITenantRepository
     {
-        Task<Tenant?> GetBySubdomainAsync(string subdomain);
+        Task<Tenant?> GetByIdAsync(int id);
         Task<Tenant?> GetByEmailAsync(string email);
-        Task<bool> SubdomainExistsAsync(string subdomain);
+        Task<Tenant?> GetByResetTokenAsync(string token);
         Task<bool> EmailExistsAsync(string email);
+        Task<Tenant> AddAsync(Tenant tenant);
+        Task UpdateAsync(Tenant tenant);
     }
 }

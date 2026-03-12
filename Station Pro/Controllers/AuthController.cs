@@ -1,159 +1,98 @@
 ﻿// =============================================================================
-// FILE: Station_Pro/Controllers/AuthController.cs  (UPDATED)
-//
-// Uses a static in-memory tenant list (mirrors AdminController._tenants pattern).
-// Register  → creates a Tenant object, adds to _tenants, saves to session.
-// Login     → looks up tenant by email + password, saves to session,
-//             routes to correct page based on subscription status.
-// Logout    → clears session.
+// FILE: Station_Pro/Controllers/AuthController.cs
 // =============================================================================
 
 using Microsoft.AspNetCore.Mvc;
+using StationPro.Application.Contracts.Services;
 using StationPro.Application.DTOs.Auth;
-using StationPro.Controllers;            // AdminController._subscriptionRequests
 using StationPro.Domain.Entities;
 
 namespace Station_Pro.Controllers
 {
     public class AuthController : Controller
     {
-        // =====================================================================
-        // IN-MEMORY TENANT STORE
-        // Same pattern as AdminController._tenants / _subscriptionRequests.
-        // Replace with EF Core + repository when you wire up the real DB.
-        // =====================================================================
-        public static readonly List<Tenant> _tenants = new();
-        private static int _nextTenantId = 10; // start at 10 to avoid clashing with admin sample data (ids 1-3)
+        private readonly IAuthService _auth;
+        private readonly ISubscriptionRequestService _subscriptionRequest;
 
-        // Test helper — kept for SubscriptionController.GetTenantModel() calls
-        private static RegisterViewModel? _lastRegisteredModel;
-        public static RegisterViewModel? GetTenantModel() => _lastRegisteredModel;
+        public AuthController(IAuthService auth, ISubscriptionRequestService subscriptionRequest)
+        {
+            _auth = auth;
+            _subscriptionRequest = subscriptionRequest;
+        }
 
-        // Convenience lookup used by SubscriptionController to fill TenantName/Email
-        public static Tenant? GetTenantById(int id)
-            => _tenants.FirstOrDefault(t => t.Id == id);
+        // ── Register ──────────────────────────────────────────────────────────
+        public IActionResult Register() => View();
 
-        // =====================================================================
-
-        public IActionResult Index() => View();
-
-        // ── GET: Auth/Register ────────────────────────────────────────────────
-        public IActionResult Register() => View("Register");
-
-        // ── POST: Auth/Register ───────────────────────────────────────────────
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            try
+            // Manual check for AcceptTerms — checkbox binding is unreliable with attributes
+            if (!model.AcceptTerms)
+                ModelState.AddModelError(nameof(model.AcceptTerms), "You must accept the terms and conditions.");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var (success, tenantId, error) = await _auth.RegisterAsync(
+                model.StoreName,
+                model.Email,
+                model.PhoneNumber,
+                model.Password);
+
+            if (!success)
             {
-                // Duplicate email check
-                if (_tenants.Any(t => t.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase)))
-                {
-                    ModelState.AddModelError("", "An account with this email already exists.");
-                    return View("Register", model);
-                }
-
-                // Build the tenant object and add it to the in-memory list
-                var tenant = new Tenant
-                {
-                    Id = ++_nextTenantId,
-                    Name = model.StoreName,
-                    Email = model.Email,
-                    PasswordHash = HashPassword(model.Password),
-                    Plan = SubscriptionPlan.Free,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow,
-                };
-
-                _tenants.Add(tenant);
-                _lastRegisteredModel = model;   // keep test helper in sync
-
-                // Persist TenantId so SubscriptionGuardFilter can read it
-                HttpContext.Session.SetInt32("TenantId", tenant.Id);
-
-                await HttpContext.Session.CommitAsync();
-
-                TempData["Success"] = "Account created! Please choose your subscription plan.";
-                return RedirectToAction("Subscribe", "Subscription", new { tenantId = tenant.Id });
+                ModelState.AddModelError(string.Empty, error ?? "Registration failed. Please try again.");
+                return View(model);
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Registration failed: {ex.Message}");
-                return View("Register", model);
-            }
+
+            HttpContext.Session.SetInt32("TenantId", tenantId);
+            await HttpContext.Session.CommitAsync();
+
+            TempData["Success"] = "Account created! Please choose your subscription plan.";
+            return RedirectToAction("Subscribe", "Subscription", new { tenantId });
         }
 
-        // ── GET: Auth/Login ───────────────────────────────────────────────────
+        // ── Login ─────────────────────────────────────────────────────────────
         public IActionResult Login()
         {
-            // Already logged in? redirect away from login page
             if (HttpContext.Session.GetInt32("TenantId").HasValue)
                 return RedirectToAction("Index", "Dashboard");
-
-            return View("Login");
+            return View();
         }
 
-        // ── POST: Auth/Login ──────────────────────────────────────────────────
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "Invalid input." });
 
-            var tenant = _tenants.FirstOrDefault(t =>
-                t.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase));
+            var (success, tenantId, error) = await _auth.LoginAsync(model.Email, model.Password);
 
-            if (tenant == null || !VerifyPassword(model.Password, tenant.PasswordHash))
-                return Json(new { success = false, message = "Invalid email or password." });
+            if (!success)
+                return Json(new { success = false, message = error });
 
-            if (!tenant.IsActive)
-                return Json(new { success = false, message = "Account deactivated. Contact support." });
-
-            HttpContext.Session.SetInt32("TenantId", tenant.Id);
-
-            // ✅ Force session to commit before responding
+            HttpContext.Session.SetInt32("TenantId", tenantId);
             await HttpContext.Session.CommitAsync();
 
-            var subscription = AdminController._subscriptionRequests
-                .Where(s => s.TenantId == tenant.Id)
-                .OrderByDescending(s => s.SubmittedDate)
-                .FirstOrDefault();
+            var latestRequest = await _subscriptionRequest.GetLatestRequest(tenantId);
 
-            var redirectUrl = subscription?.Status switch
+            var redirectUrl = latestRequest?.Status switch
             {
-                "Pending" => $"/Subscription/Pending?tenantId={tenant.Id}",
-                "Rejected" => $"/Subscription/Rejected?tenantId={tenant.Id}",
-                "Approved" => "/Dashboard/Index",
-                _ => $"/Subscription/Subscribe?tenantId={tenant.Id}"
+                SubscriptionRequestStatus.Pending => $"/Subscription/Pending?tenantId={tenantId}",
+                SubscriptionRequestStatus.Rejected => $"/Subscription/Rejected?tenantId={tenantId}",
+                SubscriptionRequestStatus.Approved => "/Dashboard/Index",
+                _ => $"/Subscription/Subscribe?tenantId={tenantId}"
             };
 
             return Json(new { success = true, redirectUrl });
         }
 
-        // ── POST: Auth/Logout ─────────────────────────────────────────────────
+        // ── Logout ────────────────────────────────────────────────────────────
         [HttpPost]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Home");
         }
-
-        // ── Private helpers ───────────────────────────────────────────────────
-
-
-        /// <summary>
-        /// Demo-only password hash.
-        /// Replace with BCrypt or ASP.NET Identity PasswordHasher before production.
-        /// </summary>
-        private static string HashPassword(string password)
-        {
-            var bytes = System.Text.Encoding.UTF8.GetBytes(password);
-            return Convert.ToBase64String(bytes) + "_demo";
-        }
-
-        private static bool VerifyPassword(string password, string hash)
-            => HashPassword(password) == hash;
     }
 }

@@ -12,8 +12,9 @@ namespace StationPro.Domain.Entities
     {
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;   // NEW
         public string PasswordHash { get; set; } = string.Empty;
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false;
         public bool EmailConfirmed { get; set; } = false;
         public string? EmailConfirmationToken { get; set; }
         public SubscriptionPlan Plan { get; set; } = SubscriptionPlan.Free;

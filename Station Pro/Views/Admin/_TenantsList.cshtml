@@ -1,5 +1,11 @@
-﻿@model List<TenantAdminDto>
+﻿@* =============================================================================
+   FILE: Views/Admin/_TenantsList.cshtml
+   Loaded via HTMX into #tenants-container on the Admin Index page.
+   ============================================================================= *@
+
+@model List<TenantAdminDto>
 @using StationPro.Application.DTOs.Admin
+@using StationPro.Domain.Entities
 
 <div class="space-y-4">
     @foreach (var tenant in Model)
@@ -23,64 +29,77 @@
         };
 
         var isExpiringSoon = tenant.SubscriptionEndDate.HasValue &&
-        tenant.SubscriptionEndDate.Value <= DateTime.Now.AddDays(7);
+        tenant.SubscriptionEndDate.Value <= DateTime.Now.AddDays(7) &&
+        tenant.SubscriptionEndDate.Value >= DateTime.Now;
         var isExpired = tenant.SubscriptionEndDate.HasValue &&
         tenant.SubscriptionEndDate.Value < DateTime.Now;
 
         <div class="tenant-card p-4 rounded-lg border @(tenant.IsActive ? "bg-white border-gray-200" : "bg-gray-50 border-gray-300 opacity-75")">
+
+            <!-- ── Header row ──────────────────────────────────────────── -->
             <div class="flex items-start justify-between mb-3">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                        <h4 class="font-bold text-gray-900">@tenant.Name</h4>
+                <div class="flex-1 min-w-0">
+
+                    <!-- Name + status badges -->
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <h4 class="font-bold text-gray-900 truncate">@tenant.Name</h4>
+
                         @if (!tenant.IsActive)
                         {
-                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
                                 INACTIVE
                             </span>
                         }
                         @if (isExpired)
                         {
-                            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
                                 EXPIRED
                             </span>
                         }
                         else if (isExpiringSoon)
                         {
-                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-semibold">
+                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
                                 EXPIRING SOON
                             </span>
                         }
                     </div>
-                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                        <span>
-                            <i class="fas fa-link text-blue-500 mr-1"></i>
-                            @tenant.Subdomain
+
+                    <!-- Contact info row -->
+                    <div class="flex items-center gap-4 flex-wrap text-sm text-gray-600 mb-1">
+                        <span class="flex items-center gap-1 min-w-0">
+                            <i class="fas fa-envelope text-gray-400 flex-shrink-0"></i>
+                            <span class="truncate">@tenant.Email</span>
                         </span>
-                        <span>
-                            <i class="fas fa-envelope text-gray-400 mr-1"></i>
-                            @tenant.Email
+                        <span class="flex items-center gap-1">
+                            <i class="fas fa-phone text-gray-400 flex-shrink-0"></i>
+                            <span>@(string.IsNullOrWhiteSpace(tenant.PhoneNumber) ? "—" : tenant.PhoneNumber)</span>
                         </span>
                     </div>
-                    <div class="flex items-center gap-4 text-xs text-gray-500">
+
+                    <!-- Joined / Expires -->
+                    <div class="flex items-center gap-4 flex-wrap text-xs text-gray-400">
                         <span>
                             <i class="fas fa-calendar mr-1"></i>
                             Joined @tenant.JoinedDate.ToString("MMM dd, yyyy")
                         </span>
                         @if (tenant.SubscriptionEndDate.HasValue)
                         {
-                            <span>
+                            <span class="@(isExpired ? "text-red-400" : isExpiringSoon ? "text-yellow-500" : "")">
                                 <i class="fas fa-clock mr-1"></i>
                                 Expires @tenant.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")
                             </span>
                         }
                     </div>
                 </div>
-                <span class="@planBadgeClass px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+
+                <!-- Plan badge -->
+                <span class="@planBadgeClass px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 flex-shrink-0 ml-3">
                     <i class="fas @planIcon"></i>
                     @tenant.Plan.ToString().ToUpper()
                 </span>
             </div>
 
+            <!-- ── Stats row ───────────────────────────────────────────── -->
             <div class="grid grid-cols-4 gap-4 mb-3 pt-3 border-t border-gray-100">
                 <div class="text-center">
                     <p class="text-xs text-gray-500 mb-1">Devices</p>
@@ -92,69 +111,168 @@
                 </div>
                 <div class="text-center">
                     <p class="text-xs text-gray-500 mb-1">Total Revenue</p>
-                    <p class="text-lg font-bold text-green-600">@tenant.TotalRevenue.ToString("C0")</p>
+                    <p class="text-lg font-bold text-green-600">@tenant.TotalRevenue.ToString("N0") EGP</p>
                 </div>
                 <div class="text-center">
-                    <p class="text-xs text-gray-500 mb-1">Monthly</p>
-                    <p class="text-lg font-bold text-blue-600">@tenant.MonthlyRevenue.ToString("C0")</p>
+                    <p class="text-xs text-gray-500 mb-1">This Month</p>
+                    <p class="text-lg font-bold text-blue-600">@tenant.MonthlyRevenue.ToString("N0") EGP</p>
                 </div>
             </div>
 
+            <!-- ── Action buttons ──────────────────────────────────────── -->
             <div class="flex gap-2">
-                <!-- Toggle Active Status -->
-                <button onclick="toggleTenantStatus(@tenant.Id, '@tenant.Name')"
+
+                <!-- Toggle active -->
+                <button onclick="toggleTenantStatus(@tenant.Id, '@Html.Raw(tenant.Name.Replace("'", "\\'"))')"
                         class="btn @(tenant.IsActive ? "btn-danger" : "btn-success") btn-sm flex-1">
                     <i class="fas @(tenant.IsActive ? "fa-ban" : "fa-check") mr-1"></i>
                     @(tenant.IsActive ? "Deactivate" : "Activate")
                 </button>
 
-                <!-- Change Subscription -->
+                <!-- Change plan dropdown -->
                 <div class="relative flex-1">
                     <button onclick="toggleSubscriptionMenu(@tenant.Id)"
                             class="btn btn-outline btn-sm w-full">
-                        <i class="fas fa-crown mr-1"></i>
-                        Change Plan
+                        <i class="fas fa-crown mr-1"></i>Change Plan
                     </button>
-                    <div id="subscription-menu-@tenant.Id" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                        <div class="p-2">
+                    <div id="subscription-menu-@tenant.Id"
+                         class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-20">
+                        <div class="p-2 space-y-0.5">
                             <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Free))"
-                                    class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2">
-                                <i class="fas fa-gift text-gray-600"></i>
-                                Free
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-lg flex items-center gap-2">
+                                <i class="fas fa-gift text-gray-500 w-4"></i> Free
                             </button>
                             <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Basic))"
-                                    class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 rounded flex items-center gap-2">
-                                <i class="fas fa-star text-blue-600"></i>
-                                Basic
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 rounded-lg flex items-center gap-2">
+                                <i class="fas fa-star text-blue-500 w-4"></i> Basic
                             </button>
                             <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Pro))"
-                                    class="w-full text-left px-3 py-2 text-sm hover:bg-purple-50 rounded flex items-center gap-2">
-                                <i class="fas fa-gem text-purple-600"></i>
-                                Pro
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-purple-50 rounded-lg flex items-center gap-2">
+                                <i class="fas fa-gem text-purple-500 w-4"></i> Pro
                             </button>
                             <button onclick="updateSubscription(@tenant.Id, @((int)SubscriptionPlan.Enterprise))"
-                                    class="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 rounded flex items-center gap-2">
-                                <i class="fas fa-crown text-orange-600"></i>
-                                Enterprise
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 rounded-lg flex items-center gap-2">
+                                <i class="fas fa-crown text-orange-500 w-4"></i> Enterprise
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- View Details -->
+                <!-- View details -->
                 <button onclick="viewTenantDetails(@tenant.Id)"
-                        class="btn btn-primary btn-sm">
+                        class="btn btn-primary btn-sm px-4"
+                        title="View details">
                     <i class="fas fa-eye"></i>
                 </button>
             </div>
         </div>
     }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-16">
+            <i class="fas fa-inbox text-gray-200 text-6xl mb-4"></i>
+            <p class="text-gray-400 font-medium">No tenants found.</p>
+        </div>
+    }
 </div>
 
-@if (!Model.Any())
-{
-    <div class="text-center py-12">
-        <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
-        <p class="text-gray-500">No tenants found</p>
+<!-- =============================================================================
+     TENANT DETAILS MODAL
+     Shown when admin clicks the eye icon. Populated by admin.js → viewTenantDetails()
+     via GET /Admin/TenantDetails?tenantId=X
+     ============================================================================= -->
+<div id="tenantDetailsModal"
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+     onclick="closeTenantDetailsModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
+
+        <!-- Modal header -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+            <h3 class="font-bold text-gray-900 text-lg flex items-center gap-2">
+                <i class="fas fa-user-circle text-blue-500"></i> Tenant Details
+            </h3>
+            <button onclick="closeTenantDetailsModal()"
+                    class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all">
+                <i class="fas fa-times text-gray-500 text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="px-6 py-6 space-y-5">
+
+            <!-- Identity section -->
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Identity</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 mb-1"><i class="fas fa-store mr-1"></i>Store Name</p>
+                        <p class="font-semibold text-gray-900 text-sm" id="detail-name">—</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 mb-1"><i class="fas fa-circle mr-1"></i>Status</p>
+                        <p class="font-semibold text-sm" id="detail-status">—</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 mb-1"><i class="fas fa-envelope mr-1"></i>Email</p>
+                        <p class="font-semibold text-gray-900 text-sm truncate" id="detail-email">—</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 mb-1"><i class="fas fa-phone mr-1"></i>Phone</p>
+                        <p class="font-semibold text-gray-900 text-sm" id="detail-phone">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscription section -->
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Subscription</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 mb-1"><i class="fas fa-crown mr-1"></i>Plan</p>
+                        <p class="font-semibold text-gray-900 text-sm" id="detail-plan">—</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 mb-1"><i class="fas fa-calendar mr-1"></i>Joined</p>
+                        <p class="font-semibold text-gray-900 text-sm" id="detail-joined">—</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 col-span-2">
+                        <p class="text-xs text-gray-400 mb-1"><i class="fas fa-clock mr-1"></i>Subscription Expires</p>
+                        <p class="font-semibold text-gray-900 text-sm" id="detail-expires">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats section -->
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Stats</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-blue-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-blue-400 mb-1">Devices</p>
+                        <p class="text-2xl font-bold text-blue-700" id="detail-devices">0</p>
+                    </div>
+                    <div class="bg-indigo-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-indigo-400 mb-1">Sessions</p>
+                        <p class="text-2xl font-bold text-indigo-700" id="detail-sessions">0</p>
+                    </div>
+                    <div class="bg-green-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-green-400 mb-1">Total Revenue</p>
+                        <p class="text-xl font-bold text-green-700" id="detail-revenue">0 EGP</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-xl p-3 text-center">
+                        <p class="text-xs text-purple-400 mb-1">This Month</p>
+                        <p class="text-xl font-bold text-purple-700" id="detail-monthly">0 EGP</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="px-6 py-4 border-t border-gray-100">
+            <button onclick="closeTenantDetailsModal()"
+                    class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-all">
+                Close
+            </button>
+        </div>
     </div>
-}
+</div>
