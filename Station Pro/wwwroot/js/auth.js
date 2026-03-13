@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Feature card animations
     document.querySelectorAll('.feature-card').forEach(c => c.classList.add('fade-in'));
+
+    // Reset login button in case user navigated back
+    const btn = document.querySelector('#login-form button[type="submit"]');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';
+    }
 });
 
 // =============================================================================
@@ -187,22 +194,48 @@ function togglePassword(inputId) {
 }
 
 // =============================================================================
-// TOAST NOTIFICATIONS
+// TOAST NOTIFICATIONS — fixed positioning & overflow
 // =============================================================================
 
 function showError(msg) { showToast(msg, 'error'); }
 function showSuccess(msg) { showToast(msg, 'success'); }
 
 function showToast(message, type = 'success') {
+    // Remove any existing toast first
     document.querySelector('.toast-notification')?.remove();
+
     const color = type === 'success' ? 'bg-green-600' : 'bg-red-600';
     const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
     const toast = document.createElement('div');
-    toast.className = `toast-notification fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl text-white shadow-xl ${color}`;
-    toast.innerHTML = `<i class="fas ${icon} text-xl"></i><span>${message}</span>`;
+
+    // Fixed bottom-right, max-w-sm so it never overflows the viewport
+    toast.className = [
+        'toast-notification',
+        'fixed bottom-6 right-6 z-[9999]',
+        'flex items-start gap-3',
+        'px-5 py-4 rounded-xl text-white shadow-2xl',
+        'max-w-sm w-[calc(100vw-3rem)]',   // never wider than viewport
+        color
+    ].join(' ');
+
+    toast.style.animation = 'toastSlideIn 0.3s ease-out';
+
+    toast.innerHTML = `
+        <i class="fas ${icon} text-lg flex-shrink-0 mt-0.5"></i>
+        <span class="flex-1 text-sm font-medium leading-snug">${message}</span>
+        <button onclick="this.parentElement.remove()"
+                class="flex-shrink-0 text-white/70 hover:text-white ml-1 -mr-1 -mt-1 p-1">
+            <i class="fas fa-times text-xs"></i>
+        </button>
+    `;
+
     document.body.appendChild(toast);
+
     setTimeout(() => {
-        toast.style.cssText += 'opacity:0;transition:opacity 0.3s';
+        toast.style.transition = 'opacity 0.3s, transform 0.3s';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
         setTimeout(() => toast.remove(), 300);
     }, 4000);
 }
@@ -217,20 +250,3 @@ function debounce(fn, wait) {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Reset login button in case user navigated back
-    const btn = document.querySelector('#login-form button[type="submit"]');
-    if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';  // match your localizer text
-    }
-
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) initializeLoginForm(loginForm);
-
-    const registerForm = document.querySelector('form:not(#login-form)');
-    if (registerForm) initializeRegisterValidation(registerForm);
-
-    document.querySelectorAll('.feature-card').forEach(c => c.classList.add('fade-in'));
-});

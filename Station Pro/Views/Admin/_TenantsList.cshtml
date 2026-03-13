@@ -31,6 +31,7 @@
         var isExpiringSoon = tenant.SubscriptionEndDate.HasValue &&
         tenant.SubscriptionEndDate.Value <= DateTime.Now.AddDays(7) &&
         tenant.SubscriptionEndDate.Value >= DateTime.Now;
+
         var isExpired = tenant.SubscriptionEndDate.HasValue &&
         tenant.SubscriptionEndDate.Value < DateTime.Now;
 
@@ -122,18 +123,22 @@
             <!-- ── Action buttons ──────────────────────────────────────── -->
             <div class="flex gap-2">
 
-                <!-- Toggle active -->
-                <button onclick="toggleTenantStatus(@tenant.Id, '@Html.Raw(tenant.Name.Replace("'", "\\'"))')"
-                        class="btn @(tenant.IsActive ? "btn-danger" : "btn-success") btn-sm flex-1">
-                    <i class="fas @(tenant.IsActive ? "fa-ban" : "fa-check") mr-1"></i>
+                <!-- ✅ FIX: pass tenant.IsActive as third argument so JS knows current state -->
+                <button onclick="toggleTenantStatus(@tenant.Id, '@Html.Raw(tenant.Name.Replace("'", "\\'"))', @tenant.IsActive.ToString().ToLower())"
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all
+                               @(tenant.IsActive
+                                   ? "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200"
+                                   : "bg-green-100 text-green-700 hover:bg-green-200 border border-green-200")">
+                    <i class="fas @(tenant.IsActive ? "fa-ban" : "fa-check")"></i>
                     @(tenant.IsActive ? "Deactivate" : "Activate")
                 </button>
 
-                <!-- Change plan dropdown -->
+                <!-- Change plan — purple -->
                 <div class="relative flex-1">
                     <button onclick="toggleSubscriptionMenu(@tenant.Id)"
-                            class="btn btn-outline btn-sm w-full">
-                        <i class="fas fa-crown mr-1"></i>Change Plan
+                            class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all
+                                   bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-200">
+                        <i class="fas fa-crown"></i> Change Plan
                     </button>
                     <div id="subscription-menu-@tenant.Id"
                          class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-20">
@@ -158,9 +163,10 @@
                     </div>
                 </div>
 
-                <!-- View details -->
+                <!-- View details — blue -->
                 <button onclick="viewTenantDetails(@tenant.Id)"
-                        class="btn btn-primary btn-sm px-4"
+                        class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-semibold transition-all
+                               bg-blue-600 text-white hover:bg-blue-700"
                         title="View details">
                     <i class="fas fa-eye"></i>
                 </button>

@@ -106,5 +106,7 @@ namespace Station_Pro.Controllers
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Home");
         }
+
+        public IActionResult Deactivated() => View();
     }
 }

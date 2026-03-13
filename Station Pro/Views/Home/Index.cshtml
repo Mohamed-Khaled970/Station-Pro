@@ -163,7 +163,7 @@
     <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-14 sm:h-16">
-                <!-- Logo - Fixed for mobile -->
+                <!-- Logo -->
                 <div class="logo-container">
                     <i class="fas fa-gamepad text-blue-600 text-xl sm:text-2xl"></i>
                     <span class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">Station Pro</span>
@@ -205,22 +205,34 @@
                         </div>
                     </div>
 
-                    <!-- Admin Panel Button (For Testing) -->
-                    <a href="/Admin/Index" class="btn btn-secondary !px-2 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm">
-                        <i class="fas fa-shield-alt @(isRtl ? "sm:ml-1" : "sm:mr-1")"></i>
-                        <span class="hidden md:inline">Admin Panel</span>
-                        <span class="md:hidden">Admin</span>
-                    </a>
-
-                    <!-- Login Link -->
-                    <a href="/auth/login" class="hidden sm:inline text-gray-700 hover:text-blue-600 font-medium text-sm">@Localizer["Login"]</a>
-
-                    <!-- Start Free Trial Button -->
-                    <a href="/auth/register" class="btn btn-primary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 lg:!px-6 lg:!py-3 text-xs sm:text-sm lg:text-base whitespace-nowrap">
-                        <i class="fas fa-rocket @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") hidden sm:inline"></i>
-                        <span class="hidden sm:inline">@Localizer["StartFreeTrial"]</span>
-                        <span class="sm:hidden">@Localizer["TryFree"]</span>
-                    </a>
+                    <!-- Conditional Nav Buttons based on session -->
+                    @if (ViewBag.IsAdmin == true)
+                    {
+                        <!-- Admin logged in -->
+                        <a href="/Admin/Index" class="btn btn-secondary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm whitespace-nowrap">
+                            <i class="fas fa-shield-alt @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2")"></i>
+                            <span>Admin Panel</span>
+                        </a>
+                    }
+                    else if (ViewBag.IsTenant == true)
+                    {
+                        <!-- Tenant logged in -->
+                        <a href="/Dashboard/Index" class="btn btn-primary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm whitespace-nowrap">
+                            <i class="fas fa-gauge-high @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2")"></i>
+                            <span>@Localizer["MyDashboard"]</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <!-- Guest -->
+                        <a href="/auth/login" class="hidden sm:inline text-gray-700 hover:text-blue-600 font-medium text-sm">
+                            @Localizer["Login"]
+                        </a>
+                        <a href="/auth/register" class="btn btn-primary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 lg:!px-6 lg:!py-3 text-xs sm:text-sm lg:text-base whitespace-nowrap">
+                            <i class="fas fa-rocket @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") hidden sm:inline"></i>
+                            <span>@Localizer["GetStarted"]</span>
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -238,10 +250,27 @@
                         @Localizer["HeroDescription"]
                     </p>
                     <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                        <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
-                            <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
-                            @Localizer["StartFreeTrial"]
-                        </a>
+                        @if (ViewBag.IsTenant == true)
+                        {
+                            <a href="/Dashboard/Index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
+                                <i class="fas fa-gauge-high @(isRtl ? "ml-2" : "mr-2")"></i>
+                                @Localizer["MyDashboard"]
+                            </a>
+                        }
+                        else if (ViewBag.IsAdmin == true)
+                        {
+                            <a href="/Admin/Index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
+                                <i class="fas fa-shield-alt @(isRtl ? "ml-2" : "mr-2")"></i>
+                                Admin Panel
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="/auth/register" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
+                                <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
+                                @Localizer["GetStarted"]
+                            </a>
+                        }
                         <a href="#features" class="bg-purple-700 bg-opacity-50 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-opacity-70 transition-all inline-flex items-center justify-center">
                             <i class="fas fa-play @(isRtl ? "ml-2" : "mr-2")"></i>
                             @Localizer["SeeHowItWorks"]
@@ -380,11 +409,13 @@
             </div>
 
             <div class="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+
+                <!-- Basic Plan -->
                 <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">@Localizer["Free"]</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">@Localizer["Basic"]</h3>
                     <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">@Localizer["PerfectToStart"]</p>
                     <div class="mb-4 sm:mb-6">
-                        <span class="text-4xl sm:text-5xl font-bold text-gray-900">0</span>
+                        <span class="text-4xl sm:text-5xl font-bold text-gray-900">29</span>
                         <span class="text-sm sm:text-base text-gray-600"> EGP/@(isRtl ? "شهر" : "month")</span>
                     </div>
                     <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
@@ -404,6 +435,7 @@
                     <a href="/auth/register" class="btn btn-outline w-full">@Localizer["GetStarted"]</a>
                 </div>
 
+                <!-- Pro Plan (highlighted) -->
                 <div class="bg-gradient-to-br from-blue-600 to-purple-600 p-6 sm:p-8 rounded-2xl shadow-2xl md:transform md:scale-105">
                     <div class="bg-yellow-400 text-gray-900 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold inline-block mb-3 sm:mb-4">
                         @Localizer["MostPopular"]
@@ -411,7 +443,7 @@
                     <h3 class="text-xl sm:text-2xl font-bold text-white mb-2">@Localizer["Pro"]</h3>
                     <p class="text-sm sm:text-base text-purple-100 mb-4 sm:mb-6">@Localizer["ForGrowingStores"]</p>
                     <div class="mb-4 sm:mb-6">
-                        <span class="text-4xl sm:text-5xl font-bold text-white">500</span>
+                        <span class="text-4xl sm:text-5xl font-bold text-white">79</span>
                         <span class="text-sm sm:text-base text-purple-100"> EGP/@(isRtl ? "شهر" : "month")</span>
                     </div>
                     <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-white text-sm sm:text-base">
@@ -432,16 +464,18 @@
                             <span>@Localizer["CustomBranding"]</span>
                         </li>
                     </ul>
-                    <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 rounded-lg font-bold w-full inline-block text-center hover:bg-gray-100 transition-all text-sm sm:text-base">
-                        @Localizer["StartFreeTrial"]
+                    <a href="/auth/register" class="bg-white text-purple-600 px-6 sm:px-8 py-3 rounded-lg font-bold w-full inline-block text-center hover:bg-gray-100 transition-all text-sm sm:text-base">
+                        @Localizer["GetStarted"]
                     </a>
                 </div>
 
+                <!-- Enterprise Plan -->
                 <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">@Localizer["Enterprise"]</h3>
                     <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">@Localizer["ForLargeOperations"]</p>
                     <div class="mb-4 sm:mb-6">
-                        <span class="text-4xl sm:text-5xl font-bold text-gray-900">@Localizer["Custom"]</span>
+                        <span class="text-4xl sm:text-5xl font-bold text-gray-900">199</span>
+                        <span class="text-sm sm:text-base text-gray-600"> EGP/@(isRtl ? "شهر" : "month")</span>
                     </div>
                     <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
                         <li class="flex items-center">
@@ -463,6 +497,7 @@
                     </ul>
                     <a href="/contact" class="btn btn-secondary w-full">@Localizer["ContactUs"]</a>
                 </div>
+
             </div>
         </div>
     </section>
@@ -474,11 +509,28 @@
             <p class="text-sm sm:text-base lg:text-xl text-purple-100 mb-6 sm:mb-8">
                 @Localizer["Join500Stores"]
             </p>
-            <a href="/dashboard/index" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
-                <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
-                @Localizer["StartFreeTrialNow"]
-            </a>
-            <p class="text-xs sm:text-sm lg:text-base text-purple-100 mt-4">@Localizer["NoCreditCard"]</p>
+            @if (ViewBag.IsTenant == true)
+            {
+                <a href="/Dashboard/Index" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
+                    <i class="fas fa-gauge-high @(isRtl ? "ml-2" : "mr-2")"></i>
+                    @Localizer["MyDashboard"]
+                </a>
+            }
+            else if (ViewBag.IsAdmin == true)
+            {
+                <a href="/Admin/Index" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
+                    <i class="fas fa-shield-alt @(isRtl ? "ml-2" : "mr-2")"></i>
+                    Admin Panel
+                </a>
+            }
+            else
+            {
+                <a href="/auth/register" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
+                    <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
+                    @Localizer["GetStarted"]
+                </a>
+                <p class="text-xs sm:text-sm lg:text-base text-purple-100 mt-4">@Localizer["NoCreditCard"]</p>
+            }
         </div>
     </section>
 
@@ -499,21 +551,28 @@
             <p class="text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">@Localizer["AllRightsReserved"]</p>
         </div>
     </footer>
-</body>
 
-<script>
-    function toggleLangDropdown() {
-        const menu = document.getElementById('langMenu');
-        menu.classList.toggle('hidden');
-    }
+    <script>
+        // ── bfcache fix: force reload when navigating back ──
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function (event) {
-        const dropdown = document.getElementById('langDropdown');
-        const menu = document.getElementById('langMenu');
-        if (!dropdown.contains(event.target)) {
-            menu.classList.add('hidden');
+        // ── Language dropdown ──
+        function toggleLangDropdown() {
+            const menu = document.getElementById('langMenu');
+            menu.classList.toggle('hidden');
         }
-    });
-</script>
+
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('langDropdown');
+            const menu = document.getElementById('langMenu');
+            if (!dropdown.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
 </html>

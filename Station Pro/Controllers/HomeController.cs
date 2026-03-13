@@ -15,6 +15,13 @@ namespace Station_Pro.Controllers
 
         public IActionResult Index()
         {
+            // Prevent browser from caching this page
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
+
+            ViewBag.IsAdmin = HttpContext.Session.GetInt32("AdminId").HasValue;
+            ViewBag.IsTenant = HttpContext.Session.GetInt32("TenantId").HasValue;
             return View();
         }
 

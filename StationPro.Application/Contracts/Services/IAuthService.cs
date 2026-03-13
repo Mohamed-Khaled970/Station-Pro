@@ -14,5 +14,6 @@ namespace StationPro.Application.Contracts.Services
         Task<(bool Success, string Error)> ForgotPasswordAsync(string email);
         Task<(bool Success, string Error)> ResetPasswordAsync(string token, string newPassword);
         Task<bool> IsResetTokenValidAsync(string token);
+        Task<bool> IsTenantActiveAsync(int tenantId);
     }
 }

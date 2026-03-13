@@ -171,27 +171,33 @@ body {
         display: none;
     }
 
-/* Toast Notifications */
+/* ============================================ */
+/* TOAST NOTIFICATIONS — fixed bottom-right     */
+/* ============================================ */
+
 .toast-notification {
     position: fixed;
-    top: 1rem;
-    right: 1rem;
+    bottom: 1.5rem; /* bottom-6 */
+    right: 1.5rem; /* right-6  */
+    left: auto;
+    top: auto; /* override any legacy top:1rem */
     z-index: 9999;
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
-    animation: slideInRight 0.3s ease;
-    max-width: 400px;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    max-width: 22rem; /* ~352px */
+    width: calc(100vw - 3rem); /* never wider than viewport */
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    animation: toastSlideIn 0.3s ease-out;
 }
 
-    .toast-notification.hide {
-        animation: slideOutRight 0.3s ease forwards;
-    }
-
-@keyframes slideInRight {
+@keyframes toastSlideIn {
     from {
         opacity: 0;
         transform: translateX(100%);
@@ -201,23 +207,6 @@ body {
         opacity: 1;
         transform: translateX(0);
     }
-}
-
-@keyframes slideOutRight {
-    to {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-}
-
-.success-message {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
-
-.error-message {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
 }
 
 /* Social Login Buttons */
@@ -250,7 +239,10 @@ body {
     }
 }
 
-/* Responsive */
+/* ============================================ */
+/* RESPONSIVE                                   */
+/* ============================================ */
+
 @media (max-width: 1024px) {
     .gaming-bg {
         padding: 2rem 1rem;
@@ -261,7 +253,6 @@ body {
         max-height: none;
     }
 
-    /* Reduce animations on tablets */
     .fade-in,
     .slide-up {
         animation-duration: 0.3s;
@@ -272,48 +263,40 @@ body {
     .gaming-bg {
         padding: 1rem 0.75rem;
         min-height: 100vh;
-        /* Disable gradient animation on mobile for performance */
         animation: none;
         background-position: 0% 50%;
     }
 
-    /* Compact branding section for mobile */
     .max-w-6xl > .grid > div:first-child {
         display: block !important;
         margin-bottom: 1.5rem;
         text-align: center;
     }
 
-        /* Hide large icon */
         .max-w-6xl > .grid > div:first-child .icon-box {
             display: none;
         }
 
-        /* Compact main heading */
         .max-w-6xl > .grid > div:first-child > div > h1 {
             font-size: 1.5rem !important;
             line-height: 1.3 !important;
             margin-bottom: 0.5rem !important;
         }
 
-        /* Compact description */
         .max-w-6xl > .grid > div:first-child > div > p {
             font-size: 0.875rem !important;
             line-height: 1.4 !important;
             margin-bottom: 1rem !important;
         }
 
-        /* Hide feature cards on mobile */
         .max-w-6xl > .grid > div:first-child .space-y-4 {
             display: none !important;
         }
 
-        /* Hide trust badges on mobile */
         .max-w-6xl > .grid > div:first-child .flex.items-center.space-x-8 {
             display: none !important;
         }
 
-    /* Make form container full width */
     .max-w-6xl > .grid {
         grid-template-columns: 1fr !important;
     }
@@ -326,7 +309,6 @@ body {
         max-width: 100%;
     }
 
-        /* Compact header */
         .glass-card > div:first-child {
             margin-bottom: 1.25rem !important;
         }
@@ -342,14 +324,12 @@ body {
             line-height: 1.4 !important;
         }
 
-    /* Compact form inputs */
     .form-input {
         padding: 0.75rem 1rem !important;
         font-size: 1rem !important;
         line-height: 1.4 !important;
     }
 
-    /* Compact labels */
     label.block {
         font-size: 0.875rem !important;
         margin-bottom: 0.5rem !important;
@@ -360,7 +340,6 @@ body {
         font-size: 0.875rem !important;
     }
 
-    /* Compact buttons */
     button[type="submit"] {
         padding: 0.875rem 1rem !important;
         font-size: 0.9375rem !important;
@@ -371,12 +350,10 @@ body {
             font-size: 0.9375rem !important;
         }
 
-    /* Reduce spacing between form fields */
     form.space-y-6 > * + * {
         margin-top: 1rem !important;
     }
 
-    /* Compact checkbox section */
     .flex.items-start.space-x-3,
     .flex.items-start.space-x-reverse {
         gap: 0.625rem !important;
@@ -394,22 +371,17 @@ body {
         flex-shrink: 0;
     }
 
-    /* Compact remember me section */
     .flex.items-center.justify-between {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.75rem;
     }
 
-        .flex.items-center.justify-between label {
-            font-size: 0.875rem !important;
-        }
-
+        .flex.items-center.justify-between label,
         .flex.items-center.justify-between a {
             font-size: 0.875rem !important;
         }
 
-    /* Compact register/login links */
     .glass-card > div:last-child {
         margin-top: 1.25rem !important;
     }
@@ -419,7 +391,6 @@ body {
             line-height: 1.4 !important;
         }
 
-    /* Compact password toggle button */
     .relative button {
         padding: 0.625rem !important;
     }
@@ -428,7 +399,17 @@ body {
             font-size: 1rem !important;
         }
 
-    /* Disable most animations on mobile */
+    /* Toast on mobile — full width with small margin */
+    .toast-notification {
+        bottom: 1rem;
+        right: 0.75rem;
+        left: 0.75rem;
+        max-width: 100%;
+        width: auto;
+        padding: 0.875rem 1rem;
+        font-size: 0.8125rem;
+    }
+
     .fade-in,
     .slide-up,
     .feature-card {
@@ -447,22 +428,12 @@ body {
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
     }
 
-    .toast-notification {
-        right: 0.5rem;
-        left: 0.5rem;
-        max-width: calc(100% - 1rem);
-        padding: 0.75rem 1rem;
-        font-size: 0.875rem;
-    }
-
-    /* Form error messages */
     .form-error {
         font-size: 0.8125rem !important;
         margin-top: 0.375rem !important;
     }
 }
 
-/* Extra compact for very small screens */
 @media (max-width: 375px) {
     .gaming-bg {
         padding: 0.75rem 0.5rem;
@@ -502,9 +473,7 @@ body {
 
 /* Prefers reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
@@ -518,24 +487,26 @@ body {
 /* RTL Support */
 [dir="rtl"] .toast-notification {
     right: auto;
-    left: 1rem;
+    left: 1.5rem;
+    animation-name: toastSlideInRtl;
 }
 
-    [dir="rtl"] .toast-notification.hide {
-        animation: slideOutLeft 0.3s ease forwards;
-    }
-
-@keyframes slideOutLeft {
-    to {
+@keyframes toastSlideInRtl {
+    from {
         opacity: 0;
         transform: translateX(-100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
 @media (max-width: 640px) {
     [dir="rtl"] .toast-notification {
-        left: 0.5rem;
-        right: 0.5rem;
+        left: 0.75rem;
+        right: 0.75rem;
     }
 }
 

@@ -127,5 +127,11 @@ namespace StationPro.Infrastructure.Services
         // ── Token validation ──────────────────────────────────────────────────
         public async Task<bool> IsResetTokenValidAsync(string token)
             => await _tenantRepo.GetByResetTokenAsync(token) != null;
+
+        public async Task<bool> IsTenantActiveAsync(int tenantId)
+        {
+            var tenant = await _tenantRepo.GetByIdAsync(tenantId);
+            return tenant?.IsActive ?? false;
+        }
     }
 }

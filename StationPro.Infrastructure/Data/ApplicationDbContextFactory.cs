@@ -16,7 +16,7 @@ namespace StationPro.Infrastructure.Data
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
 
-            var connectionString = "Server=db44413.databaseasp.net; Database=db44413; User Id=db44413; Password=t-7DT5h?%J2z; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;";
+            var connectionString = "Server=PC-1;Database=StationPro;Trusted_Connection=True;Encrypt=False";
             // Use the same connection string as your appsettings.json.
             // This is only used during migrations — not in production.
             optionsBuilder.UseSqlServer(connectionString);

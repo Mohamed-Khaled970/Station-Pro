@@ -269,7 +269,7 @@
         }
     </main>
 
-    <!-- Reject Modal (unchanged) -->
+    <!-- Reject Modal -->
     <div id="rejectModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
@@ -297,7 +297,7 @@
         </div>
     </div>
 
-    <!-- Proof Lightbox (unchanged) -->
+    <!-- Proof Lightbox -->
     <div id="lightboxOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
          onclick="closeLightbox()">
         <div class="relative max-w-xl w-full" onclick="event.stopPropagation()">
@@ -311,25 +311,39 @@
     <!-- Toast container -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
 
+    <!-- ✅ admin.js loaded first — provides showAdminConfirm, approveSubscription, showToast -->
     <script src="@Url.Content("~/js/admin.js")"></script>
     <script>
         let _rejectId = null;
 
-        function approveSubscription(id) {
-            if (!confirm('Approve this subscription request?')) return;
-            fetch(`/Admin/ApproveSubscription?id=${id}`, { method: 'POST' })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        updateRowStatus(id, 'Approved');
-                        showToast('Subscription approved!', 'success');
-                    } else {
-                        showToast(data.message || 'Failed to approve.', 'error');
-                    }
-                })
-                .catch(() => showToast('Network error.', 'error'));
-        }
+        // ── updateRowStatus ──────────────────────────────────────────────
+        // Called by window.approveSubscription (defined in admin.js) after
+        // the server confirms success.
+        window.updateRowStatus = function (id, status, reason) {
+            const row = document.getElementById(`row-${id}`);
+            if (row) {
+                const cells = row.querySelectorAll('td');
+                const badgeEl = cells[6]?.querySelector('span');
+                if (badgeEl) {
+                    badgeEl.className = `status-badge-${status.toLowerCase()} text-xs font-bold px-3 py-1.5 rounded-full`;
+                    badgeEl.textContent = status;
+                }
+                const actionsCell = cells[7];
+                if (actionsCell) actionsCell.innerHTML = '<span class="text-xs text-gray-400 italic">No action needed</span>';
+            }
+            const card = document.getElementById(`card-${id}`);
+            if (card) {
+                const badgeEl = card.querySelector('.rounded-full');
+                if (badgeEl) {
+                    badgeEl.className = `status-badge-${status.toLowerCase()} text-xs font-bold px-3 py-1.5 rounded-full`;
+                    badgeEl.textContent = status;
+                }
+                const btns = card.querySelector('.flex.gap-2:last-child');
+                if (btns) btns.remove();
+            }
+        };
 
+        // ── Reject modal ─────────────────────────────────────────────────
         function openRejectModal(id) {
             _rejectId = id;
             document.getElementById('rejectReason').value = '';
@@ -344,7 +358,10 @@
 
         function confirmReject() {
             const reason = document.getElementById('rejectReason').value.trim();
-            if (!reason) { document.getElementById('rejectReasonError').classList.remove('hidden'); return; }
+            if (!reason) {
+                document.getElementById('rejectReasonError').classList.remove('hidden');
+                return;
+            }
             document.getElementById('rejectReasonError').classList.add('hidden');
             fetch(`/Admin/RejectSubscription?id=${_rejectId}`, {
                 method: 'POST',
@@ -354,7 +371,7 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        updateRowStatus(_rejectId, 'Rejected', reason);
+                        window.updateRowStatus(_rejectId, 'Rejected', reason);
                         showToast('Subscription rejected.', 'warning');
                         closeRejectModal();
                     } else {
@@ -364,30 +381,22 @@
                 .catch(() => showToast('Network error.', 'error'));
         }
 
-        function updateRowStatus(id, status, reason) {
-            const row = document.getElementById(`row-${id}`);
-            if (row) {
-                const cells = row.querySelectorAll('td');
-                const badgeEl = cells[6]?.querySelector('span');
-                if (badgeEl) { badgeEl.className = `status-badge-${status.toLowerCase()} text-xs font-bold px-3 py-1.5 rounded-full`; badgeEl.textContent = status; }
-                const actionsCell = cells[7];
-                if (actionsCell) actionsCell.innerHTML = '<span class="text-xs text-gray-400 italic">No action needed</span>';
-            }
-            const card = document.getElementById(`card-${id}`);
-            if (card) {
-                const badgeEl = card.querySelector('.rounded-full');
-                if (badgeEl) { badgeEl.className = `status-badge-${status.toLowerCase()} text-xs font-bold px-3 py-1.5 rounded-full`; badgeEl.textContent = status; }
-                const btns = card.querySelector('.flex.gap-2:last-child');
-                if (btns) btns.remove();
-            }
-        }
-
+        // ── Lightbox ─────────────────────────────────────────────────────
         function openLightbox(url) {
             document.getElementById('lightboxImage').src = url;
             document.getElementById('lightboxOverlay').classList.remove('hidden');
         }
-        function closeLightbox() { document.getElementById('lightboxOverlay').classList.add('hidden'); }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLightbox(); closeRejectModal(); } });
+
+        function closeLightbox() {
+            document.getElementById('lightboxOverlay').classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeLightbox();
+                closeRejectModal();
+            }
+        });
     </script>
 </body>
 </html>
