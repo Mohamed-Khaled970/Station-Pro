@@ -7,87 +7,72 @@ using StationPro.Application.Interfaces.InMemory;
 using StationPro.Application.Interfaces;
 using StationPro.Domain.Entities;
 using StationPro.Filters;
+using StationPro.Application.Contracts.Services;
 
 namespace StationPro.Web.Controllers;
 
 [SubscriptionRequired]
 public class DeviceController : Controller
 {
-    private readonly ISessionService _sessions;
+    private readonly IDeviceService _devices;
+    private readonly Application.Contracts.Services.ISessionService _sessions;
 
-    public DeviceController(ISessionService sessions)
+    public DeviceController(IDeviceService devices, Application.Contracts.Services.ISessionService sessions)
     {
+        _devices = devices;
         _sessions = sessions;
     }
 
-    // ─── View ─────────────────────────────────────────────────────────────
+    // ── View ──────────────────────────────────────────────────────────────
 
-    public IActionResult Index()
-        => View(DeviceStore.GetAll());
+    public async Task<IActionResult> Index()
+    {
+        var devices = await _devices.GetAllAsync();
+        return View(devices);
+    }
 
-    // ─── Device CRUD ──────────────────────────────────────────────────────
+    // ── Device CRUD ───────────────────────────────────────────────────────
 
     [HttpGet]
-    public IActionResult Get(int id)
+    public async Task<IActionResult> Get(int id)
     {
-        var device = DeviceStore.GetById(id);
+        var device = await _devices.GetByIdAsync(id);
         return device == null ? NotFound() : Json(device);
     }
 
+    /// <summary>
+    /// Called by the "Add Device" HTMX form.
+    /// Returns the new _DeviceCard partial so HTMX can swap it in.
+    /// </summary>
     [HttpPost]
-    public IActionResult Create([FromBody] DeviceDto device)
+    public async Task<IActionResult> Create([FromForm] CreateDeviceDto dto)
     {
-        var created = DeviceStore.Add(device);
-        return Ok(created);
-    }
-
-    [HttpPut]
-    public IActionResult Update(int id, [FromBody] DeviceDto updated)
-    {
-        var device = DeviceStore.GetById(id);
-        if (device == null) return NotFound();
-
-        device.Name = updated.Name;
-        device.Type = updated.Type;
-        device.SingleSessionRate = updated.SingleSessionRate;
-        device.MultiSessionRate = updated.MultiSessionRate;
-        device.SupportsMultiSession = updated.SupportsMultiSession;
-        device.IsActive = updated.IsActive;
-
-        DeviceStore.Update(device);
-        return Ok();
-    }
-
-    [HttpDelete]
-    public IActionResult Delete(int id)
-    {
-        var device = DeviceStore.GetById(id);
-        if (device == null) return NotFound();
-
-        if (!device.IsAvailable)
-            return BadRequest(new { message = "Cannot delete a device that is currently in use." });
-
-        DeviceStore.Delete(id);
-        return Ok();
-    }
-
-    // ─── Session: Start ───────────────────────────────────────────────────
-
-    [HttpPost]
-    public IActionResult StartSession([FromBody] StartDeviceSessionRequest request)
-    {
-        var device = DeviceStore.GetById(request.DeviceId);
-        if (device == null)
-            return NotFound(new { success = false, message = "Device not found." });
-
-        if (!device.IsAvailable)
-            return BadRequest(new { success = false, message = "Device is not available." });
-
         try
         {
-            var result = _sessions.StartDeviceSession(request, device);
-            DeviceStore.Update(device);
-            return Ok(result);
+            var created = await _devices.CreateAsync(dto);
+            return PartialView("_DeviceCard", created);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Called by the "Edit Device" JS form (PUT via fetch).
+    /// Accepts a JSON body matching UpdateDeviceDto.
+    /// </summary>
+    [HttpPut]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateDeviceDto dto)
+    {
+        try
+        {
+            var updated = await _devices.UpdateAsync(id, dto);
+            return Ok(updated);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { success = false, message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -95,36 +80,70 @@ public class DeviceController : Controller
         }
     }
 
-    // ─── Session: End ─────────────────────────────────────────────────────
-
-    [HttpPost]
-    public IActionResult EndSession(int sessionId, int paymentMethod = 1)
+    [HttpDelete]
+    public async Task<IActionResult> Delete(int id)
     {
-        var session = _sessions.GetById(sessionId);
-        if (session == null || !session.IsActive)
-            return NotFound(new { message = "Active session not found." });
-
-        var device = DeviceStore.GetById(session.DeviceId!.Value);
-        if (device == null) return NotFound(new { message = "Device not found." });
-
         try
         {
-            var result = _sessions.EndDeviceSession(sessionId, paymentMethod, device);
-            DeviceStore.Update(device);
+            await _devices.DeleteAsync(id);
+            return Ok(new { success = true });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
+    }
+
+    // ── Session: Start ────────────────────────────────────────────────────
+
+    [HttpPost]
+    public async Task<IActionResult> StartSession([FromBody] StartDeviceSessionRequest request)
+    {
+        try
+        {
+            var result = await _sessions.StartDeviceSessionAsync(request, request.DeviceId);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
         }
     }
 
-    // ─── Card partial refresh ─────────────────────────────────────────────
+    // ── Session: End ──────────────────────────────────────────────────────
+
+    [HttpPost]
+    public async Task<IActionResult> EndSession(int sessionId, int paymentMethod = 1)
+    {
+        try
+        {
+            var result = await _sessions.EndDeviceSessionAsync(sessionId, paymentMethod);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ex.Message });
+        }
+    }
+
+    // ── Card partial refresh ───────────────────────────────────────────────
 
     [HttpGet]
-    public IActionResult CardPartial(int id)
+    public async Task<IActionResult> CardPartial(int id)
     {
-        var device = DeviceStore.GetById(id);
+        var device = await _devices.GetByIdAsync(id);
         return device == null ? NotFound() : PartialView("_DeviceCard", device);
     }
 }

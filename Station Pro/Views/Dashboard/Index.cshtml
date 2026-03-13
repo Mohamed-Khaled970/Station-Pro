@@ -73,7 +73,7 @@
                         </div>
                     </div>
 
-                    <!-- Mobile-only Auto-update indicator - Shows below title on small screens -->
+                    <!-- Mobile-only Auto-update indicator -->
                     <div class="flex sm:hidden items-center gap-1 text-xs text-gray-500 mb-4 pb-3 border-b border-gray-100">
                         <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         <span>@Localizer["UpdatesEvery60s"]</span>
@@ -105,7 +105,19 @@
                         @Localizer["QuickActions"]
                     </h3>
                     <div class="space-y-3">
-                        <button onclick="openModal('start-session-modal')"
+                        @*
+                        FIX: Changed onclick from openModal('start-session-modal')
+                        to openStartSessionModal().
+
+                        WHY: The old call opened the modal with a static, empty
+                        <select> — devices were never fetched so the dropdown only
+                        showed "Choose a device..." with no real options.
+
+                        openStartSessionModal() fetches /Dashboard/DeviceOptions
+                        first, populates the <select> with available devices,
+                        then opens the modal — so the list is always up to date.
+                        *@
+                        <button onclick="openStartSessionModal()"
                                 class="btn btn-primary w-full">
                             <i class="fas fa-play mr-2"></i>
                             @Localizer["StartNewSession"]
@@ -205,6 +217,11 @@
             <div class="modal-body space-y-4">
                 <div>
                     <label class="form-label">@Localizer["SelectDevice"]</label>
+                    @*
+                    The <select> starts empty — openStartSessionModal() in
+                    dashboard.js fetches /Dashboard/DeviceOptions and
+                    populates it with available devices before the modal appears.
+                    *@
                     <select name="DeviceId" class="form-input" required>
                         <option value="">@Localizer["ChooseDevice"]</option>
                     </select>
@@ -334,19 +351,13 @@
     <script src="@Url.Content("~/js/session-timer.js")"></script>
 }
 
-
-<!-- OPTIMIZATION 2: Add ETag/Last-Modified support in controller -->
-<!-- This prevents unnecessary data transfer if nothing changed -->
-
 <script>
-    // OPTIMIZATION 3: Debounce HTMX requests if user is actively interacting
+    // Debounce HTMX requests if user is actively interacting
     document.body.addEventListener('htmx:beforeRequest', function (event) {
-        // If user ended a session less than 5 seconds ago, skip the poll
         const lastAction = window.lastSessionAction || 0;
         const now = Date.now();
-
         if (event.detail.path.includes('ActiveSessions') && (now - lastAction) < 5000) {
-            console.log(' Skipping poll - recent user action');
+            console.log('Skipping poll - recent user action');
             event.preventDefault();
         }
     });
@@ -355,14 +366,13 @@
     document.body.addEventListener('htmx:afterRequest', function (event) {
         if (event.detail.path.includes('/End')) {
             window.lastSessionAction = Date.now();
-
-            // Trigger immediate refresh after ending session
             setTimeout(() => {
                 htmx.trigger('#active-sessions-container', 'refresh');
             }, 500);
         }
     });
 </script>
+
 <style>
     @@keyframes scale-in {
         from {

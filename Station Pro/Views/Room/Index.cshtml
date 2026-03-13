@@ -174,15 +174,30 @@
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
      ADD ROOM MODAL
+     FIX: Changed hx-on::after-request → hx-on:htmx:after-swap
+
+     WHY: hx-on::after-request fires after the HTTP request completes,
+     regardless of whether it succeeded or failed. This meant:
+       1. If the server returned an error, handleRoomAdded() still ran,
+          closing the modal and showing a success toast incorrectly.
+       2. Any error HTML in the response was briefly swapped into #rooms-grid,
+          corrupting the grid and making the newly added card disappear.
+
+     hx-on:htmx:after-swap fires ONLY after HTMX has successfully swapped
+     new content into the DOM — i.e. only when the card was actually added.
+     We also add hx-on:htmx:response-error to handle errors gracefully.
 ════════════════════════════════════════════════════════════════════════════ -->
 <div id="add-room-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="text-xl font-bold text-gray-900">@Localizer["AddNewRoom"]</h3>
         </div>
-        <form id="add-room-form" hx-post="/Room/Create"
-              hx-target="#rooms-grid" hx-swap="afterbegin"
-              hx-on::after-request="handleRoomAdded()">
+        <form id="add-room-form"
+              hx-post="/Room/Create"
+              hx-target="#rooms-grid"
+              hx-swap="afterbegin"
+              hx-on:htmx:after-swap="handleRoomAdded()"
+              hx-on:htmx:response-error="showToast('error', 'Failed to add room')">
             <div class="modal-body space-y-4">
                 <div>
                     <label class="form-label"><i class="fas fa-tag text-blue-600 mr-2"></i>@Localizer["RoomName"]</label>
@@ -485,7 +500,7 @@
             // ── No results ─────────────────────────────────────────────────────
             NoRoomsFound: @Json.Serialize(Localizer["NoRoomsFound"].Value),
             TryAdjustingFilters: @Json.Serialize(Localizer["TryAdjustingFilters"].Value)
-                };
+                        };
     </script>
 
     <script src="~/js/session-timer.js"></script>

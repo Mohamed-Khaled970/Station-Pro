@@ -97,11 +97,20 @@ app.UseResponseCompression();
 app.UseRequestLocalization();
 app.UseStaticFiles();
 app.UseRouting();
+// ── Middleware pipeline order — CRITICAL ──────────────────────────────────────
+// 1. Session cookie must be loaded before anything reads it
+app.UseRequestLocalization();
+app.UseSession();
 
-// ── Critical order: Session before TenantResolutionMiddleware ─────────────────
-app.UseSession();                                    // 1. load session cookie
-app.UseMiddleware<TenantResolutionMiddleware>();      // 2. session → Items["TenantId"]
-app.UseAuthorization();                              // 3. auth
+// 2. Resolve tenant from session → populates HttpContext.Items["TenantId"]
+app.UseMiddleware<TenantResolutionMiddleware>();
+
+// 3. Block protected routes that have no resolved tenant
+app.UseMiddleware<TenantGuardMiddleware>();
+
+// 4. Authorization (after tenant is known)
+app.UseAuthorization();
+// 3. auth
 
 app.MapControllerRoute(
     name: "default",

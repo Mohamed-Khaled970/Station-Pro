@@ -35,8 +35,9 @@
         _ => "status-maintenance"
     };
 
-    var startTimeIso = Model.SessionStartTime.HasValue
-        ? Model.SessionStartTime.Value.ToString("O")
+    var startTimeUtcIso = Model.SessionStartTime.HasValue
+        ? DateTime.SpecifyKind(Model.SessionStartTime.Value, DateTimeKind.Utc)
+               .ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
         : string.Empty;
 
     var activeRate = Model.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -44,15 +45,9 @@
     var multiRateJs = Model.MultiHourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     var sessionTypeLabel = Model.SessionType ?? "Single";
-    var sessionTypeBadgeCss = sessionTypeLabel == "Multi"
-        ? "bg-purple-100 text-purple-700"
-        : "bg-blue-100 text-blue-700";
+    var sessionTypeBadgeCss = sessionTypeLabel == "Multi" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700";
     var sessionTypeIcon = sessionTypeLabel == "Multi" ? "fa-users" : "fa-user";
-
-    // Localised session-type label for the badge
-    var sessionTypeLabelLocalized = sessionTypeLabel == "Multi"
-        ? Localizer["Multi"].Value
-        : Localizer["Single"].Value;
+    var sessionTypeLabelLocalized = sessionTypeLabel == "Multi" ? Localizer["Multi"].Value : Localizer["Single"].Value;
 }
 
 <div class="room-card @statusClass fade-in"
@@ -61,7 +56,6 @@
      data-room-id="@Model.Id"
      id="room-card-@Model.Id">
 
-    <!-- ── Header ──────────────────────────────────────────────────────────── -->
     <div class="flex justify-between items-start mb-4">
         <div class="flex items-center space-x-3">
             <div class="@iconBgClass p-3 rounded-xl">
@@ -86,10 +80,8 @@
         <span class="status-badge @statusBadgeClass">@Localizer[Model.Status]</span>
     </div>
 
-    <!-- ── Rate & Capacity Details ─────────────────────────────────────────── -->
     <div class="card-details border-t border-gray-100 pt-4 mb-4 space-y-2">
 
-        <!-- Single rate row -->
         <div class="flex justify-between items-center px-1">
             <span class="text-sm text-gray-500 flex items-center gap-1.5">
                 <i class="fas fa-user text-blue-500 text-xs"></i> @Localizer["SingleRateLabel"]
@@ -97,7 +89,6 @@
             <span class="text-sm font-bold text-blue-600">@Model.SingleHourlyRate.ToString("C")</span>
         </div>
 
-        <!-- Multi rate row -->
         <div class="flex justify-between items-center px-1 rounded-lg @(Model.Status == "Available" ? "bg-purple-50 py-1" : "")">
             <span class="text-sm text-gray-500 flex items-center gap-1.5">
                 <i class="fas fa-users text-purple-500 text-xs"></i> @Localizer["MultiRateLabel"]
@@ -105,7 +96,6 @@
             <span class="text-sm font-bold text-purple-600">@Model.MultiHourlyRate.ToString("C")</span>
         </div>
 
-        <!-- Capacity -->
         <div class="flex justify-between items-center px-1">
             <span class="text-sm text-gray-500">
                 <i class="fas fa-users mr-1"></i>@Localizer["Capacity"]
@@ -113,12 +103,10 @@
             <span class="text-sm font-bold text-gray-900">@Model.Capacity @Localizer["People"]</span>
         </div>
 
-        <!-- ── Occupied: live timer block ──────────────────────────────────── -->
         @if (Model.Status == "Occupied" && Model.SessionStartTime.HasValue && Model.ActiveSessionId.HasValue)
         {
             <div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500 mt-1">
 
-                <!-- Client + session-type pill -->
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <span class="text-xs text-gray-600 font-medium">
@@ -133,7 +121,6 @@
                     </span>
                 </div>
 
-                <!-- Active rate -->
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs text-gray-500"><i class="fas fa-tag mr-1"></i>@Localizer["RateLabel"]</span>
                     <span class="text-xs font-bold @(sessionTypeLabel == "Multi" ? "text-purple-700" : "text-blue-700")">
@@ -141,35 +128,39 @@
                     </span>
                 </div>
 
-                <!-- Occupancy bar -->
                 <div class="bg-gray-200 rounded-full h-1.5 mb-3">
                     <div class="bg-red-500 h-1.5 rounded-full"
                          style="width:@((Model.CurrentOccupancy * 100.0 / Model.Capacity).ToString("F0"))%"></div>
                 </div>
 
-                <!-- Live timer -->
+                @*
+            HIDDEN source-of-truth for JS timer.
+            data-start-time ends with explicit Z → browser always treats as UTC.
+            Old code used .ToString("O") which emits no Z when Kind=Unspecified,
+            causing the timer to read it as local time (UTC+2 in Egypt = 2h ahead).
+            Visible timer/cost use CSS classes only — hidden span must NOT carry those classes.
+            *@
+                <span id="timer-@Model.ActiveSessionId"
+                      data-start-time="@startTimeUtcIso"
+                      data-hourly-rate="@activeRate"
+                      class="hidden"></span>
+
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-gray-500"><i class="fas fa-clock mr-1"></i>@Localizer["DurationLabel"]</span>
-                    <span class="font-mono font-bold text-red-700 text-sm timer-display-@Model.ActiveSessionId"
-                          id="timer-@Model.ActiveSessionId"
-                          data-start-time="@startTimeIso"
-                          data-hourly-rate="@activeRate">
+                    <span class="font-mono font-bold text-red-700 text-sm timer-display-@Model.ActiveSessionId">
                         00:00:00
                     </span>
                 </div>
 
-                <!-- Running cost -->
                 <div class="flex justify-between items-center mt-1">
                     <span class="text-xs text-gray-500"><i class="fas fa-coins mr-1"></i>@Localizer["RunningCost"]</span>
-                    <span class="font-bold text-green-700 text-sm cost-display-@Model.ActiveSessionId"
-                          id="cost-@Model.ActiveSessionId">
+                    <span class="font-bold text-green-700 text-sm cost-display-@Model.ActiveSessionId">
                         EGP 0.00
                     </span>
                 </div>
             </div>
         }
 
-        <!-- ── Reserved block ──────────────────────────────────────────────── -->
         @if (Model.Status == "Reserved")
         {
             <div class="bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-500">
@@ -194,11 +185,9 @@
         }
     </div>
 
-    <!-- ── Action Buttons ──────────────────────────────────────────────────── -->
     <div class="card-actions">
         @if (Model.Status == "Available")
         {
-            <!-- Row 1: Single | Multi — equal halves -->
             <div class="btn-row">
                 <button onclick="openQuickBookModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))', 'Single', '@singleRateJs', 2)"
                         class="btn btn-success btn-session">
@@ -211,7 +200,6 @@
                     <span>@Localizer["MultiBtn"]</span>
                 </button>
             </div>
-            <!-- Row 2: Reserve (stretches) + Edit + Delete -->
             <div class="btn-row">
                 <button onclick="openReserveModal(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
                         class="btn btn-warning btn-utility">
@@ -246,7 +234,6 @@
         }
         else if (Model.Status == "Reserved")
         {
-            <!-- Row 1: Check In | Cancel -->
             <div class="btn-row">
                 <button onclick="activateReservation(@Model.Id, '@Html.Raw(Model.Name.Replace("'", "\\'"))')"
                         class="btn btn-success btn-session">
@@ -259,7 +246,6 @@
                     <span>@Localizer["CancelReservation"]</span>
                 </button>
             </div>
-            <!-- Row 2: Edit (stretches) | Delete -->
             <div class="btn-row">
                 <button onclick="editRoom(@Model.Id)" class="btn btn-outline btn-utility" title="@Localizer["EditBtn"]">
                     <i class="fas fa-edit"></i>

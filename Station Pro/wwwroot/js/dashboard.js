@@ -1,10 +1,7 @@
 ﻿// wwwroot/js/dashboard.js
 
-// ============================================
-// GLOBAL VARIABLES
-// ============================================
 let pendingSessionId = null;
-let selectedPaymentMethod = 1; // Default: Cash
+let selectedPaymentMethod = 1;
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -12,63 +9,33 @@ let selectedPaymentMethod = 1; // Default: Cash
 
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        console.warn('Toast container not found');
-        return;
-    }
-
+    if (!toastContainer) { console.warn('Toast container not found'); return; }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i>
-        <span>${message}</span>
-    `;
-
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-2"></i><span>${message}</span>`;
     toastContainer.appendChild(toast);
-
-    setTimeout(() => {
-        toast.remove();
-    }, 5000);
+    setTimeout(() => toast.remove(), 5000);
 }
 
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
+    if (modal) { modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
 }
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
+    if (modal) { modal.classList.add('hidden'); document.body.style.overflow = 'auto'; }
 }
 
 function refreshDashboard() {
     const refreshIcon = document.getElementById('refresh-icon');
-    if (refreshIcon) {
-        refreshIcon.classList.add('fa-spin');
-    }
-
-    // Trigger HTMX refresh for stats
+    if (refreshIcon) refreshIcon.classList.add('fa-spin');
     const statsContainer = document.getElementById('stats-container');
-    if (statsContainer) {
-        htmx.trigger(statsContainer, 'refresh');
-    }
-
-    // Trigger HTMX refresh for active sessions
+    if (statsContainer) htmx.trigger(statsContainer, 'refresh');
     const sessionsContainer = document.getElementById('active-sessions-container');
-    if (sessionsContainer) {
-        htmx.trigger(sessionsContainer, 'refresh');
-    }
-
+    if (sessionsContainer) htmx.trigger(sessionsContainer, 'refresh');
     setTimeout(() => {
-        if (refreshIcon) {
-            refreshIcon.classList.remove('fa-spin');
-        }
+        if (refreshIcon) refreshIcon.classList.remove('fa-spin');
         showToast('Dashboard refreshed!', 'success');
     }, 1000);
 }
@@ -83,131 +50,140 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeDashboard() {
-    // Load device cards
-    loadDeviceCards();
-
-    // Setup auto-refresh for stats
     setupStatsRefresh();
 }
 
 // ============================================
-// LOAD DEVICE CARDS
+// START SESSION MODAL
 // ============================================
 
-async function loadDeviceCards() {
-    const container = document.getElementById('devices-container');
-    if (!container) return;
-
+async function openStartSessionModal() {
+    const select = document.querySelector('#start-session-modal select[name="DeviceId"]');
+    if (select) { select.innerHTML = '<option value="">Loading devices...</option>'; select.disabled = true; }
+    openModal('start-session-modal');
     try {
-        // HTMX will handle this, but we can add loading state
-        container.classList.add('opacity-50');
-    } catch (error) {
-        console.error('Error loading devices:', error);
-        showToast('Failed to load devices', 'error');
+        const currentPath = window.location.pathname;
+        const basePath = currentPath.replace(/\/(dashboard|Dashboard).*/, '');
+        const res = await fetch(`${basePath}/Dashboard/DeviceOptions`);
+        if (res.ok) {
+            const devices = await res.json();
+            if (select) {
+                if (devices.length === 0) {
+                    select.innerHTML = '<option value="">No available devices</option>';
+                } else {
+                    select.innerHTML = '<option value="">Choose a device...</option>';
+                    devices.forEach(d => {
+                        const option = document.createElement('option');
+                        option.value = d.id;
+                        option.textContent = d.name;
+                        select.appendChild(option);
+                    });
+                }
+            }
+        } else if (select) {
+            select.innerHTML = '<option value="">Failed to load devices</option>';
+        }
+    } catch (err) {
+        console.error('Error loading devices for modal:', err);
+        if (select) select.innerHTML = '<option value="">Failed to load devices</option>';
+    } finally {
+        if (select) select.disabled = false;
     }
 }
 
 // ============================================
-// END SESSION - NEW BEAUTIFUL APPROACH
+// END SESSION
+// FIX: endSessionWithReceipt was reading device name, duration and cost
+// from the wrong DOM elements.
+//
+// The _ActiveSessions partial renders:
+//   - id="timer-{id}"          → HIDDEN span (source of truth, textContent is empty)
+//   - .timer-display-{id}      → VISIBLE timer text (updated by session-timer.js)
+//   - .cost-display-{id}       → VISIBLE cost text  (updated by session-timer.js)
+//   - h4 inside the card       → device name
+//
+// The old code did:
+//   timerElement.textContent   → always "" because the hidden span has no text
+//   costElement.textContent    → same problem (was getElementById("cost-{id}") which doesn't exist)
+//   .querySelector('h4')       → wrong ancestor, the hidden span's closest('.rounded-lg')
+//                                 may not contain the h4 in the new partial structure
+//
+// FIX: read from the VISIBLE class-based display elements instead.
 // ============================================
 
 function endSessionWithReceipt(sessionId) {
-    // Store the session ID
     pendingSessionId = sessionId;
 
-    // Get session details from the DOM
-    const timerElement = document.getElementById(`timer-${sessionId}`);
-    const costElement = document.getElementById(`cost-${sessionId}`);
+    // ✅ Read the VISIBLE timer and cost elements (class-based, updated by session-timer.js)
+    const timerDisplay = document.querySelector(`.timer-display-${sessionId}`);
+    const costDisplay = document.querySelector(`.cost-display-${sessionId}`);
 
-    if (timerElement && costElement) {
-        const duration = timerElement.textContent.trim();
-        const cost = costElement.textContent.trim();
-        const deviceName = timerElement.closest('.rounded-lg').querySelector('h4')?.textContent.trim() || 'Unknown Device';
-
-        // Update confirmation modal with session details
-        document.getElementById('confirm-device-name').textContent = deviceName;
-        document.getElementById('confirm-duration').textContent = duration;
-        document.getElementById('confirm-cost').textContent = cost;
+    // ✅ Get device name from the card's h4, walking up from the hidden timer element
+    const hiddenTimerEl = document.getElementById(`timer-${sessionId}`);
+    let deviceName = 'Unknown Device';
+    if (hiddenTimerEl) {
+        // Walk up to the session card container and find the h4
+        const card = hiddenTimerEl.closest('[data-session-id]') ||
+            hiddenTimerEl.closest('.bg-gradient-to-r') ||
+            hiddenTimerEl.parentElement;
+        if (card) {
+            const h4 = card.querySelector('h4');
+            if (h4) deviceName = h4.textContent.trim();
+        }
     }
 
-    // Reset payment method to Cash
-    selectedPaymentMethod = 1;
-    document.getElementById('payment-cash').classList.add('active');
-    document.getElementById('payment-card').classList.remove('active');
+    document.getElementById('confirm-device-name').textContent = deviceName;
+    document.getElementById('confirm-duration').textContent =
+        timerDisplay ? timerDisplay.textContent.trim() : '00:00:00';
+    document.getElementById('confirm-cost').textContent =
+        costDisplay ? costDisplay.textContent.trim() : 'EGP 0.00';
 
-    // Show confirmation modal
+    selectedPaymentMethod = 1;
+    document.getElementById('payment-cash')?.classList.add('active');
+    document.getElementById('payment-card')?.classList.remove('active');
+
     openModal('end-session-confirm-modal');
 }
 
 function selectPaymentMethod(method) {
     selectedPaymentMethod = method;
-
-    // Update button states
     const cashBtn = document.getElementById('payment-cash');
     const cardBtn = document.getElementById('payment-card');
-
-    if (method === 1) {
-        cashBtn.classList.add('active');
-        cardBtn.classList.remove('active');
-    } else {
-        cardBtn.classList.add('active');
-        cashBtn.classList.remove('active');
-    }
+    if (method === 1) { cashBtn?.classList.add('active'); cardBtn?.classList.remove('active'); }
+    else { cardBtn?.classList.add('active'); cashBtn?.classList.remove('active'); }
 }
 
-function closeEndSessionModal() {
-    closeModal('end-session-confirm-modal');
-}
+function closeEndSessionModal() { closeModal('end-session-confirm-modal'); }
 
 async function confirmEndSession() {
     if (!pendingSessionId) return;
-
     try {
-        // Close confirmation modal
         closeEndSessionModal();
+        if (window.timerManager) timerManager.removeTimer(String(pendingSessionId));
 
-
-       timerManager.removeTimer(String(pendingSessionId));
-      
-
-        // Get current path (handle tenant URLs)
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/(dashboard|Dashboard).*/, '');
 
-        // Call the End endpoint
-        const response = await fetch(`${basePath}/Dashboard/End?sessionId=${pendingSessionId}&paymentMethod=${selectedPaymentMethod}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await fetch(
+            `${basePath}/Dashboard/End?sessionId=${pendingSessionId}&paymentMethod=${selectedPaymentMethod}`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        );
 
         if (response.ok) {
             const receiptHtml = await response.text();
-
-            // Show receipt modal
             const receiptContent = document.getElementById('receipt-content');
             const receiptModal = document.getElementById('receipt-modal');
-
             if (receiptContent && receiptModal) {
                 receiptContent.innerHTML = receiptHtml;
                 receiptModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
-
-            // ✅ Remove timer immediately from JS side
-            timerManager.removeTimer(String(pendingSessionId));
-
-            // ✅ Small delay to avoid race condition with auto-refresh
+            if (window.timerManager) timerManager.removeTimer(String(pendingSessionId));
             setTimeout(() => {
                 const sessionsContainer = document.getElementById('active-sessions-container');
-                if (sessionsContainer && typeof htmx !== 'undefined') {
-                    htmx.trigger(sessionsContainer, 'load');
-                }
+                if (sessionsContainer && typeof htmx !== 'undefined') htmx.trigger(sessionsContainer, 'load');
             }, 300);
-
             showToast('Session ended successfully!', 'success');
-
         } else {
             showToast('Failed to end session', 'error');
         }
@@ -217,56 +193,23 @@ async function confirmEndSession() {
     }
 }
 
-// Close receipt modal
 function closeReceiptModal() {
     const modal = document.getElementById('receipt-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
+    if (modal) { modal.classList.add('hidden'); document.body.style.overflow = 'auto'; }
 }
 
-// Print receipt
 function printReceipt(sessionId) {
     const receiptContent = document.getElementById('receipt-content');
     if (!receiptContent) return;
-
-    // Create a new window for printing
     const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-        showToast('Please allow popups to print receipt', 'error');
-        return;
-    }
-
-    // Write the receipt HTML with styles
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Receipt - Session #${sessionId}</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-            <style>
-                @media print {
-                    body { margin: 0; padding: 20px; }
-                    .no-print { display: none !important; }
-                }
-            </style>
-        </head>
-        <body>
-            ${receiptContent.innerHTML}
-            <script>
-                window.onload = function() {
-                    setTimeout(() => {
-                        window.print();
-                        window.close();
-                    }, 500);
-                };
-            </script>
-        </body>
-        </html>
-    `);
-
+    if (!printWindow) { showToast('Please allow popups to print receipt', 'error'); return; }
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Receipt - Session #${sessionId}</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>@media print { body { margin:0; padding:20px; } .no-print { display:none !important; } }</style>
+        </head><body>${receiptContent.innerHTML}
+        <script>window.onload=function(){setTimeout(()=>{window.print();window.close();},500);};<\/script>
+        </body></html>`);
     printWindow.document.close();
     showToast('Printing receipt...', 'info');
 }
@@ -276,10 +219,8 @@ function printReceipt(sessionId) {
 // ============================================
 
 function setupStatsRefresh() {
-    // Stats are auto-refreshed by HTMX, but we can add visual feedback
     document.addEventListener('htmx:afterSwap', (event) => {
         if (event.detail.target.id === 'stats-container') {
-            // Add fade-in animation to new stats
             event.detail.target.querySelectorAll('.stat-card').forEach((card, index) => {
                 card.style.animation = `slideInRight 0.3s ease-out ${index * 0.1}s`;
             });
@@ -288,256 +229,68 @@ function setupStatsRefresh() {
 }
 
 // ============================================
-// QUICK START SESSION
-// ============================================
-
-async function quickStartSession(deviceId) {
-    try {
-        const response = await fetch(`/session/quick-start`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ deviceId })
-        });
-
-        if (response.ok) {
-            showToast('Session started successfully!', 'success');
-            // HTMX will auto-refresh the containers
-        } else {
-            showToast('Failed to start session', 'error');
-        }
-    } catch (error) {
-        console.error('Error starting session:', error);
-        showToast('An error occurred', 'error');
-    }
-}
-
-// ============================================
-// DEVICE STATUS UPDATES
-// ============================================
-
-function updateDeviceStatus(deviceId, status) {
-    const deviceCard = document.querySelector(`[data-device-id="${deviceId}"]`);
-    if (!deviceCard) return;
-
-    // Remove all status classes
-    deviceCard.classList.remove('available', 'in-use', 'maintenance', 'offline');
-
-    // Add new status class
-    deviceCard.classList.add(status.toLowerCase().replace(' ', '-'));
-
-    // Update status badge
-    const statusBadge = deviceCard.querySelector('.status-badge');
-    if (statusBadge) {
-        statusBadge.textContent = status;
-        statusBadge.className = `status-badge status-${status.toLowerCase().replace(' ', '-')}`;
-    }
-}
-
-// ============================================
-// REAL-TIME NOTIFICATIONS
-// ============================================
-
-function showSessionNotification(sessionData) {
-    const notification = document.createElement('div');
-    notification.className = 'toast success';
-    notification.innerHTML = `
-        <i class="fas fa-play-circle text-green-500 text-xl"></i>
-        <div class="flex-1">
-            <p class="font-semibold text-gray-900">Session Started</p>
-            <p class="text-sm text-gray-600">${sessionData.deviceName}</p>
-        </div>
-    `;
-
-    const container = document.getElementById('toast-container');
-    if (container) {
-        container.appendChild(notification);
-
-        setTimeout(() => {
-            notification.remove();
-        }, 5000);
-    }
-}
-
-// ============================================
-// DASHBOARD METRICS
-// ============================================
-
-class DashboardMetrics {
-    constructor() {
-        this.metrics = {
-            revenue: 0,
-            sessions: 0,
-            activeDevices: 0
-        };
-    }
-
-    update(newMetrics) {
-        this.metrics = { ...this.metrics, ...newMetrics };
-        this.render();
-    }
-
-    render() {
-        // Update DOM elements with new metrics
-        const revenueElement = document.getElementById('revenue-value');
-        if (revenueElement) {
-            this.animateValue(revenueElement, this.metrics.revenue);
-        }
-    }
-
-    animateValue(element, targetValue) {
-        const startValue = parseFloat(element.textContent.replace(/[^0-9.-]+/g, '')) || 0;
-        const duration = 1000;
-        const startTime = Date.now();
-
-        const animate = () => {
-            const elapsed = Date.now() - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-
-            const currentValue = startValue + (targetValue - startValue) * progress;
-            element.textContent = formatCurrency(currentValue);
-
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            }
-        };
-
-        animate();
-    }
-}
-
-const dashboardMetrics = new DashboardMetrics();
-
-
-// ============================================
 // SESSION START SUCCESS NOTIFICATION
 // ============================================
 
-// Listen for HTMX custom event when session starts
 document.body.addEventListener('sessionStarted', function (event) {
-    console.log('Session started event received:', event.detail);
     const { deviceName, sessionType, rate } = event.detail;
     showSessionStartedNotification(deviceName, sessionType, rate);
 });
 
 function showSessionStartedNotification(deviceName, sessionType, rate) {
-    // Get localized messages from data attributes
     const messages = getLocalizedMessages();
-
-    const sessionTypeText = sessionType === 'multi'
-        ? messages.multiSession
-        : messages.singleSession;
-
-    const title = messages.sessionStarted;
-    const message = `${deviceName} - ${sessionTypeText} (${formatCurrency(rate)}/${messages.hour})`;
-
-    // Create overlay
+    const sessionTypeText = sessionType === 'multi' ? messages.multiSession : messages.singleSession;
     const overlay = document.createElement('div');
     overlay.className = 'success-notification-overlay';
     overlay.id = 'session-success-notification';
-
     overlay.innerHTML = `
         <div class="success-notification-content">
-            <!-- Success Icon with Animation -->
             <div class="success-notification-icon-wrapper">
                 <div class="success-notification-icon-circle">
                     <i class="fas fa-check success-notification-icon"></i>
                 </div>
             </div>
-            
-            <!-- Title and Message -->
-            <h2 class="success-notification-title">${title}</h2>
-            <p class="success-notification-message">${message}</p>
-            
-            <!-- Action Button -->
+            <h2 class="success-notification-title">${messages.sessionStarted}</h2>
+            <p class="success-notification-message">${deviceName} - ${sessionTypeText} (${formatCurrency(rate)}/${messages.hour})</p>
             <div class="success-notification-actions">
                 <button onclick="closeSessionNotification()" class="success-notification-btn-primary">
-                    <i class="fas fa-check mr-2"></i>
-                    ${messages.ok}
+                    <i class="fas fa-check mr-2"></i>${messages.ok}
                 </button>
             </div>
-        </div>
-    `;
-
+        </div>`;
     document.body.appendChild(overlay);
-
-    // Trigger animation
-    setTimeout(() => {
-        overlay.classList.add('show');
-    }, 10);
+    setTimeout(() => overlay.classList.add('show'), 10);
 }
 
 function closeSessionNotification() {
     const overlay = document.getElementById('session-success-notification');
     if (!overlay) return;
-
     overlay.classList.remove('show');
-
-    setTimeout(() => {
-        overlay.remove();
-        // Refresh the page
-        window.location.reload();
-    }, 300);
+    setTimeout(() => { overlay.remove(); window.location.reload(); }, 300);
 }
 
 function getLocalizedMessages() {
-    // Try to get messages from a data attribute on the body or a hidden element
-    const messagesElement = document.getElementById('localized-messages');
-
-    if (messagesElement) {
-        try {
-            return JSON.parse(messagesElement.dataset.messages);
-        } catch (e) {
-            console.error('Error parsing localized messages:', e);
-        }
-    }
-
-    // Fallback to English
-    return {
-        sessionStarted: 'Session Started Successfully!',
-        singleSession: 'Single Session',
-        multiSession: 'Multi Session',
-        hour: 'hr',
-        ok: 'OK'
-    };
+    const el = document.getElementById('localized-messages');
+    if (el) { try { return JSON.parse(el.dataset.messages); } catch (e) { /* fallback */ } }
+    return { sessionStarted: 'Session Started Successfully!', singleSession: 'Single Session', multiSession: 'Multi Session', hour: 'hr', ok: 'OK' };
 }
 
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-EG', {
-        style: 'currency',
-        currency: 'EGP'
-    }).format(amount);
+    return new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(amount);
 }
 
-// Make sure this runs when the page loads
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Dashboard notification handler ready');
 });
+
 // ============================================
 // KEYBOARD SHORTCUTS
 // ============================================
 
 document.addEventListener('keydown', (e) => {
-    // Alt + N: New Session
-    if (e.altKey && e.key === 'n') {
-        e.preventDefault();
-        openModal('start-session-modal');
-    }
-
-    // Alt + D: View Devices
-    if (e.altKey && e.key === 'd') {
-        e.preventDefault();
-        window.location.href = '/device';
-    }
-
-    // Alt + R: View Reports
-    if (e.altKey && e.key === 'r') {
-        e.preventDefault();
-        window.location.href = '/report';
-    }
-
-    // Escape: Close modals
+    if (e.altKey && e.key === 'n') { e.preventDefault(); openStartSessionModal(); }
+    if (e.altKey && e.key === 'd') { e.preventDefault(); window.location.href = '/device'; }
+    if (e.altKey && e.key === 'r') { e.preventDefault(); window.location.href = '/report'; }
     if (e.key === 'Escape') {
         closeModal('end-session-confirm-modal');
         closeModal('receipt-modal');
@@ -545,24 +298,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ============================================
-// EXPORT DASHBOARD DATA
-// ============================================
-
 function exportDashboardData() {
-    const data = {
-        date: new Date().toISOString(),
-        stats: dashboardMetrics.metrics,
-        sessions: typeof activeTimers !== 'undefined' ? Array.from(activeTimers.keys()) : []
-    };
-
+    const data = { date: new Date().toISOString(), stats: dashboardMetrics?.metrics ?? {} };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `dashboard-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-
+    a.href = url; a.download = `dashboard-${new Date().toISOString().split('T')[0]}.json`; a.click();
     URL.revokeObjectURL(url);
 }

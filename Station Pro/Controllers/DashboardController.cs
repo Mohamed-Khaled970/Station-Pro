@@ -2,216 +2,121 @@
 using StationPro.Application.DTOs;
 using StationPro.Application.Interfaces;
 using StationPro.Domain.Entities;
-
 using StationPro.Application.Enums;
 using StationPro.Application.Interfaces.InMemory;
 using StationPro.Filters;
+using StationPro.Application.Contracts.Services;
+using StationPro.Infrastructure.Helpers;
 
 namespace Station_Pro.Controllers.Station_Pro.Controllers
 {
     [SubscriptionRequired]
     public class DashboardController : Controller
     {
-        private readonly ISessionService _sessions;
+        private readonly StationPro.Application.Contracts.Services.ISessionService _sessions;
+        private readonly IDeviceService _devices;
 
-        public DashboardController(ISessionService sessions)
+        public DashboardController(
+            StationPro.Application.Contracts.Services.ISessionService sessions,
+            IDeviceService devices)
         {
             _sessions = sessions;
+            _devices = devices;
         }
-
-        // ─── Static helpers kept for backward compat ──────────────────────────
-        // SessionController and RoomController call these.
-        // They now just proxy to SessionStore instead of owning private lists.
-
-        public static List<UnifiedSessionDto> GetActiveSessions()
-            => SessionStore.GetActive()
-               .Where(s => s.SourceType == SessionSourceType.Device)
-               .ToList();
 
         public static List<UnifiedSessionDto> GetCompletedSessions()
             => SessionStore.GetAll()
                .Where(s => s.Status == SessionStatus.Completed)
                .ToList();
 
-        // These two are kept so old call sites compile without changes.
-        // They are no-ops now — SessionStore is the single store.
-        public static void AddActiveSession(SessionDto session) { }
-        public static void AddCompletedSession(SessionReportDto session) { }
-
-        // ─── Views ────────────────────────────────────────────────────────────
-
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var allToday = SessionStore.GetAll()
-                .Where(s => s.StartTime.Date == DateTime.Today)
-                .ToList();
-
-            var stats = new DashboardStatsDto
-            {
-                TodayRevenue = CalculateTodayRevenue(),
-                TotalSessions = allToday.Count,
-                ActiveSessions = allToday.Count(s => s.Status == SessionStatus.Active),
-                ActiveDevices = allToday.Count(s => s.Status == SessionStatus.Active
-                                                       && s.SourceType == SessionSourceType.Device),
-                TotalDevices = DeviceStore.GetAll().Count,
-                AverageSessionCost = CalculateAverageCost()
-            };
-
+            var stats = await GetEgyptAwareStatsAsync();
             return View(stats);
         }
 
-        public IActionResult LiveStats()
+        public async Task<IActionResult> LiveStats()
         {
-            var stats = new DashboardStatsDto
-            {
-                TodayRevenue = CalculateTodayRevenue(),
-                TotalSessions = SessionStore.GetAll().Count(s => s.StartTime.Date == DateTime.Today),
-                ActiveSessions = SessionStore.GetActive().Count,
-                ActiveDevices = SessionStore.GetActive().Count(s => s.SourceType == SessionSourceType.Device),
-                TotalDevices = DeviceStore.GetAll().Count,
-                AverageSessionCost = CalculateAverageCost()
-            };
-
+            var stats = await GetEgyptAwareStatsAsync();
             return PartialView("_DashboardStats", stats);
         }
 
-        public IActionResult ActiveSessions()
+        /// <summary>
+        /// FIX: Builds dashboard stats using Egypt-local "today" boundaries.
+        ///
+        /// WHY the old version showed $0.00 revenue:
+        /// GetDashboardStatsAsync() calculated "today" using DateTime.Now.Date
+        /// on the UTC server, so "today" started at UTC midnight = 2:00 AM Egypt.
+        /// All sessions completed before 2 AM Egypt were excluded from "today"
+        /// even though they happened on today's Egypt calendar date, making
+        /// TodayRevenue and TotalSessions always 0 or incorrect.
+        /// </summary>
+        private async Task<DashboardStatsDto> GetEgyptAwareStatsAsync()
         {
-            // Build SessionDto list from UnifiedSessionDto for the active sessions partial
-            // (the _ActiveSessions partial still uses the old SessionDto model)
-            var active = SessionStore.GetActive()
-                .Where(s => s.SourceType == SessionSourceType.Device)
-                .Select(s => new SessionDto
-                {
-                    Id = s.Id,
-                    DeviceId = s.DeviceId ?? 0,
-                    DeviceName = s.SourceName,
-                    CustomerName = s.CustomerName,
-                    CustomerPhone = s.CustomerPhone,
-                    StartTime = s.StartTime,
-                    HourlyRate = s.HourlyRate,
-                    Status = s.Status.ToString(),
-                    Duration = s.Duration,
-                    TotalCost = s.RunningCost,
-                    SessionType = s.SessionType.ToString().ToLower()
-                })
-                .ToList();
+            var (todayStartUtc, todayEndUtc) = TimeZoneHelper.GetUtcDateRange("today");
 
+            // Fetch the base stats from the service
+            var stats = await _sessions.GetDashboardStatsAsync();
+
+            // Re-compute today-specific figures using the Egypt-correct window
+            var allSessions = await _sessions.GetPageAsync(new SessionFilterRequest
+            {
+                DateFilter = "all",
+                Status = "completed",
+                Page = 1,
+                PageSize = 10_000
+            });
+
+            var todaySessions = allSessions.Sessions?
+                .Where(s => s.StartTime >= todayStartUtc && s.StartTime <= todayEndUtc)
+                .ToList() ?? new();
+
+            stats.TodayRevenue = todaySessions.Sum(s => s.TotalCost);
+            stats.TotalSessions = todaySessions.Count;
+            stats.AverageSessionCost = todaySessions.Any()
+                ? todaySessions.Average(s => s.TotalCost)
+                : 0;
+
+            return stats;
+        }
+
+        public async Task<IActionResult> ActiveSessions()
+        {
+            var active = await _sessions.GetActiveForDevicesAsync();
             return PartialView("_ActiveSessions", active);
         }
 
-        public IActionResult DeviceCards()
+        public async Task<IActionResult> DeviceCards()
         {
-            var allDevices = DeviceStore.GetAll();
-            var activeSessions = SessionStore.GetActive()
-                .Where(s => s.SourceType == SessionSourceType.Device)
-                .ToList();
-
-            // Attach active session snapshots to device DTOs
-            foreach (var device in allDevices)
-            {
-                var running = activeSessions.FirstOrDefault(s => s.DeviceId == device.Id);
-                if (running != null)
-                {
-                    device.DeviceStatus = DeviceStatus.InUse;
-                    device.ActiveSessionId = running.Id;
-                    device.CurrentSession = new SessionDto
-                    {
-                        Id = running.Id,
-                        DeviceId = running.DeviceId ?? 0,
-                        DeviceName = running.SourceName,
-                        CustomerName = running.CustomerName,
-                        CustomerPhone = running.CustomerPhone,
-                        StartTime = running.StartTime,
-                        HourlyRate = running.HourlyRate,
-                        Status = "Active",
-                        Duration = running.Duration,
-                        TotalCost = running.RunningCost,
-                        SessionType = running.SessionType.ToString().ToLower()
-                    };
-                }
-                else
-                {
-                    device.DeviceStatus = DeviceStatus.Available;
-                    device.ActiveSessionId = null;
-                    device.CurrentSession = null;
-                }
-            }
-
-            return PartialView("_DeviceCards", allDevices);
+            var devices = await _devices.GetAllWithActiveSessionsAsync();
+            return PartialView("_DeviceCards", devices);
         }
 
-        // ─── End session ──────────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> DeviceOptions()
+        {
+            var devices = await _devices.GetAllWithActiveSessionsAsync();
+            var available = devices
+                .Where(d => d.Status == "Available")
+                .Select(d => new { d.Id, d.Name })
+                .OrderBy(d => d.Name);
+            return Json(available);
+        }
 
         [HttpPost]
-        public IActionResult End(int sessionId, int paymentMethod = 1)
+        public async Task<IActionResult> End(int sessionId, int paymentMethod = 1)
         {
-            var session = _sessions.GetById(sessionId);
-            if (session == null || !session.IsActive)
-                return NotFound(new { success = false, message = "Active device session not found." });
-
-            var device = DeviceStore.GetById(session.DeviceId!.Value);
-            if (device == null)
-                return NotFound(new { success = false, message = "Device not found." });
-
             try
             {
-                _sessions.EndDeviceSession(sessionId, paymentMethod, device);
-                DeviceStore.Update(device);
-
-                var receipt = _sessions.GetReceipt(sessionId);
+                await _sessions.EndDeviceSessionAsync(sessionId, paymentMethod);
+                var receipt = await _sessions.GetReceiptAsync(sessionId);
+                if (receipt == null)
+                    return NotFound(new { success = false, message = "Receipt not found." });
                 return PartialView("_SessionReceipt", receipt);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
-        }
-
-        // ─── Quick start (from dashboard device card) ─────────────────────────
-
-        [HttpPost]
-        public IActionResult QuickStart(int deviceId, bool isMultiSession = false)
-        {
-            var device = DeviceStore.GetById(deviceId);
-            if (device == null)
-                return BadRequest(new { success = false, message = "Device not found." });
-
-            if (!device.IsAvailable)
-                return BadRequest(new { success = false, message = "Device is already in use." });
-
-            if (isMultiSession && (!device.SupportsMultiSession || !device.MultiSessionRate.HasValue))
-                return BadRequest(new { success = false, message = "Device does not support multi-session." });
-
-
-            try
-            {
-                var request = new StartDeviceSessionRequest
-                {
-                    DeviceId = deviceId,
-                    SessionType = isMultiSession ? "multi" : "single"
-                };
-
-                var result = _sessions.StartDeviceSession(request, device);
-                DeviceStore.Update(device);
-
-                var triggerData = new
-                {
-                    sessionStarted = new
-                    {
-                        deviceName = device.Name,
-                        sessionType = isMultiSession ? "multi" : "single",
-                        rate = result.HourlyRate
-                    }
-                };
-
-                Response.Headers.Append(
-                    "HX-Trigger",
-                    System.Text.Json.JsonSerializer.Serialize(triggerData));
-
-                // ✅ FIX: Return active sessions (correct target), not device cards
-                // Device cards will refresh separately via the sessionStarted HX-Trigger event
-                return ActiveSessions();
+                return NotFound(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -219,30 +124,32 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             }
         }
 
-        // ─── Private helpers ──────────────────────────────────────────────────
-
-        private static decimal CalculateTodayRevenue()
+        [HttpPost]
+        public async Task<IActionResult> QuickStart(int deviceId, bool isMultiSession = false)
         {
-            var today = DateTime.Today;
-
-            var completed = SessionStore.GetAll()
-                .Where(s => s.StartTime.Date == today && s.Status == SessionStatus.Completed)
-                .Sum(s => s.TotalCost);
-
-            var active = SessionStore.GetActive()
-                .Where(s => s.StartTime.Date == today)
-                .Sum(s => Math.Round((decimal)s.Duration.TotalHours * s.HourlyRate, 2));
-
-            return completed + active;
-        }
-
-        private static decimal CalculateAverageCost()
-        {
-            var active = SessionStore.GetActive().ToList();
-            if (!active.Any()) return 0;
-
-            return active.Average(s =>
-                Math.Round((decimal)s.Duration.TotalHours * s.HourlyRate, 2));
+            try
+            {
+                var request = new StartDeviceSessionRequest
+                {
+                    DeviceId = deviceId,
+                    SessionType = isMultiSession ? "multi" : "single"
+                };
+                var result = await _sessions.StartDeviceSessionAsync(request, deviceId);
+                var device = await _devices.GetByIdAsync(deviceId);
+                var triggerData = new
+                {
+                    sessionStarted = new
+                    {
+                        deviceName = device?.Name ?? string.Empty,
+                        sessionType = isMultiSession ? "multi" : "single",
+                        rate = result.HourlyRate
+                    }
+                };
+                Response.Headers.Append("HX-Trigger", System.Text.Json.JsonSerializer.Serialize(triggerData));
+                return await ActiveSessions();
+            }
+            catch (InvalidOperationException ex) { return BadRequest(new { success = false, message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { success = false, message = ex.Message }); }
         }
     }
 }

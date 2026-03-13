@@ -44,6 +44,18 @@ namespace StationPro.Infrastructure
             services.AddScoped<ISubscriptionRequestService, SubscriptionRequestService>();
             services.AddScoped<IAdminAuthenticationRepository, AdminAuthenticationRepository>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IDeviceService, DeviceService>();
+            services.AddScoped<IRoomService , RoomService>();
+            services.AddScoped<ISessionService, SessionService>();
+            services.AddScoped<ISessionRepository, SessionRepository>();
+            services.AddScoped<IDeviceRepository, DeviceRepository>();
+            services.AddScoped<IRoomRepository, RoomRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+
+
+
+
 
             return services;
         }

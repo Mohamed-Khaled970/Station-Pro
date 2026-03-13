@@ -8,63 +8,139 @@ using StationPro.Web.Controllers;
 using StationPro.Filters;
 using StationPro.Domain.Entities;
 using StationPro.Application.Enums;
+using StationPro.Application.Contracts.Services;
+using StationPro.Infrastructure.Helpers;
+
 
 namespace StationPro.Controllers
 {
     [SubscriptionRequired]
     public class SessionController : Controller
     {
-        private readonly ISessionService _sessions;
+        private readonly Application.Contracts.Services.ISessionService _sessions;
+        private readonly IDeviceService _devices;
 
-        public SessionController(ISessionService sessions)
+        public SessionController(Application.Contracts.Services.ISessionService sessions, IDeviceService devices)
         {
             _sessions = sessions;
+            _devices = devices;
         }
 
-        // ─── Sessions list page ───────────────────────────────────────────────
+        // ── Sessions list page ────────────────────────────────────────────────
 
-        public IActionResult Index(
+        public async Task<IActionResult> Index(
             string dateFilter = "today",
             string status = "all",
             int? deviceId = null,
             string search = "",
             int page = 1)
         {
-            var filter = new SessionFilterRequest
+            try
             {
-                DateFilter = dateFilter,
-                Status = status,
-                DeviceId = deviceId,
-                Search = search,
-                Page = page
-            };
+                // FIX: Compute Egypt-local UTC boundaries and fetch ALL sessions,
+                // then filter in memory by the correct UTC window.
+                //
+                // WHY: Passing dateFilter = "today" to GetPageAsync uses the
+                // server's UTC DateTime.Now.Date for the boundary, which equals
+                // midnight UTC = 2:00 AM Egypt time.  Any session started before
+                // 2:00 AM Egypt local time therefore lands in the server's
+                // "yesterday" bucket, causing newly started sessions to disappear
+                // from "today" and appear in "yesterday" instead.
+                var (startUtc, endUtc) = TimeZoneHelper.GetUtcDateRange(dateFilter);
 
-            var result = _sessions.GetPage(filter);
+                var filter = new SessionFilterRequest
+                {
+                    DateFilter = "all",   // fetch all; we apply the Egypt-correct window below
+                    Status = status,
+                    DeviceId = deviceId,
+                    Search = search,
+                    Page = 1,
+                    PageSize = 10_000   // get everything, paginate after filtering
+                };
 
-            var viewModel = new SessionPageViewModel
+                var result = await _sessions.GetPageAsync(filter);
+                var availableDevices = await _devices.GetAllAsync();
+
+                // Apply the Egypt-local date window
+                var filtered = result.Sessions?
+                    .Where(s => s.StartTime >= startUtc && s.StartTime <= endUtc)
+                    .ToList() ?? new List<UnifiedSessionDto>();
+
+                // Re-paginate after filtering
+                const int pageSize = 20;
+                int totalFiltered = filtered.Count;
+                int totalPages = (int)Math.Ceiling(totalFiltered / (double)pageSize);
+                int safePage = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+                var pagedSessions = filtered
+                    .Skip((safePage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // Recompute statistics from the filtered set
+                var stats = BuildStatistics(filtered);
+
+                var viewModel = new SessionPageViewModel
+                {
+                    Sessions = pagedSessions,
+                    Statistics = stats,
+                    CurrentPage = safePage,
+                    TotalPages = totalPages,
+                    DateFilter = dateFilter,
+                    StatusFilter = status,
+                    DeviceFilter = deviceId,
+                    SearchQuery = search,
+                    AvailableDevices = availableDevices?.ToList() ?? new List<DeviceDto>()
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
             {
-                Sessions = result.Sessions,
-                Statistics = result.Statistics,
-                CurrentPage = result.CurrentPage,
-                TotalPages = result.TotalPages,
-                DateFilter = dateFilter,
-                StatusFilter = status,
-                DeviceFilter = deviceId,
-                SearchQuery = search,
-                AvailableDevices = DeviceStore.GetAll()
-            };
+                Console.Error.WriteLine($"[SessionController.Index] {ex}");
 
-            return View(viewModel);
+                List<DeviceDto> devices = new();
+                try { devices = (await _devices.GetAllAsync())?.ToList() ?? devices; } catch { /* ignore */ }
+
+                return View(new SessionPageViewModel
+                {
+                    Sessions = new List<UnifiedSessionDto>(),
+                    Statistics = new SessionStatisticsDto { AverageDuration = TimeSpan.Zero, MostPopularDevice = "—" },
+                    DateFilter = dateFilter,
+                    StatusFilter = status,
+                    DeviceFilter = deviceId,
+                    SearchQuery = search,
+                    AvailableDevices = devices
+                });
+            }
         }
 
-        // ─── Session details modal ────────────────────────────────────────────
+        // ── Build statistics from an already-filtered list ────────────────────
 
-        public IActionResult Details(int id)
+        private static SessionStatisticsDto BuildStatistics(List<UnifiedSessionDto> sessions)
         {
-            var session = _sessions.GetById(id);
+            var completed = sessions.Where(s => s.Status == SessionStatus.Completed).ToList();
+
+            return new SessionStatisticsDto
+            {
+                TotalSessions = sessions.Count,
+                TotalRevenue = completed.Sum(s => s.TotalCost),
+                AverageDuration = completed.Any()
+                    ? TimeSpan.FromMinutes(completed.Average(s => s.Duration.TotalMinutes))
+                    : TimeSpan.Zero,
+                MostPopularDevice = completed
+                    .GroupBy(s => s.SourceName)
+                    .OrderByDescending(g => g.Count())
+                    .FirstOrDefault()?.Key ?? "—"
+            };
+        }
+
+        // ── Session details modal ─────────────────────────────────────────────
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var session = await _sessions.GetByIdAsync(id);
             if (session == null) return NotFound();
 
-            // ✅ FIX: _SessionDetails expects SessionReportDto, not UnifiedSessionDto
             var report = new SessionReportDto
             {
                 Id = session.Id,
@@ -76,42 +152,35 @@ namespace StationPro.Controllers
                 Duration = session.Duration,
                 DurationFormatted = session.DurationFormatted,
                 HourlyRate = session.HourlyRate,
-                TotalCost = session.Status == SessionStatus.Active
+                TotalCost = session.IsActive
                     ? Math.Round((decimal)session.Duration.TotalHours * session.HourlyRate, 2)
                     : session.TotalCost,
-                Status = session.Status.ToString(),
+                Status = session.StatusString,
                 PaymentMethod = session.PaymentMethod?.ToString() ?? "Cash",
-                SessionType = session.SessionType.ToString()
+                SessionType = session.SessionTypeString
             };
 
             return PartialView("_SessionDetails", report);
         }
 
-        // ─── Print receipt ────────────────────────────────────────────────────
+        // ── Print receipt ─────────────────────────────────────────────────────
 
-        public IActionResult Receipt(int id)
+        public async Task<IActionResult> Receipt(int id)
         {
-            var receipt = _sessions.GetReceipt(id);
+            var receipt = await _sessions.GetReceiptAsync(id);
             if (receipt == null) return NotFound();
             return PartialView("_SessionReceipt", receipt);
         }
 
-        // ─── Start a device session ───────────────────────────────────────────
+        // ── Start a device session ────────────────────────────────────────────
 
         [HttpPost]
-        public IActionResult Start(
+        public async Task<IActionResult> Start(
             int deviceId,
             string? customerName,
             string? customerPhone,
             string sessionType = "single")
         {
-            var device = DeviceStore.GetById(deviceId);
-            if (device == null)
-                return BadRequest(new { success = false, message = "Device not found." });
-
-            if (!device.IsAvailable)
-                return BadRequest(new { success = false, message = "Device is not available." });
-
             try
             {
                 var request = new StartDeviceSessionRequest
@@ -122,16 +191,28 @@ namespace StationPro.Controllers
                     SessionType = sessionType
                 };
 
-                var result = _sessions.StartDeviceSession(request, device);
-                DeviceStore.Update(device);   // persist updated device state
+                var result = await _sessions.StartDeviceSessionAsync(request, deviceId);
 
-                return Ok(new
+                var device = await _devices.GetByIdAsync(deviceId);
+                var triggerData = new
                 {
-                    result.Success,
-                    message = "Session started successfully",
-                    result.SessionId,
-                    result.SessionType
-                });
+                    sessionStarted = new
+                    {
+                        deviceName = device?.Name ?? string.Empty,
+                        sessionType = result.SessionType,
+                        rate = result.HourlyRate
+                    }
+                };
+
+                Response.Headers.Append(
+                    "HX-Trigger",
+                    System.Text.Json.JsonSerializer.Serialize(triggerData));
+
+                return Ok(new { success = true, message = "Session started successfully." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -139,46 +220,34 @@ namespace StationPro.Controllers
             }
         }
 
-
+        // ── End a session (device or room) ────────────────────────────────────
 
         [HttpPost]
-        public IActionResult End(int sessionId, int paymentMethod = 1)
+        public async Task<IActionResult> End(int sessionId, int paymentMethod = 1)
         {
-            var session = _sessions.GetById(sessionId);
+            var session = await _sessions.GetByIdAsync(sessionId);
             if (session == null || !session.IsActive)
                 return NotFound(new { success = false, message = "Active session not found." });
 
             try
             {
                 if (session.SourceType == SessionSourceType.Device)
-                {
-                    var device = DeviceStore.GetById(session.DeviceId!.Value);
-                    if (device == null)
-                        return NotFound(new { success = false, message = "Device not found." });
-
-                    _sessions.EndDeviceSession(sessionId, paymentMethod, device);
-                    DeviceStore.Update(device);
-                }
+                    await _sessions.EndDeviceSessionAsync(sessionId, paymentMethod);
                 else if (session.SourceType == SessionSourceType.Room)
-                {
-                    var room = RoomStore.GetById(session.RoomId!.Value);
-                    if (room == null)
-                        return NotFound(new { success = false, message = "Room not found." });
-
-                    _sessions.EndRoomSession(sessionId, room);
-                    RoomStore.Update(room);
-                }
+                    await _sessions.EndRoomSessionAsync(sessionId);
                 else
-                {
                     return BadRequest(new { success = false, message = "Unknown session type." });
-                }
 
-                var receipt = _sessions.GetReceipt(sessionId);
+                var receipt = await _sessions.GetReceiptAsync(sessionId);
                 return PartialView("~/Views/Shared/_SessionReceipt.cshtml", receipt);
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
     }
@@ -199,5 +268,4 @@ namespace StationPro.Controllers
         public string SearchQuery { get; set; } = "";
         public List<DeviceDto> AvailableDevices { get; set; } = new();
     }
-
 }

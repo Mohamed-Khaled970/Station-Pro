@@ -1,4 +1,4 @@
-﻿@model IEnumerable<SessionDto>
+﻿@model IEnumerable<UnifiedSessionDto>
 @using Microsoft.Extensions.Localization
 @using StationPro
 @inject IStringLocalizer<SharedResources> Localizer
@@ -21,18 +21,23 @@ else
     <div class="space-y-3">
         @foreach (var session in Model)
         {
+            @* Force UTC ISO string — always append Z so JS Date() treats it as UTC, not local time.
+    Without this, Egypt UTC+2 makes the timer start 2 hours ahead. *@
+            var startTimeUtc = session.StartTime.Kind == DateTimeKind.Utc
+            ? session.StartTime
+            : DateTime.SpecifyKind(session.StartTime, DateTimeKind.Utc);
+
             <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-all fade-in overflow-hidden">
                 <div class="p-2.5 sm:p-4">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
 
-                        <!-- Left Section: Device Icon + Info -->
+                        <!-- Left: Device Icon + Info -->
                         <div class="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
                             <div class="bg-red-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
                                 <i class="fas fa-gamepad text-red-600 text-base sm:text-xl"></i>
                             </div>
-
                             <div class="flex-1 min-w-0">
-                                <h4 class="font-bold text-gray-900 text-sm sm:text-base truncate">@session.DeviceName</h4>
+                                <h4 class="font-bold text-gray-900 text-sm sm:text-base truncate">@session.SourceName</h4>
                                 <div class="flex flex-wrap items-center gap-x-2.5 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-600 mt-0.5">
                                     @if (!string.IsNullOrEmpty(session.CustomerName))
                                     {
@@ -50,25 +55,39 @@ else
                                     }
                                     <span class="flex items-center gap-1 whitespace-nowrap">
                                         <i class="fas fa-clock text-[10px] sm:text-xs"></i>
-                                        <span class="text-[11px] sm:text-xs">@session.StartTime.ToString("h:mm tt")</span>
+                                        @* Show local time to the user for display *@
+                                        <span class="text-[11px] sm:text-xs">@session.StartTime.ToLocalTime().ToString("h:mm tt")</span>
+                                    </span>
+                                    <span class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full @(session.SessionTypeString == "multi" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700")">
+                                        @session.SessionTypeDisplay
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Right Section: Timer, Cost & Button -->
+                        <!-- Right: Timer, Cost & End Button -->
                         <div class="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 w-full sm:w-auto">
                             <div class="text-left sm:text-right flex-shrink-0">
-                                <div class="font-mono text-base sm:text-xl lg:text-2xl font-bold text-blue-600 leading-tight timer-display-@session.Id"
-                                     id="timer-@session.Id"
-                                     data-start-time="@session.StartTime.ToString("o")"
-                                     data-hourly-rate="@session.HourlyRate">
-                                    @session.DurationFormatted
+
+                                @*
+                        HIDDEN source-of-truth for JS timer.
+                        data-start-time MUST be UTC ISO 8601 with Z suffix.
+                        JS: new Date("2026-03-13T19:18:00Z") → always correct UTC epoch.
+                        Without Z → JS treats it as local time → timer is off by UTC offset.
+                        *@
+                                <span id="timer-@session.Id"
+                                      data-start-time="@startTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")"
+                                      data-hourly-rate="@session.HourlyRate.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                      class="hidden"></span>
+
+                                @* Visible timer — JS updates this every second *@
+                                <div class="font-mono text-base sm:text-xl lg:text-2xl font-bold text-blue-600 leading-tight timer-display-@session.Id">
+                                    00:00:00
                                 </div>
 
-                                <p class="text-sm sm:text-base lg:text-lg font-bold text-green-600 leading-tight cost-display-@session.Id"
-                                   id="cost-@session.Id">
-                                    @session.TotalCost.ToString("C")
+                                @* Visible cost — JS updates this every second *@
+                                <p class="text-sm sm:text-base lg:text-lg font-bold text-green-600 leading-tight cost-display-@session.Id">
+                                    EGP 0.00
                                 </p>
 
                                 <p class="text-[10px] sm:text-xs text-gray-500">
@@ -76,7 +95,6 @@ else
                                 </p>
                             </div>
 
-                            <!-- End Button -->
                             <div class="flex-shrink-0 btn-end-wrapper">
                                 <button data-session-id="@session.Id"
                                         onclick="endSessionWithReceipt(this.getAttribute('data-session-id'))"

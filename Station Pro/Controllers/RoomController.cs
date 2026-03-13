@@ -5,138 +5,139 @@ using StationPro.Application.Enums;
 using StationPro.Application.Interfaces.InMemory;
 using StationPro.Application.Interfaces;
 using StationPro.Filters;
+using StationPro.Application.Contracts.Services;
 
 namespace Station_Pro.Controllers
 {
     [SubscriptionRequired]
     public class RoomController : Controller
     {
-        private readonly ISessionService _sessions;
+        private readonly IRoomService _rooms;
+        private readonly StationPro.Application.Contracts.Services.ISessionService _sessions;
 
-        public RoomController(ISessionService sessions)
+        public RoomController(IRoomService rooms, StationPro.Application.Contracts.Services.ISessionService sessions)
         {
+            _rooms = rooms;
             _sessions = sessions;
         }
 
-        // ─── Static helpers (called from SessionController) ────────────────────
+        // ── View ──────────────────────────────────────────────────────────────
 
-        public static List<UnifiedSessionDto> GetActiveSessions()
-            => SessionStore.GetActive()
-               .Where(s => s.SourceType == SessionSourceType.Room)
-               .ToList();
-
-        public static string GetRoomName(int roomId)
-            => RoomStore.GetName(roomId);
-
-        // ─── View ─────────────────────────────────────────────────────────────
-
-        public IActionResult Index()
-            => View(RoomStore.GetAll());
-
-        // ─── Room CRUD ────────────────────────────────────────────────────────
-
-        [HttpPost]
-        public IActionResult Create(RoomDto room)
+        public async Task<IActionResult> Index()
         {
-            // Back-compat: if old single-rate form posts HourlyRate, mirror it
-            if (room.SingleHourlyRate == 0 && room.HourlyRate > 0)
-                room.SingleHourlyRate = room.HourlyRate;
-            if (room.MultiHourlyRate == 0 && room.SingleHourlyRate > 0)
-                room.MultiHourlyRate = room.SingleHourlyRate;
-
-            var created = RoomStore.Add(room);
-            return PartialView("_RoomCard", created);
+            var rooms = await _rooms.GetAllWithActiveSessionsAsync();
+            return View(rooms);
         }
 
+        // ── Room CRUD ─────────────────────────────────────────────────────────
+
         [HttpGet]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            var room = RoomStore.GetById(id);
+            var room = await _rooms.GetByIdAsync(id);
             return room == null ? NotFound() : Json(room);
         }
 
-        [HttpPut]
-        public IActionResult Update(int id, [FromBody] RoomDto updated)
+        /// <summary>
+        /// Called by the "Add Room" HTMX form.
+        /// Returns the new _RoomCard partial so HTMX can swap it in.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> Create([FromForm] RoomDto dto)
         {
-            var room = RoomStore.GetById(id);
-            if (room == null) return NotFound();
+            try
+            {
+                var created = await _rooms.CreateAsync(dto);
+                return PartialView("_RoomCard", created);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
 
-            room.Name = updated.Name;
-            room.HasAC = updated.HasAC;
-            room.SingleHourlyRate = updated.SingleHourlyRate;
-            room.MultiHourlyRate = updated.MultiHourlyRate;
-            room.HourlyRate = updated.SingleHourlyRate;   // keep legacy in sync
-            room.Capacity = updated.Capacity;
-            room.DeviceCount = updated.DeviceCount;
-            room.IsActive = updated.IsActive;
-
-            RoomStore.Update(room);
-            return Ok();
+        [HttpPut]
+        public async Task<IActionResult> Update(int id, [FromBody] RoomDto dto)
+        {
+            try
+            {
+                var updated = await _rooms.UpdateAsync(id, dto);
+                return Ok(updated);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [HttpDelete]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var room = RoomStore.GetById(id);
-            if (room == null) return NotFound();
-
-            if (room.Status == "Occupied")
-                return BadRequest(new { message = "Cannot delete an occupied room. End the session first." });
-
-            RoomStore.Delete(id);
-            return Ok();
-        }
-
-        // ─── Session Management ───────────────────────────────────────────────
-
-        [HttpPost]
-        public IActionResult StartSession([FromBody] StartRoomSessionRequest request)
-        {
-            var room = RoomStore.GetById(request.RoomId);
-            if (room == null) return NotFound(new { message = "Room not found." });
-
             try
             {
-                var result = _sessions.StartRoomSession(request, room);
-                RoomStore.Update(room);   // persist updated room state
+                await _rooms.DeleteAsync(id);
+                return Ok(new { success = true });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        // ── Session Management ────────────────────────────────────────────────
+
+        [HttpPost]
+        public async Task<IActionResult> StartSession([FromBody] StartRoomSessionRequest request)
+        {
+            try
+            {
+                var result = await _sessions.StartRoomSessionAsync(request, request.RoomId);
                 return Ok(result);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
         [HttpPost]
-        public IActionResult EndSession(int sessionId)
+        public async Task<IActionResult> EndSession(int sessionId)
         {
-            var session = _sessions.GetById(sessionId);
-            if (session == null || !session.IsActive)
-                return NotFound(new { message = "Active session not found." });
-
-            var room = RoomStore.GetById(session.RoomId!.Value);
-            if (room == null) return NotFound(new { message = "Room not found." });
-
             try
             {
-                var result = _sessions.EndRoomSession(sessionId, room);
-                RoomStore.Update(room);   // persist reset room state
+                var result = await _sessions.EndRoomSessionAsync(sessionId);
                 return Ok(result);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet]
-        public IActionResult GetSession(int sessionId)
+        public async Task<IActionResult> GetSession(int sessionId)
         {
-            var session = _sessions.GetById(sessionId);
+            var session = await _sessions.GetByIdAsync(sessionId);
             if (session == null) return NotFound();
 
             return Json(new
@@ -145,7 +146,7 @@ namespace Station_Pro.Controllers
                 roomId = session.RoomId,
                 clientName = session.CustomerName,
                 guestCount = session.GuestCount,
-                sessionType = session.SessionType.ToString(),
+                sessionType = session.SessionTypeString,
                 startTime = session.StartTime.ToString("O"),
                 hourlyRate = session.HourlyRate,
                 currentCost = session.RunningCost,
@@ -153,107 +154,103 @@ namespace Station_Pro.Controllers
             });
         }
 
-        // ─── Reservation Management ───────────────────────────────────────────
+        // ── Reservation Management ────────────────────────────────────────────
 
         [HttpPost]
-        public IActionResult Reserve([FromBody] CreateReservationRequest request)
+        public async Task<IActionResult> Reserve([FromBody] CreateReservationRequest request)
         {
-            var room = RoomStore.GetById(request.RoomId);
-            if (room == null) return NotFound(new { message = "Room not found." });
+            var room = await _rooms.GetByIdAsync(request.RoomId);
+            if (room == null)
+                return NotFound(new { success = false, message = "Room not found." });
+
             if (room.Status != "Available")
-                return BadRequest(new { message = $"Room is currently {room.Status}." });
+                return BadRequest(new { success = false, message = $"Room is currently {room.Status}." });
 
-            var reservation = RoomStore.AddReservation(new RoomReservationDto
+            try
             {
-                RoomId = room.Id,
-                ClientName = request.ClientName,
-                Phone = request.Phone,
-                ReservationTime = request.ReservationTime,
-                Notes = request.Notes
-            });
-
-            room.Status = "Reserved";
-            room.ReservationClientName = request.ClientName;
-            room.ReservationTime = request.ReservationTime;
-            room.ReservationNotes = request.Notes;
-            RoomStore.Update(room);
-
-            return Ok(new { success = true, reservationId = reservation.Id });
+                var reservation = await _rooms.AddReservationAsync(request);
+                return Ok(new { success = true, reservationId = reservation.Id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPost]
-        public IActionResult CancelReservation(int roomId)
+        public async Task<IActionResult> CancelReservation(int roomId)
         {
-            var room = RoomStore.GetById(roomId);
-            if (room == null) return NotFound(new { message = "Room not found." });
+            var room = await _rooms.GetByIdAsync(roomId);
+            if (room == null)
+                return NotFound(new { success = false, message = "Room not found." });
+
             if (room.Status != "Reserved")
-                return BadRequest(new { message = "Room has no active reservation." });
+                return BadRequest(new { success = false, message = "Room has no active reservation." });
 
-            RoomStore.RemoveReservation(roomId);
-
-            room.Status = "Available";
-            room.ReservationClientName = null;
-            room.ReservationTime = null;
-            room.ReservationNotes = null;
-            RoomStore.Update(room);
-
+            await _rooms.RemoveReservationAsync(roomId);
             return Ok(new { success = true });
         }
 
         [HttpPost]
-        public IActionResult ActivateReservation(int roomId)
+        public async Task<IActionResult> ActivateReservation(int roomId)
         {
-            var room = RoomStore.GetById(roomId);
-            if (room == null) return NotFound(new { message = "Room not found." });
+            var room = await _rooms.GetByIdAsync(roomId);
+            if (room == null)
+                return NotFound(new { success = false, message = "Room not found." });
+
             if (room.Status != "Reserved")
-                return BadRequest(new { message = "Room is not reserved." });
+                return BadRequest(new { success = false, message = "Room is not reserved." });
 
-            var reservation = RoomStore.GetReservation(roomId);
-            if (reservation == null) return NotFound(new { message = "Reservation not found." });
+            var reservation = await _rooms.GetReservationAsync(roomId);
+            if (reservation == null)
+                return NotFound(new { success = false, message = "Reservation not found." });
 
-            var request = new StartRoomSessionRequest
-            {
-                RoomId = roomId,
-                ClientName = reservation.ClientName,
-                GuestCount = 1,
-                SessionType = "Single"
-            };
-
-            // ✅ FIX: clear reservation state BEFORE StartRoomSession checks room.Status
-            room.Status = "Available";
-            room.ReservationClientName = null;
-            room.ReservationTime = null;
-            room.ReservationNotes = null;
-            RoomStore.RemoveReservation(roomId);
+            // Remove the reservation BEFORE starting the session so
+            // StartRoomSessionAsync sees the room as Available.
+            await _rooms.RemoveReservationAsync(roomId);
 
             try
             {
-                var result = _sessions.StartRoomSession(request, room);
-                RoomStore.Update(room);
+                var request = new StartRoomSessionRequest
+                {
+                    RoomId = roomId,
+                    ClientName = reservation.ClientName,
+                    GuestCount = 1,
+                    SessionType = "Single"
+                };
+
+                var result = await _sessions.StartRoomSessionAsync(request, roomId);
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                // ✅ FIX: rollback room status if session start fails
-                room.Status = "Available";
-                RoomStore.Update(room);
-                return BadRequest(new { message = ex.Message });
+                // Rollback: put the reservation back so the UI is consistent.
+                await _rooms.AddReservationAsync(new CreateReservationRequest
+                {
+                    RoomId = roomId,
+                    ClientName = reservation.ClientName,
+                    Phone = reservation.Phone,
+                    ReservationTime = reservation.ReservationTime,
+                    Notes = reservation.Notes
+                });
+
+                return BadRequest(new { success = false, message = ex.Message });
             }
         }
 
-        // ─── Card Partial & Receipt ───────────────────────────────────────────
+        // ── Card partial & Receipt ─────────────────────────────────────────────
 
         [HttpGet]
-        public IActionResult CardPartial(int id)
+        public async Task<IActionResult> CardPartial(int id)
         {
-            var room = RoomStore.GetById(id);
+            var room = await _rooms.GetByIdAsync(id);
             return room == null ? NotFound() : PartialView("_RoomCard", room);
         }
 
         [HttpGet]
-        public IActionResult SessionReceipt(int sessionId)
+        public async Task<IActionResult> SessionReceipt(int sessionId)
         {
-            var receipt = _sessions.GetReceipt(sessionId);
+            var receipt = await _sessions.GetReceiptAsync(sessionId);
             if (receipt == null) return NotFound();
             return PartialView("~/Views/Shared/_SessionReceipt.cshtml", receipt);
         }

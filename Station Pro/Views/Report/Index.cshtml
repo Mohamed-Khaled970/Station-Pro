@@ -1,6 +1,7 @@
 ﻿@model CompleteReportDto
 @using Microsoft.Extensions.Localization
 @using StationPro
+@using StationPro.Infrastructure.Helpers
 @inject IStringLocalizer<SharedResources> Localizer
 
 @{
@@ -67,7 +68,6 @@
 
         <!-- Summary Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Total Revenue -->
             <div class="report-card fade-in">
                 <div class="summary-stat">
                     <div class="summary-stat-icon revenue">
@@ -80,7 +80,6 @@
                 </div>
             </div>
 
-            <!-- Total Sessions -->
             <div class="report-card fade-in">
                 <div class="summary-stat">
                     <div class="summary-stat-icon sessions">
@@ -93,7 +92,6 @@
                 </div>
             </div>
 
-            <!-- Average Session -->
             <div class="report-card fade-in">
                 <div class="summary-stat">
                     <div class="summary-stat-icon duration">
@@ -106,7 +104,6 @@
                 </div>
             </div>
 
-            <!-- Most Used Device -->
             <div class="report-card fade-in">
                 <div class="summary-stat">
                     <div class="summary-stat-icon device">
@@ -218,13 +215,17 @@
                         <tbody>
                             @foreach (var session in Model.Sessions)
                             {
+                                @* FIX: Convert UTC StartTime to Egypt local time (UTC+2) before display.
+                        TimeZoneHelper.ToEgyptTime() converts the UTC datetime to Egypt local.
+                        Without this, all times appeared 2 hours behind (e.g. 10:40 PM instead of 12:40 AM). *@
+                                var egyptTime = TimeZoneHelper.ToEgyptTime(session.StartTime);
                                 <tr>
                                     <td>
                                         <div class="font-semibold text-gray-900">
-                                            @session.StartTime.ToString("MMM dd, yyyy")
+                                            @egyptTime.ToString("MMM dd, yyyy")
                                         </div>
                                         <div class="text-xs text-gray-500">
-                                            @session.StartTime.ToString("hh:mm tt")
+                                            @egyptTime.ToString("hh:mm tt")
                                         </div>
                                     </td>
                                     <td>

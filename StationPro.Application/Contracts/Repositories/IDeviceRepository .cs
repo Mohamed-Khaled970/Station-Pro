@@ -9,10 +9,14 @@ namespace StationPro.Application.Contracts.Repositories
 {
     public interface IDeviceRepository : IRepository<Device>
     {
-        Task<IEnumerable<Device>> GetAvailableDevicesAsync();
-        Task<IEnumerable<Device>> GetDevicesByTypeAsync(DeviceType type);
-        Task<IEnumerable<Device>> GetDevicesByRoomAsync(int roomId);
-        Task<Device?> GetDeviceWithSessionsAsync(int id);
-        Task<int> CountAsync();
+        /// <summary>Returns all active (non-soft-deleted) devices for a tenant.</summary>
+        Task<IEnumerable<Device>> GetAllActiveAsync();
+
+        /// <summary>Returns only available (not InUse) devices for a tenant.</summary>
+        Task<IEnumerable<Device>> GetAvailableAsync();
+
+        /// <summary>Returns a device with its currently active sessions pre-loaded.</summary>
+        Task<Device?> GetWithActiveSessionAsync(int deviceId);
+        Task<IEnumerable<Device>> GetAllWithActiveSessionsAsync();
     }
 }

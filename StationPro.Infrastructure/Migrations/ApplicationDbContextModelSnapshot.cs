@@ -53,7 +53,7 @@ namespace StationPro.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_Admins_Email");
 
-                    b.ToTable("Admins");
+                    b.ToTable("Admins", (string)null);
                 });
 
             modelBuilder.Entity("StationPro.Domain.Entities.Device", b =>
@@ -117,7 +117,7 @@ namespace StationPro.Infrastructure.Migrations
                     b.HasIndex("TenantId", "Status")
                         .HasDatabaseName("IX_Devices_TenantId_Status");
 
-                    b.ToTable("Devices");
+                    b.ToTable("Devices", (string)null);
                 });
 
             modelBuilder.Entity("StationPro.Domain.Entities.Room", b =>
@@ -179,7 +179,7 @@ namespace StationPro.Infrastructure.Migrations
                     b.HasIndex("TenantId")
                         .HasDatabaseName("IX_Rooms_TenantId");
 
-                    b.ToTable("Rooms");
+                    b.ToTable("Rooms", (string)null);
                 });
 
             modelBuilder.Entity("StationPro.Domain.Entities.Session", b =>
@@ -268,7 +268,7 @@ namespace StationPro.Infrastructure.Migrations
                     b.HasIndex("TenantId", "Status")
                         .HasDatabaseName("IX_Sessions_TenantId_Status");
 
-                    b.ToTable("Sessions");
+                    b.ToTable("Sessions", (string)null);
                 });
 
             modelBuilder.Entity("StationPro.Domain.Entities.SubscriptionPlanLimits", b =>
@@ -313,7 +313,7 @@ namespace StationPro.Infrastructure.Migrations
                     b.HasIndex("Plan")
                         .IsUnique();
 
-                    b.ToTable("SubscriptionPlanLimits");
+                    b.ToTable("SubscriptionPlanLimits", (string)null);
 
                     b.HasData(
                         new
@@ -424,7 +424,7 @@ namespace StationPro.Infrastructure.Migrations
                     b.HasIndex("TenantId")
                         .HasDatabaseName("IX_SubscriptionRequests_TenantId");
 
-                    b.ToTable("SubscriptionRequests");
+                    b.ToTable("SubscriptionRequests", (string)null);
                 });
 
             modelBuilder.Entity("StationPro.Domain.Entities.Tenant", b =>
@@ -488,7 +488,7 @@ namespace StationPro.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_Tenants_Email");
 
-                    b.ToTable("Tenants");
+                    b.ToTable("Tenants", (string)null);
                 });
 
             modelBuilder.Entity("StationPro.Domain.Entities.Device", b =>

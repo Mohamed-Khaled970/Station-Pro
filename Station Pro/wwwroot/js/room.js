@@ -207,8 +207,10 @@ function openEndSessionModal(roomId, sessionId, roomName, clientName) {
     document.getElementById('end-session-room-label').textContent = roomName;
     document.getElementById('end-client-name').textContent = clientName;
 
-    const timerEl = document.getElementById(`timer-${sessionId}`);
-    const costEl = document.getElementById(`cost-${sessionId}`);
+    // ✅ Use querySelector with class selectors — the card uses
+    //    .timer-display-{id} and .cost-display-{id} (classes, not IDs).
+    const timerEl = document.querySelector(`.timer-display-${sessionId}`);
+    const costEl = document.querySelector(`.cost-display-${sessionId}`);
 
     document.getElementById('end-session-duration').textContent =
         timerEl ? timerEl.textContent.trim() : '00:00:00';
@@ -259,7 +261,7 @@ function cancelReservation(roomId, roomName) {
                 const res = await fetch(`/Room/CancelReservation?roomId=${roomId}`, { method: 'POST' });
                 if (res.ok) {
                     await refreshRoomCard(roomId);
-                    closeDeletingOverlay(); // ✅ close AFTER card is refreshed
+                    closeDeletingOverlay();
                     showToast('success',
                         t('ReservationCancelledMsg').replace('{room}', roomName),
                         t('ReservationCancelledTitle')
@@ -275,6 +277,7 @@ function cancelReservation(roomId, roomName) {
         }
     );
 }
+
 async function activateReservation(roomId, roomName) {
     try {
         const res = await fetch(`/Room/ActivateReservation?roomId=${roomId}`, { method: 'POST' });
@@ -396,17 +399,17 @@ function deleteRoom(roomId, roomName) {
                     card.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         card.remove();
-                        closeDeletingOverlay(); // ← FIX: was missing from this branch
+                        closeDeletingOverlay();
                     }, 200);
                 } else {
-                    closeDeletingOverlay(); // ← FIX: was never called when card not found
+                    closeDeletingOverlay();
                 }
                 showToast('success',
                     t('RoomDeletedMsg').replace('{room}', roomName),
                     t('RoomDeletedTitle')
                 );
             } else {
-                closeDeletingOverlay(); // ← FIX: always close overlay on error too
+                closeDeletingOverlay();
                 const err = await res.json().catch(() => ({}));
                 showToast('error', err.message || t('FailedDeleteRoom'));
             }
@@ -415,14 +418,44 @@ function deleteRoom(roomId, roomName) {
 }
 
 // ============================================
-// ADD ROOM (HTMX callback)
+// ADD ROOM — HTMX swap listener
 // ============================================
+
+// ✅ ROOT CAUSE EXPLAINED:
+//
+// Attempt 1 — hx-on::after-request on the form:
+//   Fires on EVERY request completion, including HTTP errors.
+//   Result: modal closed + success toast showed even on failure.
+//
+// Attempt 2 — hx-on:htmx:after-swap on the form:
+//   htmx:afterSwap is a GLOBAL bubbling event. Attaching it to the form
+//   element means it fires whenever ANY htmx swap happens on the page
+//   (e.g. the 60-second stats/sessions poll), randomly calling
+//   handleRoomAdded() and closing the modal / resetting the form,
+//   which made newly added cards disappear when the page polled.
+//
+// ✅ CORRECT FIX — listen on the TARGET element (#rooms-grid) in JS:
+//   htmx:afterSwap on the target element fires only when that specific
+//   element receives new content. We also verify the triggering form ID
+//   to be 100% sure we're reacting to the add-room submission and not
+//   any other future swap that might target #rooms-grid.
+function setupAddRoomForm() {
+    const grid = document.getElementById('rooms-grid');
+    if (!grid) return;
+
+    grid.addEventListener('htmx:afterSwap', (e) => {
+        // Verify the swap was triggered by the add-room form specifically
+        const triggerEl = e.detail?.requestConfig?.elt ?? e.detail?.elt;
+        if (triggerEl && triggerEl.id === 'add-room-form') {
+            handleRoomAdded();
+        }
+    });
+}
 
 function handleRoomAdded() {
     closeModal('add-room-modal');
     if (window.timerManager) setTimeout(() => window.timerManager.smartRestart(), 50);
     showToast('success', t('RoomAddedMsg'), t('RoomAddedTitle'));
-    document.getElementById('add-room-form')?.reset();
 }
 
 // ============================================
@@ -524,14 +557,13 @@ function closeDeleteConfirmation() {
 }
 
 function showDeletingOverlay() {
-    // Remove any existing one first
     document.getElementById('deleting-overlay')?.remove();
 
     const el = document.createElement('div');
     el.id = 'deleting-overlay';
     el.className = 'deleting-overlay';
-    el.setAttribute('hx-disable', '');        // ✅ prevents HTMX from touching it
-    el.setAttribute('data-htmx-disable', ''); // ✅ belt-and-suspenders
+    el.setAttribute('hx-disable', '');
+    el.setAttribute('data-htmx-disable', '');
     el.innerHTML = `<div class="deleting-spinner-wrapper">
         <div class="deleting-spinner"></div>
         <p class="deleting-text">${t('Processing')}</p>
@@ -540,7 +572,6 @@ function showDeletingOverlay() {
 }
 
 function closeDeletingOverlay() {
-    // ✅ Remove synchronously — no setTimeout, no animation race condition
     const el = document.getElementById('deleting-overlay');
     if (el) el.remove();
 }
@@ -554,7 +585,6 @@ function closeDeletingOverlay() {
 let _notifTimer = null;
 
 function showToast(type, message, title) {
-    // Remove any existing notification
     document.getElementById('room-notification')?.remove();
     clearTimeout(_notifTimer);
 
@@ -584,10 +614,7 @@ function showToast(type, message, title) {
 
     document.body.appendChild(el);
 
-    // Click backdrop to close
     el.addEventListener('click', e => { if (e.target === el) closeNotification(); });
-
-    // Auto-close after 5s
     _notifTimer = setTimeout(closeNotification, 5000);
 }
 
@@ -600,7 +627,7 @@ function closeNotification() {
     }
 }
 
-// Legacy wrappers — keep these so nothing else breaks
+// Legacy wrappers
 function showSuccessNotification(title, message) { showToast('success', message, title); }
 function closeSuccessNotification() { closeNotification(); }
 function showErrorNotification(msg) { showToast('error', msg); }
@@ -648,6 +675,7 @@ function setupKeyboardShortcuts() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    setupAddRoomForm();      // ← targeted htmx:afterSwap listener on #rooms-grid
     setupQuickBookForm();
     setupEditRoomForm();
     setupReserveRoomForm();

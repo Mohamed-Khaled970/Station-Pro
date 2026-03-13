@@ -9,7 +9,9 @@ namespace StationPro.Application.Contracts.Repositories
 {
     public interface IRoomRepository : IRepository<Room>
     {
-        Task<IEnumerable<Room>> GetActiveRoomsAsync();
-        Task<Room?> GetRoomWithDevicesAsync(int id);
+        Task<IEnumerable<Room>> GetAllActiveAsync();
+        Task<IEnumerable<Room>> GetAvailableAsync();
+        Task<Room?> GetWithActiveSessionAsync(int roomId);
+        Task<IEnumerable<Room>> GetAllWithActiveSessionsAsync();
     }
 }
