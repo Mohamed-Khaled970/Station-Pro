@@ -225,8 +225,10 @@
                     else
                     {
                         <!-- Guest -->
-                        <a href="/auth/login" class="hidden sm:inline text-gray-700 hover:text-blue-600 font-medium text-sm">
-                            @Localizer["Login"]
+                        <a href="/auth/login" class="btn btn-outline !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm whitespace-nowrap">
+                            <i class="fas fa-sign-in-alt @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2")"></i>
+                            <span class="hidden xs:inline sm:inline">@Localizer["Login"]</span>
+
                         </a>
                         <a href="/auth/register" class="btn btn-primary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 lg:!px-6 lg:!py-3 text-xs sm:text-sm lg:text-base whitespace-nowrap">
                             <i class="fas fa-rocket @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") hidden sm:inline"></i>
