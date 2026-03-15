@@ -65,8 +65,10 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
 
+    // ✅ This makes the cookie persist in the browser after closing
+    options.Cookie.MaxAge = TimeSpan.FromHours(8); // match IdleTimeout
+});
 // ── Supported cultures ────────────────────────────────────────────────────────
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -99,7 +101,6 @@ app.UseStaticFiles();
 app.UseRouting();
 // ── Middleware pipeline order — CRITICAL ──────────────────────────────────────
 // 1. Session cookie must be loaded before anything reads it
-app.UseRequestLocalization();
 app.UseSession();
 
 // 2. Resolve tenant from session → populates HttpContext.Items["TenantId"]
