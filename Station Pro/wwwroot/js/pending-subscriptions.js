@@ -1,55 +1,74 @@
-// ============================================
-// PENDING SUBSCRIPTIONS PAGE FUNCTIONS
-// ============================================
+﻿// =============================================================================
+// FILE: wwwroot/js/pendingsubscriptions.js
+//
+// Handles the Pending Subscriptions admin page:
+//   - Status filter tabs
+//   - Proof image modal
+//   - Approve modal  → delegates actual fetch to approveSubscription() in admin.js
+//   - Reject modal   → delegates actual fetch to rejectSubscription()  in admin.js
+//   - Auto-refresh pending badge every 30 s
+//
+// NOTE: approveSubscription() and rejectSubscription() are defined in admin.js.
+//       Do NOT redefine them here — that was causing the approve/reject conflict.
+// =============================================================================
 
-let currentSubscriptionId = null;
+'use strict';
 
-// Filter Status
+// =============================================================================
+// FILTER
+// =============================================================================
+
 function filterStatus(status) {
     const items = document.querySelectorAll('.subscription-item');
     const buttons = document.querySelectorAll('.filter-btn');
 
-    // Update button states
-    buttons.forEach(btn => {
-        btn.classList.remove('active', 'bg-blue-600', 'text-white');
-    });
+    buttons.forEach(btn => btn.classList.remove('active', 'bg-blue-600', 'text-white'));
     event.target.classList.add('active', 'bg-blue-600', 'text-white');
 
-    // Filter items
     items.forEach(item => {
-        if (status === 'all' || item.dataset.status === status) {
-            item.style.display = 'block';
-            item.classList.add('fade-in');
-        } else {
-            item.style.display = 'none';
-        }
+        const show = status === 'all' || item.dataset.status === status;
+        item.style.display = show ? 'block' : 'none';
+        if (show) item.classList.add('fade-in');
     });
 }
 
-// Modal Functions
-function openProofModal(imageUrl, tenantName) {
-    const modal = document.getElementById('proofModal');
-    const modalImage = document.getElementById('modalImage');
-    const modalTitle = document.getElementById('modalTitle');
+// =============================================================================
+// PROOF IMAGE MODAL
+// =============================================================================
 
-    modalImage.src = imageUrl;
-    modalTitle.textContent = tenantName + ' - Payment Proof';
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden'; // Prevent background scroll
+function openProofModal(imageUrl, tenantName) {
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('modalTitle').textContent = tenantName + ' - Payment Proof';
+    document.getElementById('proofModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
 
 function closeProofModal() {
-    const modal = document.getElementById('proofModal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Restore scroll
+    document.getElementById('proofModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
+// =============================================================================
+// APPROVE MODAL
+// The actual fetch is handled by window.approveSubscription(id) in admin.js.
+// =============================================================================
+
 function showApproveModal(id, tenantName, plan) {
-    currentSubscriptionId = id;
     document.getElementById('approveTenantName').textContent = tenantName;
     document.getElementById('approvePlan').textContent = plan;
     document.getElementById('approveModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
+
+    // Wire the confirm button to admin.js handler with the correct id
+    const confirmBtn = document.getElementById('approveConfirmBtn');
+    if (confirmBtn) {
+        // Remove any previous listener to avoid stacking calls
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        document.getElementById('approveConfirmBtn').addEventListener('click', () => {
+            closeApproveModal();
+            window.approveSubscription(id);
+        });
+    }
 }
 
 function closeApproveModal() {
@@ -57,8 +76,15 @@ function closeApproveModal() {
     document.body.style.overflow = 'auto';
 }
 
+// =============================================================================
+// REJECT MODAL
+// Stores the id on window._currentRejectId so rejectSubscription() in admin.js
+// can read it. The submit button in the modal calls window.rejectSubscription().
+// =============================================================================
+
 function showRejectModal(id, tenantName) {
-    currentSubscriptionId = id;
+    window._currentRejectId = id;   // read by rejectSubscription() in admin.js
+
     document.getElementById('rejectTenantName').textContent = tenantName;
     document.getElementById('rejectReason').value = '';
     document.getElementById('rejectModal').style.display = 'block';
@@ -68,144 +94,28 @@ function showRejectModal(id, tenantName) {
 function closeRejectModal() {
     document.getElementById('rejectModal').style.display = 'none';
     document.body.style.overflow = 'auto';
+    window._currentRejectId = null;
 }
 
-// Approve Subscription
-async function approveSubscription() {
-    if (!currentSubscriptionId) {
-        showToast('Error: No subscription selected', 'error');
-        return;
-    }
+// =============================================================================
+// CLOSE MODALS ON OUTSIDE CLICK
+// =============================================================================
 
-    try {
-        const response = await fetch(`/Admin/ApproveSubscription/${currentSubscriptionId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showToast('Subscription approved successfully!', 'success');
-            closeApproveModal();
-
-            // Reload page after short delay to show updated status
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        } else {
-            showToast(data.message || 'Failed to approve subscription', 'error');
-        }
-    } catch (error) {
-        console.error('Error approving subscription:', error);
-        showToast('An error occurred. Please try again.', 'error');
-    }
-}
-
-// Reject Subscription
-async function rejectSubscription() {
-    const reason = document.getElementById('rejectReason').value.trim();
-
-    if (!reason) {
-        showToast('Please provide a reason for rejection', 'warning');
-        document.getElementById('rejectReason').focus();
-        return;
-    }
-
-    if (!currentSubscriptionId) {
-        showToast('Error: No subscription selected', 'error');
-        return;
-    }
-
-    try {
-        const response = await fetch(`/Admin/RejectSubscription/${currentSubscriptionId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ reason: reason })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            showToast('Subscription rejected', 'success');
-            closeRejectModal();
-
-            // Reload page after short delay
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        } else {
-            showToast(data.message || 'Failed to reject subscription', 'error');
-        }
-    } catch (error) {
-        console.error('Error rejecting subscription:', error);
-        showToast('An error occurred. Please try again.', 'error');
-    }
-}
-
-// Toast Notification
-function showToast(message, type = 'info') {
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'fixed top-4 right-4 z-50 space-y-2';
-        document.body.appendChild(toastContainer);
-    }
-
-    const toast = document.createElement('div');
-    const icons = {
-        success: 'fa-check-circle',
-        error: 'fa-exclamation-circle',
-        info: 'fa-info-circle',
-        warning: 'fa-exclamation-triangle'
-    };
-
-    const colors = {
-        success: 'bg-green-500',
-        error: 'bg-red-500',
-        info: 'bg-blue-500',
-        warning: 'bg-yellow-500'
-    };
-
-    toast.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in`;
-    toast.innerHTML = `
-        <i class="fas ${icons[type]}"></i>
-        <span>${message}</span>
-    `;
-
-    toastContainer.appendChild(toast);
-
-    setTimeout(() => {
-        toast.classList.add('animate-slide-out');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// Close modals on outside click
-window.onclick = function (event) {
+window.addEventListener('click', (event) => {
     const proofModal = document.getElementById('proofModal');
     const approveModal = document.getElementById('approveModal');
     const rejectModal = document.getElementById('rejectModal');
 
-    if (event.target == proofModal) {
-        closeProofModal();
-    }
-    if (event.target == approveModal) {
-        closeApproveModal();
-    }
-    if (event.target == rejectModal) {
-        closeRejectModal();
-    }
-}
+    if (event.target === proofModal) closeProofModal();
+    if (event.target === approveModal) closeApproveModal();
+    if (event.target === rejectModal) closeRejectModal();
+});
 
-// Keyboard shortcuts
-document.addEventListener('keydown', function (e) {
-    // ESC key closes modals
+// =============================================================================
+// KEYBOARD SHORTCUTS
+// =============================================================================
+
+document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeProofModal();
         closeApproveModal();
@@ -213,42 +123,39 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-// Initialize on page load
+// =============================================================================
+// INIT
+// =============================================================================
+
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Pending subscriptions page initialized');
-
-    // Set active filter on page load
+    // Activate the "All" filter button by default
     const allButton = document.querySelector('.filter-btn[data-status="all"]');
-    if (allButton) {
-        allButton.classList.add('bg-blue-600', 'text-white', 'active');
-    }
+    if (allButton) allButton.classList.add('bg-blue-600', 'text-white', 'active');
 
-    // Check URL parameters for filter
-    const urlParams = new URLSearchParams(window.location.search);
-    const filter = urlParams.get('filter');
+    // Honour ?filter= query param
+    const filter = new URLSearchParams(window.location.search).get('filter');
     if (filter) {
-        const filterButton = document.querySelector(`.filter-btn[data-status="${filter}"]`);
-        if (filterButton) {
-            filterButton.click();
-        }
+        const btn = document.querySelector(`.filter-btn[data-status="${filter}"]`);
+        btn?.click();
     }
 });
 
-// Auto-refresh pending count every 30 seconds
+// =============================================================================
+// AUTO-REFRESH PENDING BADGE (every 30 s)
+// =============================================================================
+
 setInterval(async () => {
     try {
-        const response = await fetch('/Admin/GetPendingCount');
-        const data = await response.json();
-
-        // Update badge if exists
+        const data = await fetch('/Admin/GetPendingCount').then(r => r.json());
         const badge = document.querySelector('.pending-count-badge');
-        if (badge && data.count > 0) {
+        if (!badge) return;
+        if (data.count > 0) {
             badge.textContent = data.count;
             badge.style.display = 'flex';
-        } else if (badge && data.count === 0) {
+        } else {
             badge.style.display = 'none';
         }
-    } catch (error) {
-        console.error('Error fetching pending count:', error);
+    } catch {
+        // silently ignore network errors
     }
-}, 30000); // 30 seconds
+}, 30_000);

@@ -55,9 +55,6 @@ namespace StationPro.Infrastructure.Services
             if (tenant == null || !BCrypt.Net.BCrypt.Verify(password, tenant.PasswordHash))
                 return (false, 0, "Invalid email or password.");
 
-            if (!tenant.IsActive)
-                return (false, 0, "Your account is pending admin approval.");
-
             return (true, tenant.Id, string.Empty);
         }
 

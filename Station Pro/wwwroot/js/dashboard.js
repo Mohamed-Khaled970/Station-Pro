@@ -28,16 +28,7 @@ function closeModal(modalId) {
 }
 
 function refreshDashboard() {
-    const refreshIcon = document.getElementById('refresh-icon');
-    if (refreshIcon) refreshIcon.classList.add('fa-spin');
-    const statsContainer = document.getElementById('stats-container');
-    if (statsContainer) htmx.trigger(statsContainer, 'refresh');
-    const sessionsContainer = document.getElementById('active-sessions-container');
-    if (sessionsContainer) htmx.trigger(sessionsContainer, 'refresh');
-    setTimeout(() => {
-        if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-        showToast('Dashboard refreshed!', 'success');
-    }, 1000);
+    window.location.reload();
 }
 
 // ============================================
@@ -46,12 +37,7 @@ function refreshDashboard() {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Dashboard initialized');
-    initializeDashboard();
 });
-
-function initializeDashboard() {
-    setupStatsRefresh();
-}
 
 // ============================================
 // START SESSION MODAL
@@ -93,36 +79,17 @@ async function openStartSessionModal() {
 
 // ============================================
 // END SESSION
-// FIX: endSessionWithReceipt was reading device name, duration and cost
-// from the wrong DOM elements.
-//
-// The _ActiveSessions partial renders:
-//   - id="timer-{id}"          → HIDDEN span (source of truth, textContent is empty)
-//   - .timer-display-{id}      → VISIBLE timer text (updated by session-timer.js)
-//   - .cost-display-{id}       → VISIBLE cost text  (updated by session-timer.js)
-//   - h4 inside the card       → device name
-//
-// The old code did:
-//   timerElement.textContent   → always "" because the hidden span has no text
-//   costElement.textContent    → same problem (was getElementById("cost-{id}") which doesn't exist)
-//   .querySelector('h4')       → wrong ancestor, the hidden span's closest('.rounded-lg')
-//                                 may not contain the h4 in the new partial structure
-//
-// FIX: read from the VISIBLE class-based display elements instead.
 // ============================================
 
 function endSessionWithReceipt(sessionId) {
     pendingSessionId = sessionId;
 
-    // ✅ Read the VISIBLE timer and cost elements (class-based, updated by session-timer.js)
     const timerDisplay = document.querySelector(`.timer-display-${sessionId}`);
     const costDisplay = document.querySelector(`.cost-display-${sessionId}`);
 
-    // ✅ Get device name from the card's h4, walking up from the hidden timer element
     const hiddenTimerEl = document.getElementById(`timer-${sessionId}`);
     let deviceName = 'Unknown Device';
     if (hiddenTimerEl) {
-        // Walk up to the session card container and find the h4
         const card = hiddenTimerEl.closest('[data-session-id]') ||
             hiddenTimerEl.closest('.bg-gradient-to-r') ||
             hiddenTimerEl.parentElement;
@@ -155,8 +122,20 @@ function selectPaymentMethod(method) {
 
 function closeEndSessionModal() { closeModal('end-session-confirm-modal'); }
 
+// ============================================
+// CONFIRM END SESSION
+// ============================================
+
 async function confirmEndSession() {
     if (!pendingSessionId) return;
+
+    const endBtn = document.querySelector(`[data-session-id="${pendingSessionId}"]`);
+    if (endBtn) {
+        endBtn.disabled = true;
+        endBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        endBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
     try {
         closeEndSessionModal();
         if (window.timerManager) timerManager.removeTimer(String(pendingSessionId));
@@ -170,6 +149,14 @@ async function confirmEndSession() {
         );
 
         if (response.ok) {
+            const sessionCard = endBtn?.closest('.bg-gradient-to-r');
+            if (sessionCard) {
+                sessionCard.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                sessionCard.style.opacity = '0';
+                sessionCard.style.transform = 'scale(0.97)';
+                setTimeout(() => sessionCard.remove(), 200);
+            }
+
             const receiptHtml = await response.text();
             const receiptContent = document.getElementById('receipt-content');
             const receiptModal = document.getElementById('receipt-modal');
@@ -178,24 +165,37 @@ async function confirmEndSession() {
                 receiptModal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
+
             if (window.timerManager) timerManager.removeTimer(String(pendingSessionId));
-            setTimeout(() => {
-                const sessionsContainer = document.getElementById('active-sessions-container');
-                if (sessionsContainer && typeof htmx !== 'undefined') htmx.trigger(sessionsContainer, 'load');
-            }, 300);
+
             showToast('Session ended successfully!', 'success');
         } else {
+            if (endBtn) {
+                endBtn.disabled = false;
+                endBtn.innerHTML = '<i class="fas fa-stop mr-1"></i><span>End</span>';
+                endBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
             showToast('Failed to end session', 'error');
         }
     } catch (error) {
         console.error('Error ending session:', error);
+        if (endBtn) {
+            endBtn.disabled = false;
+            endBtn.innerHTML = '<i class="fas fa-stop mr-1"></i><span>End</span>';
+            endBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
         showToast('An error occurred while ending the session', 'error');
     }
 }
 
+// ============================================
+// RECEIPT MODAL
+// ============================================
+
 function closeReceiptModal() {
     const modal = document.getElementById('receipt-modal');
     if (modal) { modal.classList.add('hidden'); document.body.style.overflow = 'auto'; }
+    window.location.reload();
 }
 
 function printReceipt(sessionId) {
@@ -212,20 +212,6 @@ function printReceipt(sessionId) {
         </body></html>`);
     printWindow.document.close();
     showToast('Printing receipt...', 'info');
-}
-
-// ============================================
-// STATS REFRESH
-// ============================================
-
-function setupStatsRefresh() {
-    document.addEventListener('htmx:afterSwap', (event) => {
-        if (event.detail.target.id === 'stats-container') {
-            event.detail.target.querySelectorAll('.stat-card').forEach((card, index) => {
-                card.style.animation = `slideInRight 0.3s ease-out ${index * 0.1}s`;
-            });
-        }
-    });
 }
 
 // ============================================
@@ -278,10 +264,6 @@ function getLocalizedMessages() {
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP' }).format(amount);
 }
-
-document.addEventListener('DOMContentLoaded', function () {
-    console.log('Dashboard notification handler ready');
-});
 
 // ============================================
 // KEYBOARD SHORTCUTS

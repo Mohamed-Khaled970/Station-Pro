@@ -108,7 +108,8 @@
 
         @if (!Model.Any())
         {
-            <div class="card p-12 text-center">
+
+            <div id ="empty-rooms-state" class="card p-12 text-center">
                 <i class="fas fa-door-open text-gray-300 text-6xl mb-4"></i>
                 <h3 class="text-xl font-bold text-gray-900 mb-2">@Localizer["NoRoomsYet"]</h3>
                 <p class="text-gray-600 mb-6">@Localizer["AddFirstRoom"]</p>

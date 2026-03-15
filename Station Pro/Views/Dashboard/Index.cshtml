@@ -22,18 +22,10 @@
                 </h1>
                 <p class="text-gray-600">@Localizer["TodayStatus"]</p>
             </div>
-            <button onclick="refreshDashboard()"
-                    id="refresh-btn"
-                    class="btn btn-primary flex items-center gap-2">
-                <i class="fas fa-sync-alt" id="refresh-icon"></i>
-                @Localizer["Refresh"]
-            </button>
         </div>
 
         <!-- Stats Cards -->
         <div id="stats-container"
-             hx-get="@Html.TenantUrl("Dashboard", "LiveStats")"
-             hx-swap="innerHTML"
              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             @await Html.PartialAsync("_DashboardStats", Model)
         </div>
@@ -41,48 +33,23 @@
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <!-- OPTIMIZED ACTIVE SESSIONS SECTION -->
+            <!-- ACTIVE SESSIONS SECTION -->
             <div class="lg:col-span-2">
                 <div class="card p-6 fade-in">
-                    <!-- COMPACT HEADER - Mobile Optimized -->
+                    <!-- Header -->
                     <div class="flex justify-between items-center mb-6 gap-2">
-                        <!-- Title Section - Compact -->
                         <div class="flex items-center gap-2">
                             <i class="fas fa-clock text-blue-600 text-base sm:text-lg"></i>
                             <h2 class="text-base sm:text-xl font-bold text-gray-900 leading-tight">
                                 @Localizer["ActiveSessions"]
                             </h2>
                         </div>
-
-                        <!-- Right Side - Responsive -->
-                        <div class="flex items-center gap-2 sm:gap-4">
-                            <!-- Updates Indicator - Hidden on small mobile -->
-                            <span class="hidden sm:flex items-center gap-1 text-xs text-gray-500">
-                                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                <span class="whitespace-nowrap">@Localizer["UpdatesEvery60s"]</span>
-                            </span>
-
-                            <!-- Manual refresh button - Compact -->
-                            <button class="text-blue-600 hover:text-blue-700 p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
-                                    hx-get="/Dashboard/ActiveSessions"
-                                    hx-target="#active-sessions-container"
-                                    hx-swap="innerHTML"
-                                    title="@Localizer["RefreshNow"]">
-                                <i class="fas fa-sync-alt text-sm"></i>
-                            </button>
-                        </div>
                     </div>
 
-                    <!-- Mobile-only Auto-update indicator -->
-                    <div class="flex sm:hidden items-center gap-1 text-xs text-gray-500 mb-4 pb-3 border-b border-gray-100">
-                        <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                        <span>@Localizer["UpdatesEvery60s"]</span>
-                    </div>
-
-                    <!-- Sessions Container -->
+                    <!-- Sessions Container — loads once on page load, no polling -->
                     <div id="active-sessions-container"
                          hx-get="/Dashboard/ActiveSessions"
-                         hx-trigger="load, every 60s"
+                         hx-trigger="load"
                          hx-swap="innerHTML transition:true"
                          hx-indicator="#sessions-loading">
 
@@ -105,23 +72,11 @@
                         @Localizer["QuickActions"]
                     </h3>
                     <div class="space-y-3">
-                        @*
-                        FIX: Changed onclick from openModal('start-session-modal')
-                        to openStartSessionModal().
-
-                        WHY: The old call opened the modal with a static, empty
-                        <select> — devices were never fetched so the dropdown only
-                        showed "Choose a device..." with no real options.
-
-                        openStartSessionModal() fetches /Dashboard/DeviceOptions
-                        first, populates the <select> with available devices,
-                        then opens the modal — so the list is always up to date.
-                        *@
-                        <button onclick="openStartSessionModal()"
-                                class="btn btn-primary w-full">
-                            <i class="fas fa-play mr-2"></i>
-                            @Localizer["StartNewSession"]
-                        </button>
+                        <a href="@Html.TenantUrl("Room", "Index")"
+                           class="btn btn-primary w-full">
+                            <i class="fas fa-door-open mr-2"></i>
+                            @Localizer["ManageRooms"]
+                        </a>
                         <a href="@Html.TenantUrl("Device", "Index")"
                            class="btn btn-outline w-full">
                             <i class="fas fa-plus mr-2"></i>
@@ -195,7 +150,7 @@
 
                 <div id="devices-container"
                      hx-get="@Html.TenantUrl("Dashboard", "DeviceCards")"
-                     hx-trigger="load, sessionStarted from:body"
+                     hx-trigger="load"
                      hx-swap="innerHTML"
                      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Devices loaded here -->
@@ -217,11 +172,6 @@
             <div class="modal-body space-y-4">
                 <div>
                     <label class="form-label">@Localizer["SelectDevice"]</label>
-                    @*
-                    The <select> starts empty — openStartSessionModal() in
-                    dashboard.js fetches /Dashboard/DeviceOptions and
-                    populates it with available devices before the modal appears.
-                    *@
                     <select name="DeviceId" class="form-input" required>
                         <option value="">@Localizer["ChooseDevice"]</option>
                     </select>
@@ -350,28 +300,6 @@
     <script src="@Url.Content("~/js/dashboard.js")"></script>
     <script src="@Url.Content("~/js/session-timer.js")"></script>
 }
-
-<script>
-    // Debounce HTMX requests if user is actively interacting
-    document.body.addEventListener('htmx:beforeRequest', function (event) {
-        const lastAction = window.lastSessionAction || 0;
-        const now = Date.now();
-        if (event.detail.path.includes('ActiveSessions') && (now - lastAction) < 5000) {
-            console.log('Skipping poll - recent user action');
-            event.preventDefault();
-        }
-    });
-
-    // Track when user ends a session
-    document.body.addEventListener('htmx:afterRequest', function (event) {
-        if (event.detail.path.includes('/End')) {
-            window.lastSessionAction = Date.now();
-            setTimeout(() => {
-                htmx.trigger('#active-sessions-container', 'refresh');
-            }, 500);
-        }
-    });
-</script>
 
 <style>
     @@keyframes scale-in {

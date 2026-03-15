@@ -159,11 +159,14 @@
                             </div>
                         </div>
 
+
                         <!-- Remember Me & Forgot Password -->
                         <div class="flex items-center justify-between">
                             <label class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-2">
+                                <input type="hidden" name="RememberMe" value="false" />
                                 <input type="checkbox"
                                        name="RememberMe"
+                                       value="true"
                                        class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                                 <span class="text-sm text-gray-600">@Localizer["RememberMe"]</span>
                             </label>

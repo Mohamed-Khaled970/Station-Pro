@@ -88,7 +88,11 @@ namespace Station_Pro.Controllers
 
             var latestRequest = await _subscriptionRequest.GetLatestRequest(tenantId);
 
-            var redirectUrl = latestRequest?.Status switch
+            // No request at all → hasn't chosen a plan yet
+            if (latestRequest == null)
+                return Json(new { success = true, redirectUrl = $"/Subscription/Subscribe?tenantId={tenantId}" });
+
+            var redirectUrl = latestRequest.Status switch
             {
                 SubscriptionRequestStatus.Pending => $"/Subscription/Pending?tenantId={tenantId}",
                 SubscriptionRequestStatus.Rejected => $"/Subscription/Rejected?tenantId={tenantId}",

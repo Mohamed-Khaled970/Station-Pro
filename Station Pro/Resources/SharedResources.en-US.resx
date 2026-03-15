@@ -1451,4 +1451,7 @@
     <value>Try adjusting your search or filters</value>
   </data>
 
+	<data name="ManageRooms" xml:space="preserve">
+    <value>Manage Rooms</value>
+  </data>
 </root>

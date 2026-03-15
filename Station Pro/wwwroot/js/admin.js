@@ -171,7 +171,9 @@ function updateSubscription(tenantId, planValue) {
 }
 
 // =============================================================================
-// APPROVE SUBSCRIPTION  (used by PendingSubscriptions.cshtml)
+// APPROVE SUBSCRIPTION
+// Single definition — used by both the tenants page and PendingSubscriptions.cshtml
+// Always uses query string ?id= to match the controller signature.
 // =============================================================================
 
 window.approveSubscription = function (id) {
@@ -186,10 +188,61 @@ window.approveSubscription = function (id) {
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    window.updateRowStatus(id, 'Approved');
+                    window.updateRowStatus?.(id, 'Approved');
                     showToast('Subscription approved! The tenant now has access 🎉', 'success');
+                    setTimeout(() => location.reload(), 1500);
                 } else {
                     showToast(data.message || 'Failed to approve.', 'error');
+                }
+            })
+            .catch(() => showToast('A network error occurred. Please try again.', 'error'));
+    });
+};
+
+// =============================================================================
+// REJECT SUBSCRIPTION
+// Single definition — used by PendingSubscriptions.cshtml modal.
+// Reads reason from #rejectReason textarea inside the reject modal.
+// Always uses query string ?id= to match the controller signature.
+// =============================================================================
+
+window.rejectSubscription = function () {
+    // currentSubscriptionId is set by showRejectModal() in pendingsubscriptions.js
+    const id = window._currentRejectId;
+    const reason = document.getElementById('rejectReason')?.value?.trim();
+
+    if (!reason) {
+        showToast('Please provide a reason for rejection.', 'warning');
+        document.getElementById('rejectReason')?.focus();
+        return;
+    }
+
+    if (!id) {
+        showToast('Error: No subscription selected.', 'error');
+        return;
+    }
+
+    showAdminConfirm({
+        title: 'Reject this subscription?',
+        message: 'The tenant will be notified and can resubmit with a new payment screenshot.',
+        confirmText: 'Yes, Reject',
+        color: 'red',
+        icon: 'fa-ban',
+    }, () => {
+        fetch(`/Admin/RejectSubscription?id=${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.updateRowStatus?.(id, 'Rejected');
+                    showToast('Subscription rejected.', 'warning');
+                    closeRejectModal();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message || 'Failed to reject.', 'error');
                 }
             })
             .catch(() => showToast('A network error occurred. Please try again.', 'error'));
@@ -211,10 +264,6 @@ function viewTenantDetails(tenantId) {
             document.getElementById('detail-email').textContent = t.email ?? '—';
             document.getElementById('detail-phone').textContent = t.phoneNumber ?? '—';
             document.getElementById('detail-plan').textContent = t.plan ?? '—';
-            document.getElementById('detail-status').textContent = t.isActive ? 'Active' : 'Inactive';
-            document.getElementById('detail-status').className = t.isActive
-                ? 'font-semibold text-green-600'
-                : 'font-semibold text-red-500';
             document.getElementById('detail-joined').textContent = t.joinedDate ?? '—';
             document.getElementById('detail-expires').textContent = t.subscriptionEndDate ?? 'N/A';
             document.getElementById('detail-devices').textContent = t.totalDevices ?? 0;
@@ -222,13 +271,20 @@ function viewTenantDetails(tenantId) {
             document.getElementById('detail-revenue').textContent = (t.totalRevenue ?? 0).toLocaleString() + ' EGP';
             document.getElementById('detail-monthly').textContent = (t.monthlyRevenue ?? 0).toLocaleString() + ' EGP';
 
-            document.getElementById('tenantDetailsModal').classList.remove('hidden');
+            const statusEl = document.getElementById('detail-status');
+            statusEl.textContent = t.isActive ? 'Active' : 'Inactive';
+            statusEl.className = t.isActive ? 'font-semibold text-green-600' : 'font-semibold text-red-500';
+
+            // Use .is-open class — modal lives at body level, not inside the HTMX partial
+            document.body.style.overflow = 'hidden';
+            document.getElementById('tenantDetailsModal').classList.add('is-open');
         })
         .catch(() => showToast('Network error loading tenant details.', 'error'));
 }
 
 function closeTenantDetailsModal() {
-    document.getElementById('tenantDetailsModal')?.classList.add('hidden');
+    document.getElementById('tenantDetailsModal')?.classList.remove('is-open');
+    document.body.style.overflow = '';
 }
 
 // =============================================================================
@@ -293,6 +349,9 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeAdminConfirm();
         closeTenantDetailsModal();
+        // also close reject/approve modals if on PendingSubscriptions page
+        if (typeof closeRejectModal === 'function') closeRejectModal();
+        if (typeof closeApproveModal === 'function') closeApproveModal();
     }
 });
 

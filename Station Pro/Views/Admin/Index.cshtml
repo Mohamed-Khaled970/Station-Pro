@@ -22,6 +22,41 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+
+        /* Modal overlay — uses display:none / display:flex toggled by JS, NOT Tailwind hidden */
+        #tenantDetailsModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+            #tenantDetailsModal.is-open {
+                display: flex;
+            }
+
+        #tenantDetailsModalBox {
+            background: #fff;
+            border-radius: 1.25rem;
+            box-shadow: 0 25px 60px rgba(0,0,0,.25);
+            width: 100%;
+            max-width: 32rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(.95);
+            opacity: 0;
+            transition: transform .2s ease, opacity .2s ease;
+        }
+
+        #tenantDetailsModal.is-open #tenantDetailsModalBox {
+            transform: scale(1);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -31,7 +66,6 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
 
-                <!-- Logo -->
                 <div class="flex items-center space-x-3">
                     <div class="w-9 h-9 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
                         <i class="fas fa-shield-alt text-white text-sm"></i>
@@ -42,7 +76,6 @@
                     </div>
                 </div>
 
-                <!-- Desktop nav links -->
                 <div class="admin-desktop-nav flex items-center space-x-1">
                     <a href="/Admin/Index" class="px-4 py-2 rounded-lg text-white bg-white/10 font-medium text-sm">
                         <i class="fas fa-chart-line mr-2 text-blue-400"></i>Dashboard
@@ -58,26 +91,19 @@
                     </a>
                 </div>
 
-                <!-- Right side: admin name + logout (desktop) + hamburger (mobile) -->
                 <div class="flex items-center space-x-2">
-                    <!-- Admin name — hidden on small screens -->
                     <div class="hidden sm:flex items-center space-x-2 text-slate-300 text-sm">
                         <div class="w-8 h-8 bg-blue-500/20 border border-blue-400/30 rounded-full flex items-center justify-center">
                             <i class="fas fa-user-shield text-blue-400 text-xs"></i>
                         </div>
                         <span>@(Context.Session.GetString("AdminName") ?? "Admin")</span>
                     </div>
-
-                    <!-- Desktop logout -->
                     <form method="post" action="/Auth/Logout" class="hidden sm:block">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-400/10 text-sm font-medium">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
+                            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
                         </button>
                     </form>
-
-                    <!-- Mobile hamburger -->
                     <button id="admin-mobile-menu-btn" onclick="toggleAdminMobileMenu()" aria-label="Toggle menu">
                         <i class="fas fa-bars text-xl text-slate-300"></i>
                     </button>
@@ -85,15 +111,10 @@
             </div>
         </div>
 
-        <!-- Mobile dropdown menu -->
         <div id="admin-mobile-menu">
-            <a href="/Admin/Index">
-                <i class="fas fa-chart-line text-blue-400 w-5 text-center"></i>
-                Dashboard
-            </a>
+            <a href="/Admin/Index"><i class="fas fa-chart-line text-blue-400 w-5 text-center"></i>Dashboard</a>
             <a href="/Admin/PendingSubscriptions" class="relative">
-                <i class="fas fa-clock text-yellow-400 w-5 text-center"></i>
-                Subscriptions
+                <i class="fas fa-clock text-yellow-400 w-5 text-center"></i>Subscriptions
                 @if (Model.PendingSubscriptionsCount > 0)
                 {
                     <span class="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -104,8 +125,7 @@
             <form method="post" action="/Auth/Logout" style="margin:0">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="mobile-logout-item">
-                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
-                    Logout
+                    <i class="fas fa-sign-out-alt w-5 text-center"></i>Logout
                 </button>
             </form>
         </div>
@@ -115,22 +135,18 @@
     <main class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-6 sm:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <!-- Header -->
             <div class="mb-6 sm:mb-8 fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1">
-                        🛡️ Admin Dashboard
-                    </h1>
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1">🛡️ Admin Dashboard</h1>
                     <p class="text-gray-500 text-sm sm:text-base">Manage tenants, subscriptions, and platform statistics</p>
                 </div>
                 <button onclick="refreshDashboard()" id="refresh-btn"
                         class="btn btn-primary self-start sm:self-auto flex items-center gap-2">
-                    <i class="fas fa-sync-alt" id="refresh-icon"></i>
-                    <span>Refresh</span>
+                    <i class="fas fa-sync-alt" id="refresh-icon"></i><span>Refresh</span>
                 </button>
             </div>
 
-            <!-- Quick Access Cards — uses admin-quick-grid from CSS -->
+            <!-- Quick Access Cards -->
             <div class="admin-quick-grid mb-6 sm:mb-8">
                 <a href="/Admin/PendingSubscriptions"
                    class="card p-4 hover:shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-300">
@@ -146,7 +162,6 @@
                         <i class="fas fa-arrow-right text-yellow-400 text-xl hidden sm:block"></i>
                     </div>
                 </a>
-
                 <a href="/Admin/PendingSubscriptions?filter=approved" class="card p-4 hover:shadow-lg">
                     <div class="flex items-center gap-2 mb-2">
                         <i class="fas fa-check-circle text-green-600 text-lg"></i>
@@ -155,7 +170,6 @@
                     <p class="text-2xl sm:text-3xl font-bold text-green-600">@Model.ApprovedTodayCount</p>
                     <p class="text-xs text-gray-500 mt-1">Subscriptions activated</p>
                 </a>
-
                 <a href="#tenants-container" class="card p-4 hover:shadow-lg">
                     <div class="flex items-center gap-2 mb-2">
                         <i class="fas fa-users text-blue-600 text-lg"></i>
@@ -164,7 +178,6 @@
                     <p class="text-2xl sm:text-3xl font-bold text-blue-600">@Model.TotalTenants</p>
                     <p class="text-xs text-gray-500 mt-1">Registered stores</p>
                 </a>
-
                 <a href="#revenue" class="card p-4 hover:shadow-lg">
                     <div class="flex items-center gap-2 mb-2">
                         <i class="fas fa-chart-line text-purple-600 text-lg"></i>
@@ -175,46 +188,35 @@
                 </a>
             </div>
 
-            <!-- Stats Grid — uses admin-stats-grid from CSS -->
+            <!-- Stats Grid -->
             <div class="admin-stats-grid mb-6 sm:mb-8">
                 <div class="card p-5 sm:p-6 fade-in">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="p-2.5 sm:p-3 bg-blue-100 rounded-xl">
-                            <i class="fas fa-building text-blue-600 text-xl sm:text-2xl"></i>
-                        </div>
+                        <div class="p-2.5 sm:p-3 bg-blue-100 rounded-xl"><i class="fas fa-building text-blue-600 text-xl sm:text-2xl"></i></div>
                         <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">TENANTS</span>
                     </div>
                     <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">@Model.TotalTenants</h3>
                     <p class="text-sm text-gray-600"><span class="text-green-600 font-semibold">@Model.ActiveTenants Active</span></p>
                 </div>
-
                 <div class="card p-5 sm:p-6 fade-in">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="p-2.5 sm:p-3 bg-green-100 rounded-xl">
-                            <i class="fas fa-dollar-sign text-green-600 text-xl sm:text-2xl"></i>
-                        </div>
+                        <div class="p-2.5 sm:p-3 bg-green-100 rounded-xl"><i class="fas fa-dollar-sign text-green-600 text-xl sm:text-2xl"></i></div>
                         <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full">REVENUE</span>
                     </div>
                     <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">@Model.TotalRevenue.ToString("C")</h3>
                     <p class="text-sm text-gray-600">All-time revenue</p>
                 </div>
-
                 <div class="card p-5 sm:p-6 fade-in">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="p-2.5 sm:p-3 bg-purple-100 rounded-xl">
-                            <i class="fas fa-chart-line text-purple-600 text-xl sm:text-2xl"></i>
-                        </div>
+                        <div class="p-2.5 sm:p-3 bg-purple-100 rounded-xl"><i class="fas fa-chart-line text-purple-600 text-xl sm:text-2xl"></i></div>
                         <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">MONTHLY</span>
                     </div>
                     <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">@Model.MonthlyRevenue.ToString("C")</h3>
                     <p class="text-sm text-gray-600">This month</p>
                 </div>
-
                 <div class="card p-5 sm:p-6 fade-in">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="p-2.5 sm:p-3 bg-orange-100 rounded-xl">
-                            <i class="fas fa-crown text-orange-600 text-xl sm:text-2xl"></i>
-                        </div>
+                        <div class="p-2.5 sm:p-3 bg-orange-100 rounded-xl"><i class="fas fa-crown text-orange-600 text-xl sm:text-2xl"></i></div>
                         <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">PREMIUM</span>
                     </div>
                     <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">@(Model.BasicPlanCount + Model.ProPlanCount + Model.EnterprisePlanCount)</h3>
@@ -222,10 +224,8 @@
                 </div>
             </div>
 
-            <!-- Tenants + Sidebar — uses admin-main-grid from CSS -->
+            <!-- Tenants + Sidebar -->
             <div class="admin-main-grid mb-8">
-
-                <!-- Tenants table -->
                 <div class="card p-5 sm:p-6 fade-in min-w-0">
                     <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-5">
                         <i class="fas fa-users text-blue-600 mr-2"></i>Tenants Overview
@@ -241,9 +241,7 @@
                     </div>
                 </div>
 
-                <!-- Sidebar -->
                 <div class="space-y-6">
-                    <!-- Subscription plan breakdown -->
                     <div class="card p-5 sm:p-6 fade-in">
                         <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4">
                             <i class="fas fa-chart-pie text-purple-600 mr-2"></i>Subscription Plans
@@ -254,10 +252,7 @@
                                     <div class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                                         <i class="fas fa-gift text-gray-600 text-sm"></i>
                                     </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-sm">Free</p>
-                                        <p class="text-xs text-gray-500">Basic features</p>
-                                    </div>
+                                    <div><p class="font-semibold text-gray-900 text-sm">Free</p><p class="text-xs text-gray-500">Basic features</p></div>
                                 </div>
                                 <span class="text-xl sm:text-2xl font-bold text-gray-900">@Model.FreePlanCount</span>
                             </div>
@@ -266,10 +261,7 @@
                                     <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                                         <i class="fas fa-star text-blue-600 text-sm"></i>
                                     </div>
-                                    <div>
-                                        <p class="font-semibold text-blue-900 text-sm">Basic</p>
-                                        <p class="text-xs text-blue-600">29 EGP/month</p>
-                                    </div>
+                                    <div><p class="font-semibold text-blue-900 text-sm">Basic</p><p class="text-xs text-blue-600">29 EGP/month</p></div>
                                 </div>
                                 <span class="text-xl sm:text-2xl font-bold text-blue-900">@Model.BasicPlanCount</span>
                             </div>
@@ -278,10 +270,7 @@
                                     <div class="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
                                         <i class="fas fa-gem text-purple-600 text-sm"></i>
                                     </div>
-                                    <div>
-                                        <p class="font-semibold text-purple-900 text-sm">Pro</p>
-                                        <p class="text-xs text-purple-600">79 EGP/month</p>
-                                    </div>
+                                    <div><p class="font-semibold text-purple-900 text-sm">Pro</p><p class="text-xs text-purple-600">79 EGP/month</p></div>
                                 </div>
                                 <span class="text-xl sm:text-2xl font-bold text-purple-900">@Model.ProPlanCount</span>
                             </div>
@@ -290,17 +279,13 @@
                                     <div class="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
                                         <i class="fas fa-crown text-orange-600 text-sm"></i>
                                     </div>
-                                    <div>
-                                        <p class="font-semibold text-orange-900 text-sm">Enterprise</p>
-                                        <p class="text-xs text-orange-600">199 EGP/month</p>
-                                    </div>
+                                    <div><p class="font-semibold text-orange-900 text-sm">Enterprise</p><p class="text-xs text-orange-600">199 EGP/month</p></div>
                                 </div>
                                 <span class="text-xl sm:text-2xl font-bold text-orange-900">@Model.EnterprisePlanCount</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Quick Actions -->
                     <div class="card p-5 sm:p-6 fade-in bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                         <h4 class="font-bold mb-4 flex items-center gap-2 text-sm sm:text-base">
                             <i class="fas fa-bolt"></i>Quick Actions
@@ -328,6 +313,104 @@
         </div>
     </main>
 
+    <!-- ══════════════════════════════════════════════════════════════════
+         TENANT DETAILS MODAL
+         Placed at body level (outside #tenants-container) so it overlays
+         the entire page correctly. Toggled via .is-open class in admin.js.
+         ══════════════════════════════════════════════════════════════════ -->
+    <div id="tenantDetailsModal" onclick="closeTenantDetailsModal()">
+        <div id="tenantDetailsModalBox" onclick="event.stopPropagation()">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                <h3 class="font-bold text-gray-900 text-lg flex items-center gap-2">
+                    <i class="fas fa-user-circle text-blue-500"></i> Tenant Details
+                </h3>
+                <button onclick="closeTenantDetailsModal()"
+                        class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-gray-500 text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="px-6 py-6 space-y-5">
+
+                <!-- Identity -->
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Identity</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-store mr-1"></i>Store Name</p>
+                            <p class="font-semibold text-gray-900 text-sm" id="detail-name">—</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-circle mr-1"></i>Status</p>
+                            <p class="font-semibold text-sm" id="detail-status">—</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-envelope mr-1"></i>Email</p>
+                            <p class="font-semibold text-gray-900 text-sm truncate" id="detail-email">—</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-phone mr-1"></i>Phone</p>
+                            <p class="font-semibold text-gray-900 text-sm" id="detail-phone">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscription -->
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Subscription</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-crown mr-1"></i>Plan</p>
+                            <p class="font-semibold text-gray-900 text-sm" id="detail-plan">—</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-calendar mr-1"></i>Joined</p>
+                            <p class="font-semibold text-gray-900 text-sm" id="detail-joined">—</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 col-span-2">
+                            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-clock mr-1"></i>Subscription Expires</p>
+                            <p class="font-semibold text-gray-900 text-sm" id="detail-expires">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Stats</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-blue-400 mb-1">Devices</p>
+                            <p class="text-2xl font-bold text-blue-700" id="detail-devices">0</p>
+                        </div>
+                        <div class="bg-indigo-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-indigo-400 mb-1">Sessions</p>
+                            <p class="text-2xl font-bold text-indigo-700" id="detail-sessions">0</p>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-green-400 mb-1">Total Revenue</p>
+                            <p class="text-xl font-bold text-green-700" id="detail-revenue">0 EGP</p>
+                        </div>
+                        <div class="bg-purple-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-purple-400 mb-1">This Month</p>
+                            <p class="text-xl font-bold text-purple-700" id="detail-monthly">0 EGP</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-gray-100">
+                <button onclick="closeTenantDetailsModal()"
+                        class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-all">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
 
@@ -347,6 +430,5 @@
             }, 1000);
         }
     </script>
-
 </body>
 </html>

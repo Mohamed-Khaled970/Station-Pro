@@ -385,6 +385,7 @@ function setupEditRoomForm() {
 // DELETE ROOM
 // ============================================
 
+
 function deleteRoom(roomId, roomName) {
     showDeleteConfirmation(
         t('DeleteRoomAction').replace('{room}', roomName),
@@ -400,9 +401,11 @@ function deleteRoom(roomId, roomName) {
                     setTimeout(() => {
                         card.remove();
                         closeDeletingOverlay();
+                        checkIfGridEmpty();   // ← show empty state if last room deleted
                     }, 200);
                 } else {
                     closeDeletingOverlay();
+                    checkIfGridEmpty();
                 }
                 showToast('success',
                     t('RoomDeletedMsg').replace('{room}', roomName),
@@ -417,6 +420,33 @@ function deleteRoom(roomId, roomName) {
     );
 }
 
+// Shows the "No rooms yet" empty state when the grid has no room cards left.
+// Also wires up its "Add First Room" button.
+function checkIfGridEmpty() {
+    const grid = document.getElementById('rooms-grid');
+    if (!grid) return;
+
+    // Count actual room cards (ignore the no-results-message div)
+    const roomCards = grid.querySelectorAll('.room-card');
+    if (roomCards.length > 0) return;
+
+    // Don't add duplicate
+    if (document.getElementById('empty-rooms-state')) return;
+
+    const emptyState = document.createElement('div');
+    emptyState.id = 'empty-rooms-state';
+    emptyState.className = 'card p-12 text-center';
+    emptyState.innerHTML = `
+        <i class="fas fa-door-open text-gray-300 text-6xl mb-4 block"></i>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">${t('NoRoomsYet') || 'No Rooms Yet'}</h3>
+        <p class="text-gray-600 mb-6">${t('AddFirstRoom') || 'Add your first room to get started'}</p>
+        <button onclick="openModal('add-room-modal')" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>${t('AddFirstRoomButton') || 'Add First Room'}
+        </button>`;
+
+    // Insert after #rooms-grid (as a sibling, same as Razor renders it)
+    grid.insertAdjacentElement('afterend', emptyState);
+}
 // ============================================
 // ADD ROOM — HTMX swap listener
 // ============================================
@@ -454,6 +484,10 @@ function setupAddRoomForm() {
 
 function handleRoomAdded() {
     closeModal('add-room-modal');
+
+    // Remove the "No rooms yet" empty state — targeted by id now
+    document.getElementById('empty-rooms-state')?.remove();
+
     if (window.timerManager) setTimeout(() => window.timerManager.smartRestart(), 50);
     showToast('success', t('RoomAddedMsg'), t('RoomAddedTitle'));
 }
