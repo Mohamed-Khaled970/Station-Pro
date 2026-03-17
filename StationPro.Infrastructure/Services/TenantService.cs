@@ -33,12 +33,16 @@ namespace StationPro.Infrastructure.Services
             var context = _httpContextAccessor.HttpContext;
             if (context == null) return null;
 
-            // Primary: Items dict (set by TenantResolutionMiddleware, fast)
+            // Primary: Items dict (set by TenantResolutionMiddleware)
             if (context.Items.TryGetValue("TenantId", out var value) && value is int tenantId)
                 return tenantId;
 
-            // Fallback: session directly
-            return context.Session.GetInt32("TenantId");
+            // Fallback: read claim directly
+            var claim = context.User?.FindFirst("TenantId");
+            if (claim != null && int.TryParse(claim.Value, out var claimTenantId))
+                return claimTenantId;
+
+            return null;
         }
     }
 }

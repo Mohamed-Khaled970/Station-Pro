@@ -2,10 +2,13 @@
 // FILE: Station_Pro/Controllers/AuthController.cs
 // =============================================================================
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using StationPro.Application.Contracts.Services;
 using StationPro.Application.DTOs.Auth;
 using StationPro.Domain.Entities;
+using System.Security.Claims;
 
 namespace Station_Pro.Controllers
 {
@@ -28,7 +31,6 @@ namespace Station_Pro.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            // Manual check for AcceptTerms — checkbox binding is unreliable with attributes
             if (!model.AcceptTerms)
                 ModelState.AddModelError(nameof(model.AcceptTerms), "You must accept the terms and conditions.");
 
@@ -47,8 +49,8 @@ namespace Station_Pro.Controllers
                 return View(model);
             }
 
-            HttpContext.Session.SetInt32("TenantId", tenantId);
-            await HttpContext.Session.CommitAsync();
+            // ── Sign in as tenant immediately after registration ──────────────
+            await SignInAsTenantAsync(tenantId);
 
             TempData["Success"] = "Account created! Please choose your subscription plan.";
             return RedirectToAction("Subscribe", "Subscription", new { tenantId });
@@ -57,8 +59,11 @@ namespace Station_Pro.Controllers
         // ── Login ─────────────────────────────────────────────────────────────
         public IActionResult Login()
         {
-            if (HttpContext.Session.GetInt32("TenantId").HasValue)
+            // If already authenticated as a tenant, skip login page
+            var tenantClaim = User.FindFirst("TenantId");
+            if (tenantClaim != null)
                 return RedirectToAction("Index", "Dashboard");
+
             return View();
         }
 
@@ -68,27 +73,25 @@ namespace Station_Pro.Controllers
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "Invalid input." });
 
+            // ── Check admin first ─────────────────────────────────────────────
             var admin = await _adminService.TryToGetAdmin(model.Email);
 
             if (admin != null && BCrypt.Net.BCrypt.Verify(model.Password, admin.PasswordHash))
             {
-                HttpContext.Session.SetInt32("AdminId", admin.Id);
-                HttpContext.Session.SetString("AdminName", admin.Name);
-                await HttpContext.Session.CommitAsync();
+                await SignInAsAdminAsync(admin.Id, admin.Name);
                 return Json(new { success = true, redirectUrl = "/Admin/Index" });
             }
 
+            // ── Check tenant ──────────────────────────────────────────────────
             var (success, tenantId, error) = await _auth.LoginAsync(model.Email, model.Password);
 
             if (!success)
                 return Json(new { success = false, message = error });
 
-            HttpContext.Session.SetInt32("TenantId", tenantId);
-            await HttpContext.Session.CommitAsync();
+            await SignInAsTenantAsync(tenantId);
 
             var latestRequest = await _subscriptionRequest.GetLatestRequest(tenantId);
 
-            // No request at all → hasn't chosen a plan yet
             if (latestRequest == null)
                 return Json(new { success = true, redirectUrl = $"/Subscription/Subscribe?tenantId={tenantId}" });
 
@@ -105,12 +108,57 @@ namespace Station_Pro.Controllers
 
         // ── Logout ────────────────────────────────────────────────────────────
         [HttpPost]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Clear();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
 
         public IActionResult Deactivated() => View();
+
+        // ── Private helpers ───────────────────────────────────────────────────
+
+        private async Task SignInAsTenantAsync(int tenantId)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim("TenantId", tenantId.ToString()),
+                new Claim("Role", "Tenant"),
+                new Claim(ClaimTypes.NameIdentifier, tenantId.ToString())
+            };
+
+            await SignInWithClaimsAsync(claims);
+        }
+
+        private async Task SignInAsAdminAsync(int adminId, string adminName)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim("AdminId",  adminId.ToString()),
+                new Claim("AdminName", adminName),
+                new Claim("Role", "Admin"),
+                new Claim(ClaimTypes.NameIdentifier, adminId.ToString()),
+                new Claim(ClaimTypes.Name, adminName)
+            };
+
+            await SignInWithClaimsAsync(claims);
+        }
+
+        private async Task SignInWithClaimsAsync(List<Claim> claims)
+        {
+            var identity = new ClaimsIdentity(
+                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,                       // survives browser close
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                });
+        }
     }
 }

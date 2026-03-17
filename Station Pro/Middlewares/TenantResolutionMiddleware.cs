@@ -13,12 +13,12 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var tenantId = context.Session.GetInt32("TenantId");
+            var tenantClaim = context.User?.FindFirst("TenantId");
 
-            if (tenantId.HasValue)
+            if (tenantClaim != null && int.TryParse(tenantClaim.Value, out var tenantId))
             {
-                context.Items["TenantId"] = tenantId.Value;
-                _logger.LogDebug("Tenant resolved: {TenantId}", tenantId.Value);
+                context.Items["TenantId"] = tenantId;
+                _logger.LogDebug("Tenant resolved from cookie: {TenantId}", tenantId);
             }
 
             await _next(context);

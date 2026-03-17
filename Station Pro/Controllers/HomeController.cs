@@ -20,20 +20,22 @@ namespace Station_Pro.Controllers
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
 
-            ViewBag.IsAdmin = HttpContext.Session.GetInt32("AdminId").HasValue;
-            ViewBag.IsTenant = HttpContext.Session.GetInt32("TenantId").HasValue;
+            // Read from claims instead of session
+            ViewBag.IsAdmin = User.FindFirst("Role")?.Value == "Admin";
+            ViewBag.IsTenant = User.FindFirst("TenantId") != null;
+
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
         }
     }
 }

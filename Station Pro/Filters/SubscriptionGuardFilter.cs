@@ -1,10 +1,10 @@
-﻿// =============================================================================
-// FILE: StationPro/Filters/SubscriptionGuardFilter.cs
-// =============================================================================
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using StationPro.Application.Contracts.Services;
 using StationPro.Domain.Entities;
+using System.Security.Claims;
 
 namespace StationPro.Filters
 {
@@ -14,11 +14,11 @@ namespace StationPro.Filters
     public class SubscriptionGuardFilter : IAsyncActionFilter
     {
         private readonly ISubscriptionRequestService _subscriptionService;
-        private readonly IAuthService _authService; // ← add this
+        private readonly IAuthService _authService;
 
         public SubscriptionGuardFilter(
             ISubscriptionRequestService subscriptionService,
-            IAuthService authService) // ← inject
+            IAuthService authService)
         {
             _subscriptionService = subscriptionService;
             _authService = authService;
@@ -37,31 +37,33 @@ namespace StationPro.Filters
                 return;
             }
 
-            // ── Resolve TenantId from session ─────────────────────────────────
-            var tenantId = context.HttpContext.Session.GetInt32("TenantId");
-            if (!tenantId.HasValue || tenantId.Value == 0)
+            // ── Resolve TenantId from cookie claims ───────────────────────────
+            var tenantClaim = context.HttpContext.User?.FindFirst("TenantId");
+
+            if (tenantClaim == null || !int.TryParse(tenantClaim.Value, out var tenantId) || tenantId == 0)
             {
                 context.Result = new RedirectToActionResult("Login", "Auth", null);
                 return;
             }
 
             // ── Check if tenant is still active (admin may have deactivated) ──
-            var isActive = await _authService.IsTenantActiveAsync(tenantId.Value);
+            var isActive = await _authService.IsTenantActiveAsync(tenantId);
             if (!isActive)
             {
-                // Clear session so they have to log in again after reactivation
-                context.HttpContext.Session.Clear();
-                context.Result = new RedirectToActionResult(
-                    "Deactivated", "Auth", null);
+                // Sign out completely — deletes the cookie
+                await context.HttpContext.SignOutAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+
+                context.Result = new RedirectToActionResult("Deactivated", "Auth", null);
                 return;
             }
 
             // ── Check subscription request status ─────────────────────────────
-            var latest = await _subscriptionService.GetLatestRequest(tenantId.Value);
+            var latest = await _subscriptionService.GetLatestRequest(tenantId);
             if (latest == null)
             {
                 context.Result = new RedirectToActionResult(
-                    "Subscribe", "Subscription", new { tenantId = tenantId.Value });
+                    "Subscribe", "Subscription", new { tenantId });
                 return;
             }
 
@@ -69,18 +71,21 @@ namespace StationPro.Filters
             {
                 case SubscriptionRequestStatus.Pending:
                     context.Result = new RedirectToActionResult(
-                        "Pending", "Subscription", new { tenantId = tenantId.Value });
+                        "Pending", "Subscription", new { tenantId });
                     break;
+
                 case SubscriptionRequestStatus.Rejected:
                     context.Result = new RedirectToActionResult(
-                        "Rejected", "Subscription", new { tenantId = tenantId.Value });
+                        "Rejected", "Subscription", new { tenantId });
                     break;
+
                 case SubscriptionRequestStatus.Approved:
                     await next();
                     break;
+
                 default:
                     context.Result = new RedirectToActionResult(
-                        "Subscribe", "Subscription", new { tenantId = tenantId.Value });
+                        "Subscribe", "Subscription", new { tenantId });
                     break;
             }
         }

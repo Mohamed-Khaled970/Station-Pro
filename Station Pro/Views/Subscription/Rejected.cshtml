@@ -17,48 +17,7 @@
     <title>@ViewData["Title"] – Station Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .field-error {
-            display: none;
-            color: #dc2626;
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-            font-weight: 500;
-        }
-
-            .field-error.visible {
-                display: block;
-            }
-
-        .input-invalid {
-            border-color: #dc2626 !important;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-        }
-
-        .upload-error {
-            display: none;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 0.75rem;
-            padding: 0.875rem 1rem;
-            color: #dc2626;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-            .upload-error.visible {
-                display: flex;
-            }
-    </style>
+    <link rel="stylesheet" href="~/css/subscribe.css">
 </head>
 <body class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
 
@@ -83,12 +42,12 @@
 
             <!-- Status card -->
             <div class="bg-white rounded-3xl shadow-xl border border-red-100 overflow-hidden mb-6">
-                <div class="bg-gradient-to-r from-red-500 to-orange-500 px-8 py-6 text-center">
+                <div class="bg-gradient-to-r from-red-500 to-orange-500 px-8 py-6 text-center card-header-pad">
                     <h1 class="text-2xl font-extrabold text-white mb-1">Subscription Rejected</h1>
                     <p class="text-red-50 text-sm">Please review the reason below and resubmit.</p>
                 </div>
 
-                <div class="px-8 py-7">
+                <div class="px-8 py-7 mobile-pad">
                     <div class="flex items-center justify-between mb-5">
                         <span class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Status</span>
                         <span class="inline-flex items-center gap-1.5 bg-red-100 text-red-700 font-semibold text-sm px-4 py-1.5 rounded-full">
@@ -96,7 +55,7 @@
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div class="grid grid-cols-2 gap-4 mb-5 info-row">
                         <div class="bg-gray-50 rounded-xl p-4">
                             <p class="text-xs text-gray-400 uppercase mb-1">Plan</p>
                             <p class="font-bold text-gray-900">@Model.PlanName</p>
@@ -120,12 +79,11 @@
                 </div>
             </div>
 
-            <!-- ── Server-side error banner (from TempData) ── -->
+            <!-- Server-side error banner -->
             @if (TempData["Error"] != null)
             {
                 var parts = TempData["Error"]!.ToString()!.Split('|');
-                <div id="server-error-banner"
-                     class="flex items-start gap-3 bg-red-50 border border-red-300 rounded-2xl p-4 mb-4">
+                <div class="flex items-start gap-3 bg-red-50 border border-red-300 rounded-2xl p-4 mb-4">
                     <i class="fas fa-exclamation-circle text-red-500 mt-0.5 flex-shrink-0"></i>
                     <div>
                         <p class="text-sm font-bold text-red-800">@parts[0]</p>
@@ -139,7 +97,7 @@
 
             <!-- Re-upload form card -->
             <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-                <div class="bg-gray-900 px-8 py-5">
+                <div class="bg-gray-900 px-8 py-5 card-header-pad">
                     <h2 class="text-lg font-bold text-white flex items-center gap-2">
                         <i class="fas fa-redo text-blue-400"></i> Submit a New Request
                     </h2>
@@ -153,7 +111,7 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="TenantId" value="@Model.TenantId" />
 
-                    <div class="px-8 py-7 space-y-5">
+                    <div class="px-8 py-7 space-y-5 mobile-pad">
 
                         <!-- Payment method -->
                         <div>
@@ -213,27 +171,27 @@
                                       placeholder="Anything the admin should know…"></textarea>
                         </div>
 
-                        <!-- File upload -->
+                        <!-- File upload — same enhanced zone as subscribe page -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">
                                 New Payment Screenshot <span class="text-red-500">*</span>
                             </label>
 
                             <div id="reuploadZone"
-                                 class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all"
+                                 class="border-2 border-dashed border-gray-300 rounded-xl text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all drop-zone-inner"
+                                 style="padding: 2.5rem 1rem;"
                                  onclick="document.getElementById('reuploadInput').click()"
                                  ondragover="event.preventDefault(); this.classList.add('border-blue-500','bg-blue-50')"
                                  ondragleave="this.classList.remove('border-blue-500','bg-blue-50')"
                                  ondrop="handleReuploadDrop(event)">
-                                <i class="fas fa-upload text-3xl text-gray-300 mb-2"></i>
-                                <p class="text-gray-500 text-sm font-medium">Click or drag a file here</p>
-                                <p class="text-xs text-gray-400 mt-1">PNG, JPG – max 5 MB</p>
+                                <i class="fas fa-cloud-upload-alt upload-icon text-4xl text-gray-300 mb-3 block"></i>
+                                <p class="text-gray-600 font-medium mb-1 text-sm">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-400">PNG, JPG up to 5 MB — auto compressed</p>
                                 <input type="file" name="PaymentProof" id="reuploadInput"
                                        accept="image/png,image/jpeg,image/jpg" class="hidden"
                                        onchange="previewReupload(this)" />
                             </div>
 
-                            <!-- Upload error shown by JS -->
                             <div class="upload-error" id="err-file">
                                 <i class="fas fa-exclamation-circle flex-shrink-0"></i>
                                 <span>Please upload a payment screenshot (PNG or JPG).</span>
@@ -241,7 +199,7 @@
 
                             <!-- Preview -->
                             <div id="reuploadPreview" class="mt-3 hidden">
-                                <div class="relative inline-block">
+                                <div class="relative inline-block max-w-full">
                                     <img id="reuploadImg" src="" alt="Preview"
                                          class="max-h-48 rounded-xl border border-gray-200 shadow-sm" />
                                     <button type="button" onclick="removeReupload()"
@@ -249,7 +207,7 @@
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <p class="text-xs text-green-600 font-medium mt-1" id="reupload-filename"></p>
+                                {{-- filename text removed intentionally --}}
                             </div>
                         </div>
 
@@ -268,122 +226,7 @@
         </div>
     </main>
 
-    <script>
-        // ── File preview ───────────────────────────────────────────────────────
-        function previewReupload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            // Clear upload error once a file is chosen
-            document.getElementById('err-file').classList.remove('visible');
-            document.getElementById('reuploadZone').classList.remove('input-invalid');
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                document.getElementById('reuploadImg').src = e.target.result;
-                document.getElementById('reuploadPreview').classList.remove('hidden');
-                document.getElementById('reuploadZone').classList.add('hidden');
-                document.getElementById('reupload-filename').textContent =
-                    file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removeReupload() {
-            document.getElementById('reuploadInput').value = '';
-            document.getElementById('reuploadPreview').classList.add('hidden');
-            document.getElementById('reuploadZone').classList.remove('hidden');
-            document.getElementById('reupload-filename').textContent = '';
-        }
-
-        function handleReuploadDrop(e) {
-            e.preventDefault();
-            document.getElementById('reuploadZone').classList.remove('border-blue-500', 'bg-blue-50');
-            const dt = e.dataTransfer;
-            if (dt.files.length) {
-                document.getElementById('reuploadInput').files = dt.files;
-                previewReupload(document.getElementById('reuploadInput'));
-            }
-        }
-
-        // ── Form validation on submit ──────────────────────────────────────────
-        document.getElementById('resubmitForm').addEventListener('submit', function (e) {
-            let valid = true;
-
-            // Helper: show/hide field error
-            function setError(inputId, errorId, show) {
-                const input = document.getElementById(inputId);
-                const err = document.getElementById(errorId);
-                if (!input || !err) return;
-                if (show) {
-                    input.classList.add('input-invalid');
-                    err.classList.add('visible');
-                } else {
-                    input.classList.remove('input-invalid');
-                    err.classList.remove('visible');
-                }
-            }
-
-            // 1. Payment method
-            const method = document.getElementById('resubmit-method').value;
-            setError('resubmit-method', 'err-method', !method);
-            if (!method) valid = false;
-
-            // 2. Phone number (10–11 digits)
-            const phone = document.getElementById('resubmit-phone').value.replace(/\D/g, '');
-            setError('resubmit-phone', 'err-phone', phone.length < 10);
-            if (phone.length < 10) valid = false;
-
-            // 3. Payment proof file
-            const fileInput = document.getElementById('reuploadInput');
-            const hasFile = fileInput.files && fileInput.files.length > 0;
-            const fileErr = document.getElementById('err-file');
-            const dropZone = document.getElementById('reuploadZone');
-
-            if (!hasFile) {
-                fileErr.classList.add('visible');
-                // Only highlight drop zone if it's still visible (not in preview state)
-                if (!dropZone.classList.contains('hidden')) {
-                    dropZone.classList.add('input-invalid');
-                }
-                valid = false;
-            } else {
-                fileErr.classList.remove('visible');
-                dropZone.classList.remove('input-invalid');
-            }
-
-            if (!valid) {
-                e.preventDefault();
-                // Scroll to first error
-                document.querySelector('.field-error.visible, .upload-error.visible')
-                    ?.closest('div')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return;
-            }
-
-            // Disable button to prevent double-submit
-            const btn = document.getElementById('resubmitBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting…';
-        });
-
-        // ── Phone: digits only ─────────────────────────────────────────────────
-        document.getElementById('resubmit-phone').addEventListener('input', function () {
-            this.value = this.value.replace(/\D/g, '').slice(0, 11);
-            // Clear error as user types
-            if (this.value.length >= 10) {
-                this.classList.remove('input-invalid');
-                document.getElementById('err-phone').classList.remove('visible');
-            }
-        });
-
-        // ── Clear method error on change ───────────────────────────────────────
-        document.getElementById('resubmit-method').addEventListener('change', function () {
-            if (this.value) {
-                this.classList.remove('input-invalid');
-                document.getElementById('err-method').classList.remove('visible');
-            }
-        });
-    </script>
+    {{!-- All JS is now in subscribe.js — no inline scripts needed --}}
+    <script src="~/js/subscribe.js"></script>
 </body>
 </html>

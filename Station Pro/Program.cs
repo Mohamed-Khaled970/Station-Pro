@@ -2,6 +2,8 @@
 // FILE: StationPro/Program.cs
 // =============================================================================
 
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.ResponseCompression;
 using Station_Pro;
@@ -16,17 +18,41 @@ using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── In-memory session service (your existing one) ─────────────────────────────
+// ── Data Protection — persist keys to disk so app pool restarts don't ─────────
+// invalidate existing auth cookies. Keys are auto-generated XML files.
+// ContentRootPath resolves automatically on any server — no hardcoded path.
+var keysPath = Path.Combine(builder.Environment.ContentRootPath, "DataProtectionKeys");
+Directory.CreateDirectory(keysPath); // creates the folder if it doesn't exist yet
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
+    .SetApplicationName("StationPro");
+
+// ── Cookie Authentication ─────────────────────────────────────────────────────
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Auth/Login";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;          // resets 8h timer on activity
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.IsEssential = true;
+        options.Cookie.Name = "StationPro.Auth";
+    });
+
+builder.Services.AddAuthorization();
+
+// ── In-memory session service (your custom one, NOT ASP.NET sessions) ─────────
 builder.Services.AddSingleton<ISessionService, SessionService>();
 
 // ── Infrastructure (EF Core + repositories + services + HttpContextAccessor) ──
 builder.Services.AddInfrastructureService(builder.Configuration);
 
-// ── SubscriptionGuardFilter — must be AddScoped so DI injects it properly ─────
-// Do NOT use options.Filters.Add<SubscriptionGuardFilter>() for scoped filters.
-// Use AddService<> inside AddControllersWithViews instead.
+// ── Filters ───────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<SubscriptionGuardFilter>();
-
 builder.Services.AddScoped<AdminAuthFilter>();
 
 // ── Response compression ──────────────────────────────────────────────────────
@@ -44,10 +70,9 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 // ── Localization ──────────────────────────────────────────────────────────────
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-// ── MVC + global filter registration ─────────────────────────────────────────
+// ── MVC ───────────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews(options =>
 {
-    // AddService<T> correctly resolves scoped filters from the DI container
     options.Filters.AddService<SubscriptionGuardFilter>();
 })
 .AddViewLocalization()
@@ -57,18 +82,6 @@ builder.Services.AddControllersWithViews(options =>
         factory.Create(typeof(SharedResources));
 });
 
-// ── Session ───────────────────────────────────────────────────────────────────
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromHours(8);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-
-    // ✅ This makes the cookie persist in the browser after closing
-    options.Cookie.MaxAge = TimeSpan.FromHours(8); // match IdleTimeout
-});
 // ── Supported cultures ────────────────────────────────────────────────────────
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -99,19 +112,21 @@ app.UseResponseCompression();
 app.UseRequestLocalization();
 app.UseStaticFiles();
 app.UseRouting();
-// ── Middleware pipeline order — CRITICAL ──────────────────────────────────────
-// 1. Session cookie must be loaded before anything reads it
-app.UseSession();
 
-// 2. Resolve tenant from session → populates HttpContext.Items["TenantId"]
+// ── Middleware pipeline order — CRITICAL ──────────────────────────────────────
+// Order matters. Never swap these around.
+
+// 1. Decrypt the auth cookie → populates HttpContext.User with claims
+app.UseAuthentication();
+
+// 2. Resolve TenantId from claims → populates HttpContext.Items["TenantId"]
 app.UseMiddleware<TenantResolutionMiddleware>();
 
 // 3. Block protected routes that have no resolved tenant
 app.UseMiddleware<TenantGuardMiddleware>();
 
-// 4. Authorization (after tenant is known)
+// 4. Authorization
 app.UseAuthorization();
-// 3. auth
 
 app.MapControllerRoute(
     name: "default",

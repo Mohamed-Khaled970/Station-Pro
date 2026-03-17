@@ -7,8 +7,10 @@ namespace StationPro.Filters
     {
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            var adminId = context.HttpContext.Session.GetInt32("AdminId");
-            if (adminId == null)
+            // Check Role claim from the encrypted auth cookie
+            var roleClaim = context.HttpContext.User?.FindFirst("Role");
+
+            if (roleClaim?.Value != "Admin")
             {
                 context.Result = new RedirectToActionResult("Login", "Auth", null);
             }

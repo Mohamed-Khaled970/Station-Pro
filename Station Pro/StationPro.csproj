@@ -4,6 +4,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<RootNamespace>StationPro</RootNamespace>
+		<UserSecretsId>e913783d-05fe-4587-9aae-ce2a0f67dc22</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,6 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="DataProtectionKeys\" />
 	  <Folder Include="wwwroot\payment-proofs\" />
 	</ItemGroup>
 </Project>

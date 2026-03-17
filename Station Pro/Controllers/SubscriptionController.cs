@@ -1,23 +1,11 @@
 ﻿// =============================================================================
 // FILE: Station_Pro/Controllers/SubscriptionController.cs
-//
-// Handles the full user-facing subscription flow:
-//   GET  /Subscription/Subscribe        → plan picker
-//   POST /Subscription/SubmitSubscription → save request + redirect to Pending
-//   GET  /Subscription/Pending          → "under review" page
-//   GET  /Subscription/Rejected         → rejection page with re-upload form
-//   POST /Subscription/Resubmit         → save new attempt, back to Pending
-//   GET  /Subscription/CheckStatus      → JSON poll used by Pending page
-//
-// Storage: static in-memory list (replace with EF Core + repository pattern).
 // =============================================================================
 
 using Microsoft.AspNetCore.Mvc;
-using Station_Pro.Controllers;                        // AuthController.GetTenantModel()
 using StationPro.Application.Contracts.Repositories;
 using StationPro.Application.Contracts.Services;
 using StationPro.Application.DTOs.Subscriptions;
-using StationPro.Controllers;                         // AdminController.AddSubscriptionRequest()
 using StationPro.Domain.Entities;
 
 namespace Station_Pro.Controllers
@@ -38,14 +26,21 @@ namespace Station_Pro.Controllers
             _environment = environment;
         }
 
+        // ── Private helper: resolve TenantId from cookie claims ───────────────
+        private int? GetCurrentTenantId()
+        {
+            var claim = User.FindFirst("TenantId");
+            if (claim != null && int.TryParse(claim.Value, out var id) && id > 0)
+                return id;
+            return null;
+        }
+
         // ── GET /Subscription/Subscribe ───────────────────────────────────────
         [HttpGet]
         public async Task<IActionResult> Subscribe(int? tenantId)
         {
-            // Prefer session over query string — more reliable
-            var currentTenantId = HttpContext.Session.GetInt32("TenantId")
-                                  ?? tenantId
-                                  ?? 0;
+            // Prefer claim over query string — more reliable and tamper-resistant
+            var currentTenantId = GetCurrentTenantId() ?? tenantId ?? 0;
 
             if (currentTenantId == 0)
                 return RedirectToAction("Login", "Auth");
@@ -70,7 +65,6 @@ namespace Station_Pro.Controllers
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitSubscription(SubmitSubscriptionDto dto)
         {
-            // ── Validation ────────────────────────────────────────────────────
             if (string.IsNullOrWhiteSpace(dto.SubscriptionPlan) ||
                 dto.Amount <= 0 ||
                 string.IsNullOrWhiteSpace(dto.PaymentMethod) ||

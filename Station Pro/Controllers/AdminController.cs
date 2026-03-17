@@ -1,23 +1,14 @@
 ﻿// =============================================================================
-// FILE: StationPro/Controllers/AdminController.cs  (UPDATED)
-//
-// Changes vs original:
-//  1. ApproveSubscription  → calls SubscriptionController.SyncApproval()
-//  2. RejectSubscription   → calls SubscriptionController.SyncRejection()
-//  3. Local RejectReasonDto removed — use the one from SubscriptionDtos.cs
-//
-// Everything else (dashboard stats, tenant management, sample data) is
-// preserved exactly as it was in the original file.
+// FILE: StationPro/Controllers/AdminController.cs
 // =============================================================================
 
 using Microsoft.AspNetCore.Mvc;
+using StationPro.Application.Contracts.Repositories;
+using StationPro.Application.Contracts.Services;
 using StationPro.Application.DTOs.Admin;
 using StationPro.Application.DTOs.Subscriptions;
 using StationPro.Domain.Entities;
-using Station_Pro.Controllers;
-using StationPro.Application.Contracts.Repositories;
-using StationPro.Application.Contracts.Services;
-using StationPro.Filters;    // SubscriptionController.SyncApproval / SyncRejection
+using StationPro.Filters;
 
 namespace StationPro.Controllers
 {
@@ -34,6 +25,10 @@ namespace StationPro.Controllers
             _adminRepo = adminRepo;
             _subService = subService;
         }
+
+        // ── Private helper: resolve AdminName from cookie claims ──────────────
+        private string GetAdminName()
+            => User.FindFirst("AdminName")?.Value ?? "Admin";
 
         // ── Dashboard ─────────────────────────────────────────────────────────
         public async Task<IActionResult> Index()
@@ -67,7 +62,6 @@ namespace StationPro.Controllers
         {
             var all = await _subService.GetAllAsync();
 
-            // Map domain entities → DTOs for the view
             var dtos = all
                 .Where(r => filter == "all" ||
                             r.Status.ToString().Equals(filter, StringComparison.OrdinalIgnoreCase))
@@ -101,7 +95,7 @@ namespace StationPro.Controllers
         [HttpPost]
         public async Task<IActionResult> ApproveSubscription(int id)
         {
-            var reviewedBy = HttpContext.Session.GetString("AdminName") ?? "Admin";
+            var reviewedBy = GetAdminName();
 
             var (success, error) = await _subService.ApproveAsync(id, reviewedBy);
 
@@ -119,7 +113,7 @@ namespace StationPro.Controllers
             if (string.IsNullOrWhiteSpace(dto?.Reason))
                 return BadRequest(new { success = false, message = "Please provide a reason." });
 
-            var reviewedBy = HttpContext.Session.GetString("AdminName") ?? "Admin";
+            var reviewedBy = GetAdminName();
 
             var (success, error) = await _subService.RejectAsync(id, dto.Reason, reviewedBy);
 
@@ -150,7 +144,7 @@ namespace StationPro.Controllers
             return Ok(new { success = true, plan = plan.ToString() });
         }
 
-
+        // ── Tenant details ────────────────────────────────────────────────────
         [HttpGet]
         public async Task<IActionResult> TenantDetails(int tenantId)
         {
