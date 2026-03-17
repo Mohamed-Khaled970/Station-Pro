@@ -370,18 +370,18 @@ body {
         margin-top: 0.125rem !important;
         flex-shrink: 0;
     }
-
     .flex.items-center.justify-between {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+        flex-direction: row; /* ← keep on same row */
+        align-items: center; /* ← vertically centered */
+        justify-content: space-between;
+        gap: 0;
+        flex-wrap: wrap; /* ← wrap only if truly no space */
     }
 
         .flex.items-center.justify-between label,
         .flex.items-center.justify-between a {
-            font-size: 0.875rem !important;
+            font-size: 0.8125rem !important; /* slightly smaller on mobile */
         }
-
     .glass-card > div:last-child {
         margin-top: 1.25rem !important;
     }
