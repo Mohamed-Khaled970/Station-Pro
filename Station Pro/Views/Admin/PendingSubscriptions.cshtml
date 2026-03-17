@@ -1,7 +1,7 @@
 ﻿@model List<StationPro.Application.DTOs.Subscriptions.PendingSubscriptionDto>
 @{
     ViewData["Title"] = "Subscription Requests";
-    Layout = null;  // ← isolated
+    Layout = null;
     var filter = Context.Request.Query["filter"].ToString() is { Length: > 0 } f ? f : "all";
 }
 
@@ -40,10 +40,11 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <!-- Admin Navigation (same as Index) -->
+    <!-- Admin Navigation -->
     <nav class="bg-gradient-to-r from-slate-800 to-slate-900 shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
+
                 <!-- Logo -->
                 <div class="flex items-center space-x-3">
                     <div class="w-9 h-9 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -78,13 +79,14 @@
 
                 <!-- Admin info + Logout -->
                 <div class="flex items-center space-x-3">
+                    <!-- ✅ AdminName from cookie claim instead of Session -->
                     <div class="hidden md:flex items-center space-x-2 text-slate-300 text-sm">
                         <div class="w-8 h-8 bg-blue-500/20 border border-blue-400/30 rounded-full flex items-center justify-center">
                             <i class="fas fa-user-shield text-blue-400 text-xs"></i>
                         </div>
-                        <span>@(Context.Session.GetString("AdminName") ?? "Admin")</span>
+                        <span>@(User.FindFirst("AdminName")?.Value ?? "Admin")</span>
                     </div>
-                    <form method="post" action="/Auth/Logout">
+                    <form method="post" asp-action="Logout" asp-controller="Auth">
                         @Html.AntiForgeryToken()
                         <button type="submit"
                                 class="flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-400/10 transition-all text-sm">
@@ -311,14 +313,10 @@
     <!-- Toast container -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
 
-    <!-- ✅ admin.js loaded first — provides showAdminConfirm, approveSubscription, showToast -->
     <script src="@Url.Content("~/js/admin.js")"></script>
     <script>
         let _rejectId = null;
 
-        // ── updateRowStatus ──────────────────────────────────────────────
-        // Called by window.approveSubscription (defined in admin.js) after
-        // the server confirms success.
         window.updateRowStatus = function (id, status, reason) {
             const row = document.getElementById(`row-${id}`);
             if (row) {
@@ -343,7 +341,6 @@
             }
         };
 
-        // ── Reject modal ─────────────────────────────────────────────────
         function openRejectModal(id) {
             _rejectId = id;
             document.getElementById('rejectReason').value = '';
@@ -381,7 +378,6 @@
                 .catch(() => showToast('Network error.', 'error'));
         }
 
-        // ── Lightbox ─────────────────────────────────────────────────────
         function openLightbox(url) {
             document.getElementById('lightboxImage').src = url;
             document.getElementById('lightboxOverlay').classList.remove('hidden');
