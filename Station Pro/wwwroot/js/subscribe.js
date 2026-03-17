@@ -103,7 +103,7 @@ async function processImageFile(file, loadingContainer, onSuccess) {
         onSuccess(file);
     }
 }
-}
+
 
 // =============================================================================
 // SUBSCRIBE PAGE — 3-step form
