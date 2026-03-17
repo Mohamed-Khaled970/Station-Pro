@@ -23,12 +23,11 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Modal overlay — uses display:none / display:flex toggled by JS, NOT Tailwind hidden */
         #tenantDetailsModal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0,0,0,0.55);
             backdrop-filter: blur(4px);
             z-index: 9999;
             align-items: center;
@@ -92,13 +91,14 @@
                 </div>
 
                 <div class="flex items-center space-x-2">
+                    <!-- ✅ AdminName from cookie claim instead of Session -->
                     <div class="hidden sm:flex items-center space-x-2 text-slate-300 text-sm">
                         <div class="w-8 h-8 bg-blue-500/20 border border-blue-400/30 rounded-full flex items-center justify-center">
                             <i class="fas fa-user-shield text-blue-400 text-xs"></i>
                         </div>
-                        <span>@(Context.Session.GetString("AdminName") ?? "Admin")</span>
+                        <span>@(User.FindFirst("AdminName")?.Value ?? "Admin")</span>
                     </div>
-                    <form method="post" action="/Auth/Logout" class="hidden sm:block">
+                    <form method="post" asp-action="Logout" asp-controller="Auth" class="hidden sm:block">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-400/10 text-sm font-medium">
                             <i class="fas fa-sign-out-alt"></i><span>Logout</span>
@@ -122,7 +122,7 @@
                     </span>
                 }
             </a>
-            <form method="post" action="/Auth/Logout" style="margin:0">
+            <form method="post" asp-action="Logout" asp-controller="Auth" style="margin:0">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="mobile-logout-item">
                     <i class="fas fa-sign-out-alt w-5 text-center"></i>Logout
@@ -313,15 +313,9 @@
         </div>
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════════════
-         TENANT DETAILS MODAL
-         Placed at body level (outside #tenants-container) so it overlays
-         the entire page correctly. Toggled via .is-open class in admin.js.
-         ══════════════════════════════════════════════════════════════════ -->
+    <!-- ══ TENANT DETAILS MODAL ══ -->
     <div id="tenantDetailsModal" onclick="closeTenantDetailsModal()">
         <div id="tenantDetailsModalBox" onclick="event.stopPropagation()">
-
-            <!-- Header -->
             <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <h3 class="font-bold text-gray-900 text-lg flex items-center gap-2">
                     <i class="fas fa-user-circle text-blue-500"></i> Tenant Details
@@ -331,11 +325,7 @@
                     <i class="fas fa-times text-gray-500 text-sm"></i>
                 </button>
             </div>
-
-            <!-- Body -->
             <div class="px-6 py-6 space-y-5">
-
-                <!-- Identity -->
                 <div>
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Identity</p>
                     <div class="grid grid-cols-2 gap-4">
@@ -357,8 +347,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Subscription -->
                 <div>
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Subscription</p>
                     <div class="grid grid-cols-2 gap-4">
@@ -376,8 +364,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Stats -->
                 <div>
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Stats</p>
                     <div class="grid grid-cols-2 gap-4">
@@ -400,8 +386,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Footer -->
             <div class="px-6 py-4 border-t border-gray-100">
                 <button onclick="closeTenantDetailsModal()"
                         class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-all">
@@ -411,7 +395,6 @@
         </div>
     </div>
 
-    <!-- Toast Container -->
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
 
     <script src="@Url.Content("~/js/admin.js")"></script>

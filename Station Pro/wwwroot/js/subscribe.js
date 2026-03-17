@@ -16,11 +16,19 @@ let _currentStep = 1;
 // Used by both the subscribe upload and the rejected-page resubmit upload.
 // =============================================================================
 
+// Files under this size skip compression entirely — instant preview
+const SKIP_COMPRESS_MB = 1.0;
+const MAX_DIMENSION = 1280;   // max px on longest side
+const ENCODE_QUALITY = 0.75;   // single fixed quality, no iterative loop
+
 /**
- * Compresses an image File to under maxSizeMB at up to maxWidthOrHeight px.
- * Returns a new File (JPEG) or throws on failure.
+ * Fast compression:
+ *  - Files <= SKIP_COMPRESS_MB  -> returned as-is (no canvas work)
+ *  - Files >  SKIP_COMPRESS_MB  -> resized + single-pass JPEG encode
  */
-async function compressImage(file, maxSizeMB = 0.5, maxWidthOrHeight = 1920) {
+async function compressImage(file) {
+    if (file.size / 1024 / 1024 <= SKIP_COMPRESS_MB) return file;
+
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -30,45 +38,24 @@ async function compressImage(file, maxSizeMB = 0.5, maxWidthOrHeight = 1920) {
             img.src = event.target.result;
 
             img.onload = () => {
-                const canvas = document.createElement('canvas');
                 let width = img.width;
                 let height = img.height;
 
                 if (width > height) {
-                    if (width > maxWidthOrHeight) {
-                        height = Math.round(height * maxWidthOrHeight / width);
-                        width = maxWidthOrHeight;
-                    }
+                    if (width > MAX_DIMENSION) { height = Math.round(height * MAX_DIMENSION / width); width = MAX_DIMENSION; }
                 } else {
-                    if (height > maxWidthOrHeight) {
-                        width = Math.round(width * maxWidthOrHeight / height);
-                        height = maxWidthOrHeight;
-                    }
+                    if (height > MAX_DIMENSION) { width = Math.round(width * MAX_DIMENSION / height); height = MAX_DIMENSION; }
                 }
 
+                const canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
-                let quality = 0.7;
-
-                const tryCompress = () => {
-                    canvas.toBlob((blob) => {
-                        if (!blob) { reject(new Error('Canvas toBlob failed')); return; }
-
-                        if (blob.size / 1024 / 1024 > maxSizeMB && quality > 0.3) {
-                            quality -= 0.1;
-                            tryCompress();
-                        } else {
-                            resolve(new File([blob], file.name, {
-                                type: 'image/jpeg',
-                                lastModified: Date.now()
-                            }));
-                        }
-                    }, 'image/jpeg', quality);
-                };
-
-                tryCompress();
+                canvas.toBlob((blob) => {
+                    if (!blob) { reject(new Error('Canvas toBlob failed')); return; }
+                    resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+                }, 'image/jpeg', ENCODE_QUALITY);
             };
 
             img.onerror = () => reject(new Error('Image load failed'));
@@ -79,8 +66,8 @@ async function compressImage(file, maxSizeMB = 0.5, maxWidthOrHeight = 1920) {
 }
 
 /**
- * Core handler: validates file type, compresses, then calls onSuccess(compressedFile, sizeInfo).
- * Shows a loading indicator inside loadingContainer while compressing.
+ * Core handler: validates, compresses if needed, calls onSuccess(file).
+ * Spinner only shown for files that actually need compression.
  */
 async function processImageFile(file, loadingContainer, onSuccess) {
     if (!file || !file.type.startsWith('image/')) {
@@ -88,20 +75,20 @@ async function processImageFile(file, loadingContainer, onSuccess) {
         return;
     }
 
-    // Show loading spinner
-    const loaderId = 'compress-loading-' + Date.now();
-    loadingContainer.insertAdjacentHTML('beforeend', `
-        <div id="${loaderId}" class="flex flex-col items-center gap-2 text-blue-600 py-4">
-            <i class="fas fa-spinner fa-spin text-2xl"></i>
-            <span class="text-sm font-medium">Optimizing image…</span>
-        </div>`);
+    const needsCompression = file.size / 1024 / 1024 > SKIP_COMPRESS_MB;
+    let loaderId = null;
+
+    if (needsCompression) {
+        loaderId = 'compress-loading-' + Date.now();
+        loadingContainer.insertAdjacentHTML('beforeend', `
+            <div id="${loaderId}" class="flex flex-col items-center gap-2 text-blue-600 py-3">
+                <i class="fas fa-spinner fa-spin text-xl"></i>
+                <span class="text-xs font-medium">Optimizing...</span>
+            </div>`);
+    }
 
     try {
-        const originalMB = (file.size / 1024 / 1024).toFixed(2);
-        const compressed = await compressImage(file, 0.5, 1920);
-        const compressedMB = (compressed.size / 1024 / 1024).toFixed(2);
-        const savings = ((1 - compressed.size / file.size) * 100).toFixed(0);
-
+        const compressed = await compressImage(file);
         document.getElementById(loaderId)?.remove();
 
         if (compressed.size > 5 * 1024 * 1024) {
@@ -109,14 +96,13 @@ async function processImageFile(file, loadingContainer, onSuccess) {
             return;
         }
 
-        const sizeInfo = `Optimized: ${compressedMB}MB (${savings}% smaller than ${originalMB}MB)`;
-        onSuccess(compressed, sizeInfo);
+        onSuccess(compressed);
 
     } catch {
         document.getElementById(loaderId)?.remove();
-        // Fall back to original without compression
-        onSuccess(file, null);
+        onSuccess(file);
     }
+}
 }
 
 // =============================================================================
@@ -244,7 +230,7 @@ function handleDrop(event) {
 function handleSubscribeFile(file, input) {
     const dropZone = document.getElementById('dropZone');
 
-    processImageFile(file, dropZone, (compressed, sizeInfo) => {
+    processImageFile(file, dropZone, (compressed) => {
         // Inject compressed file back into the input
         try {
             const dt = new DataTransfer();
@@ -254,11 +240,11 @@ function handleSubscribeFile(file, input) {
             // DataTransfer not supported in this browser — use original
         }
 
-        showSubscribePreview(compressed, sizeInfo);
+        showSubscribePreview(compressed);
     });
 }
 
-function showSubscribePreview(file, sizeInfo) {
+function showSubscribePreview(file) {
     const reader = new FileReader();
     reader.onload = e => {
         document.getElementById('previewImage').src = e.target.result;
@@ -288,7 +274,7 @@ function previewReupload(input) {
 
     const dropZone = document.getElementById('reuploadZone');
 
-    processImageFile(file, dropZone, (compressed, sizeInfo) => {
+    processImageFile(file, dropZone, (compressed) => {
         // Inject compressed file back into the input
         try {
             const dt = new DataTransfer();
