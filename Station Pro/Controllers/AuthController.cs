@@ -49,7 +49,6 @@ namespace Station_Pro.Controllers
                 return View(model);
             }
 
-            // ── Sign in as tenant immediately after registration ──────────────
             await SignInAsTenantAsync(tenantId);
 
             TempData["Success"] = "Account created! Please choose your subscription plan.";
@@ -59,7 +58,6 @@ namespace Station_Pro.Controllers
         // ── Login ─────────────────────────────────────────────────────────────
         public IActionResult Login()
         {
-            // If already authenticated as a tenant, skip login page
             var tenantClaim = User.FindFirst("TenantId");
             if (tenantClaim != null)
                 return RedirectToAction("Index", "Dashboard");
@@ -73,7 +71,6 @@ namespace Station_Pro.Controllers
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "Invalid input." });
 
-            // ── Check admin first ─────────────────────────────────────────────
             var admin = await _adminService.TryToGetAdmin(model.Email);
 
             if (admin != null && BCrypt.Net.BCrypt.Verify(model.Password, admin.PasswordHash))
@@ -82,7 +79,6 @@ namespace Station_Pro.Controllers
                 return Json(new { success = true, redirectUrl = "/Admin/Index" });
             }
 
-            // ── Check tenant ──────────────────────────────────────────────────
             var (success, tenantId, error) = await _auth.LoginAsync(model.Email, model.Password);
 
             if (!success)
@@ -115,6 +111,49 @@ namespace Station_Pro.Controllers
         }
 
         public IActionResult Deactivated() => View();
+
+        // ── Forgot Password ───────────────────────────────────────────────────
+        public IActionResult ForgotPassword() => View();
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            await _auth.ForgotPasswordAsync(email);
+            TempData["Success"] = "If that email is registered, a reset link has been sent.";
+            return RedirectToAction(nameof(ForgotPassword));
+        }
+
+        // ── Reset Password ────────────────────────────────────────────────────
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            if (!await _auth.IsResetTokenValidAsync(token))
+            {
+                // ── Token already used or expired → go to ForgotPassword
+                //    with ONLY the error message, no success message ──────────
+                TempData.Clear();   // 👈 clear any lingering TempData first
+                TempData["Error"] = "This reset link is invalid or has expired. Please request a new one.";
+                return RedirectToAction(nameof(ForgotPassword));
+            }
+
+            return View(model: token);
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string token, string newPassword)
+        {
+            var (success, error) = await _auth.ResetPasswordAsync(token, newPassword);
+
+            if (!success)
+            {
+                TempData.Clear();   // 👈 clear any lingering TempData first
+                TempData["Error"] = error;
+                return RedirectToAction(nameof(ForgotPassword));
+            }
+
+            // ── Password reset OK → go straight to Login with success toast ──
+            TempData["Success"] = "Password reset successfully. Please log in.";
+            return RedirectToAction(nameof(Login));   // 👈 go to Login, not ForgotPassword
+        }
 
         // ── Private helpers ───────────────────────────────────────────────────
 
@@ -156,7 +195,7 @@ namespace Station_Pro.Controllers
                 principal,
                 new AuthenticationProperties
                 {
-                    IsPersistent = true,                       // survives browser close
+                    IsPersistent = true,
                     ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                 });
         }

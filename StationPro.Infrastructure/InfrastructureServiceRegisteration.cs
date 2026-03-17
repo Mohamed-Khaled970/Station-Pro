@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StationPro.Application.Contracts.Repositories;
 using StationPro.Application.Contracts.Services;
+using StationPro.Application.Settings;
 using StationPro.Infrastructure.Data;
 using StationPro.Infrastructure.Repositories;
 using StationPro.Infrastructure.Services;
@@ -28,6 +29,8 @@ namespace StationPro.Infrastructure
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
+            services.Configure<EmailSettings>( configuration.GetSection("EmailSettings"));
+
             // ── Required by TenantService ─────────────────────────────────────
             // THIS WAS MISSING — causes the entire startup crash
             services.AddHttpContextAccessor();
@@ -51,6 +54,7 @@ namespace StationPro.Infrastructure
             services.AddScoped<IDeviceRepository, DeviceRepository>();
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IEmailService, SmtpEmailService>();
 
 
 

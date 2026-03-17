@@ -1,4 +1,5 @@
-﻿using StationPro.Application.Contracts.Repositories;
+﻿using Microsoft.AspNetCore.Http;
+using StationPro.Application.Contracts.Repositories;
 using StationPro.Application.Contracts.Services;
 using StationPro.Domain.Entities;
 using System;
@@ -13,11 +14,12 @@ namespace StationPro.Infrastructure.Services
     {
         private readonly ITenantRepository _tenantRepo;
         private readonly IEmailService _email;
-
-        public AuthService(ITenantRepository tenantRepo, IEmailService email)
+        private readonly IHttpContextAccessor _httpContext;
+        public AuthService(ITenantRepository tenantRepo, IEmailService email, IHttpContextAccessor httpContext)
         {
             _tenantRepo = tenantRepo;
             _email = email;
+            _httpContext = httpContext; 
         }
 
 
@@ -83,7 +85,7 @@ namespace StationPro.Infrastructure.Services
             var tenant = await _tenantRepo.GetByEmailAsync(email);
 
             if (tenant == null)
-                return (true, string.Empty);   // don't reveal whether email exists
+                return (true, string.Empty);
 
             var token = Convert.ToHexString(
                 System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
@@ -94,7 +96,12 @@ namespace StationPro.Infrastructure.Services
 
             await _tenantRepo.UpdateAsync(tenant);
 
-            var resetLink = $"https://stationpro.com/Auth/ResetPassword?token={token}";
+            // ── Build URL dynamically from current request ────────────────────
+            var request = _httpContext.HttpContext!.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var resetLink = $"{baseUrl}/Auth/ResetPassword?token={token}";
+            // ─────────────────────────────────────────────────────────────────
+
             await _email.SendAsync(
                 to: tenant.Email,
                 subject: "Reset your StationPro password",
