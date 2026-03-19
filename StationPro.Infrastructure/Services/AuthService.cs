@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Http;
 using StationPro.Application.Contracts.Repositories;
 using StationPro.Application.Contracts.Services;
 using StationPro.Domain.Entities;
@@ -102,12 +103,11 @@ namespace StationPro.Infrastructure.Services
             var resetLink = $"{baseUrl}/Auth/ResetPassword?token={token}";
             // ─────────────────────────────────────────────────────────────────
 
-            await _email.SendAsync(
-                to: tenant.Email,
-                subject: "Reset your StationPro password",
-                body: $"Click the link to reset your password (expires in 1 hour):\n\n{resetLink}"
-            );
-
+            BackgroundJob.Enqueue<IEmailService>(e => e.SendAsync( tenant.Email,
+                             "Reset your StationPro password",
+                             $"Click the link to reset your password (expires in 1 hour):\n\n{resetLink}"
+                        ));
+                            
             return (true, string.Empty);
         }
 

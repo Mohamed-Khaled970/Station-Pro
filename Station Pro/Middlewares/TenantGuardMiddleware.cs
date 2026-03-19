@@ -28,6 +28,7 @@
             "/language",      // LanguageController — culture switcher
             "/error",         // error pages
             "/favicon.ico",
+             "/hangfire"
         };
 
         /// <summary>

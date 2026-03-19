@@ -2,6 +2,8 @@
 // FILE: StationPro/Program.cs
 // =============================================================================
 
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
@@ -102,6 +104,29 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     };
 });
 
+
+// ── Hangfire Registeration ────────────────────────────────────────────────────────
+var hangfireConn = builder.Configuration.GetConnectionString("HangfireConnection");
+
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(hangfireConn, new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,          // react instantly
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+    }));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 2;   // keep low on shared hosting
+    options.Queues = new[] { "critical", "default" };
+});
+
 // =============================================================================
 var app = builder.Build();
 // =============================================================================
@@ -127,6 +152,19 @@ app.UseMiddleware<TenantGuardMiddleware>();
 
 // 4. Authorization
 app.UseAuthorization();
+
+
+// ── Hangfire Dashboard (username/password secured) ────────────────────────────
+var dashboardUser = builder.Configuration["Hangfire:DashboardUsername"]!;
+var dashboardPassword = builder.Configuration["Hangfire:DashboardPassword"]!;
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    DashboardTitle = "StationPro Jobs",
+    Authorization = new[] { new HangfireBasicAuthFilter(dashboardUser, dashboardPassword) },
+    IsReadOnlyFunc = _ => false
+});
+
 
 app.MapControllerRoute(
     name: "default",
