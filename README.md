@@ -8,8 +8,79 @@
 [![SQL Server](https://img.shields.io/badge/SQL_Server-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)](https://www.microsoft.com/en-us/sql-server)
 [![Entity Framework](https://img.shields.io/badge/Entity_Framework_Core-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://docs.microsoft.com/en-us/ef/core/)
 [![Hangfire](https://img.shields.io/badge/Hangfire-Background_Jobs-FF6600?style=for-the-badge)](https://www.hangfire.io/)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-stationpro.runasp.net-22C55E?style=for-the-badge)](https://stationpro.runasp.net/)
 
 > Station Pro helps gaming shop owners track devices, rooms, sessions, and subscription plans — all from one clean multi-tenant dashboard.
+
+---
+
+### 🎬 Watch the Demo
+
+[![Station Pro Demo](https://github.com/user-attachments/assets/1230b29f-e79c-407c-a877-dbfb29038d19)](https://stationpro.runasp.net/)
+
+> 👆 Click the image to visit the live demo
+
+---
+
+## 📸 Screenshots
+
+### 🔐 Authentication
+
+<img src="https://github.com/user-attachments/assets/d18f8aef-e6c9-4940-8e35-b4c578ef676b" width="48%" alt="Login Page"/>
+<img src="https://github.com/user-attachments/assets/25934687-d94b-465c-a58e-f49f51aa8a5b" width="48%" alt="Create Your Store / Register"/>
+
+---
+
+### 💳 Subscription Flow
+
+<img src="https://github.com/user-attachments/assets/b4bb3982-1a2c-48cf-8694-81e41ccf5733" width="48%" alt="Choose Your Plan"/>
+<img src="https://github.com/user-attachments/assets/49b52bd5-bbac-4d50-9e0e-5971964c8d57" width="48%" alt="Payment Method & Phone Number"/>
+
+<img src="https://github.com/user-attachments/assets/13d15477-c205-42dc-bf76-f1dbba63d1e6" width="48%" alt="Upload Payment Proof"/>
+<img src="https://github.com/user-attachments/assets/32b9772d-a77a-4436-87f3-02e8a8eae57f" width="48%" alt="Pending Review Page"/>
+
+<img src="https://github.com/user-attachments/assets/53f80b84-0b98-4258-aa96-3ade47b22d35" width="48%" alt="Rejection Page"/>
+
+---
+
+### 🔑 Password Reset Flow
+
+<img src="https://github.com/user-attachments/assets/b8a1e1ca-2def-41ac-b1a9-268af04035bd" width="32%" alt="Forgot Password Page"/>
+<img src="https://github.com/user-attachments/assets/4b690239-d5c8-4b58-8f51-4811c0bf4403" width="32%" alt="Reset Password Email"/>
+<img src="https://github.com/user-attachments/assets/6ff9bd9f-4a5e-4fd2-b4f2-73cdd1fec0cd" width="32%" alt="Reset Password Page"/>
+
+---
+
+### 📊 Tenant Dashboard & Sessions
+
+<img src="https://github.com/user-attachments/assets/af2cf627-2a6a-4f23-b735-97243b32712a" width="100%" alt="Tenant Live Dashboard"/>
+
+<img src="https://github.com/user-attachments/assets/518a0794-50a3-4ebe-a49e-cc9aa042774e" width="100%" alt="Session Management Page"/>
+
+---
+
+### 🖥️ Device & Room Management
+
+<img src="https://github.com/user-attachments/assets/a02bdc2b-943c-413a-9b70-0089d2a5890b" width="48%" alt="Device Management"/>
+<img src="https://github.com/user-attachments/assets/00c397f0-2d45-44d0-afec-2aab853d9fc9" width="48%" alt="Room Management"/>
+
+---
+
+### 📈 Reports & Analytics
+
+<img src="https://github.com/user-attachments/assets/13782974-964b-4904-aad1-c08bd7536440" width="48%" alt="Reports Page 1"/>
+<img src="https://github.com/user-attachments/assets/0661eb11-be54-41d9-abcd-dd0bb7126099" width="48%" alt="Reports Page 2"/>
+
+<img src="https://github.com/user-attachments/assets/2df980ac-49a7-4894-8fd4-ce8613a23172" width="48%" alt="Print Report"/>
+<img src="https://github.com/user-attachments/assets/82c4887d-6283-4193-bd4a-ff3af1ccb0e0" width="48%" alt="Export as Excel / CSV"/>
+
+---
+
+### 🛡️ Admin Panel
+
+<img src="https://github.com/user-attachments/assets/c0a9bc92-8316-4cf9-ba39-5f1320622356" width="100%" alt="Admin Dashboard"/>
+
+<img src="https://github.com/user-attachments/assets/2ab7c5ba-68ae-4c6d-8148-f07cd5464ce5" width="100%" alt="Admin Subscription Requests"/>
 
 </div>
 
@@ -37,6 +108,8 @@
 
 The platform supports a full admin panel for managing tenants, reviewing subscription requests, approving/rejecting payments, and overriding plans.
 
+🌐 **Live Demo:** [stationpro.runasp.net](https://stationpro.runasp.net/)
+
 ---
 
 ## ✨ Features
@@ -50,6 +123,7 @@ The platform supports a full admin panel for managing tenants, reviewing subscri
 | 💰 **Auto Cost Calculation** | Session cost is auto-calculated based on hourly rate × duration |
 | 📊 **Live Dashboard** | Real-time stats: active sessions, today's revenue, device cards |
 | 📅 **Session History** | Filter and search sessions by date, device, status, and more |
+| 📈 **Reports & Analytics** | Detailed reports with PDF print and Excel/CSV export |
 | 🔐 **Forgot / Reset Password** | Secure email-based password reset flow with expiring tokens |
 | 🌍 **Multi-language** | Supports English (`en-US`) and Arabic (`ar-EG`) with RTL layout |
 
@@ -238,11 +312,11 @@ Without Hangfire, if the SMTP server is temporarily down, the email is lost fore
 
 ### Setup
 
-Hangfire uses a **dedicated, isolated database** (`db44413_hangfire`) separate from the main application database. This keeps Hangfire's internal polling tables from interfering with business data, migrations, or backups.
+Hangfire uses a **dedicated, isolated database** separate from the main application database. This keeps Hangfire's internal polling tables from interfering with business data, migrations, or backups.
 
 ```
-Main DB (db44413)          → All business entities (Tenants, Devices, Sessions...)
-Hangfire DB (db44413_hangfire) → Hangfire job tables only
+Main DB        → All business entities (Tenants, Devices, Sessions...)
+Hangfire DB    → Hangfire job tables only
 ```
 
 ### Enqueuing Email Jobs
@@ -268,7 +342,9 @@ Tenant registers
     ↓
 Chooses a plan (Basic / Pro / Enterprise)
     ↓
-Uploads payment proof screenshot + enters transaction reference
+Enters payment method + phone number
+    ↓
+Uploads payment proof screenshot + transaction reference
     ↓
 Request goes to "Pending" state
     ↓
@@ -280,14 +356,11 @@ Admin Rejects  → Tenant sees rejection reason, can resubmit
 
 ### Subscription Plans
 
-| Plan | Target |
-|---|---|
-| **Free** | Default placeholder before admin assigns real plan |
-| **Basic** | Small shops |
-| **Pro** | Medium shops |
-| **Enterprise** | Large multi-device stores |
-
-Each plan can have limits on devices, sessions, and features (enforced via `SubscriptionGuardFilter`).
+| Plan | Price | Target |
+|---|---|---|
+| **Basic** | 29 EGP/mo | Small shops — up to 10 devices |
+| **Pro** | 79 EGP/mo | Growing businesses — up to 50 devices |
+| **Enterprise** | 199 EGP/mo | Large operations — unlimited devices |
 
 ---
 
@@ -330,8 +403,8 @@ Admin (separate — not a Tenant)
 ### Clone & Setup
 
 ```bash
-git clone https://github.com/your-username/StationPro.git
-cd StationPro
+git clone https://github.com/Mohamed-Khaled970/Station-Pro.git
+cd Station-Pro
 ```
 
 ### Database Setup
@@ -384,5 +457,7 @@ Update `appsettings.json` with your own values:
 <div align="center">
 
 Built with ❤️ using ASP.NET Core 8 · Clean Architecture · Multi-Tenancy
+
+🌐 [stationpro.runasp.net](https://stationpro.runasp.net/)
 
 </div>
