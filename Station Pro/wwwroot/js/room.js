@@ -57,10 +57,118 @@ function closeReceiptModal() {
 }
 
 // ============================================
-// QUICK BOOK MODAL
+// QUICK BOOK MODAL — with session confirmation
+//
+// RTL FIX EXPLANATION:
+// The info rows inside the confirmation dialog used hardcoded inline styles
+// with no direction context. When the page is RTL (Arabic), the browser
+// renders flex rows LTR unless told otherwise, because inline styles do NOT
+// inherit the document's dir attribute — they create an isolated formatting
+// context.
+//
+// THE FIX: We read `document.documentElement.dir` at runtime and inject
+// `direction: rtl` (or ltr) directly onto the dialog container div, so the
+// flex rows and text alignment inside it all inherit the correct direction
+// automatically — no per-row hacks needed.
 // ============================================
 
+// Temp store for pending session args
+let _pendingSession = null;
+
 function openQuickBookModal(roomId, roomName, sessionType, hourlyRate, maxGuests) {
+    _pendingSession = { roomId, roomName, sessionType, hourlyRate, maxGuests };
+
+    const isMulti = sessionType === 'Multi';
+    const rateFormatted = formatEGP(parseFloat(hourlyRate));
+    const typeLabel = isMulti ? t('MultiSession') : t('SingleSession');
+    const iconCss = isMulti ? 'fa-users' : 'fa-user';
+    const badgeCss = isMulti
+        ? 'background:#ede9fe;color:#6d28d9'
+        : 'background:#dbeafe;color:#1d4ed8';
+
+    // ── RTL detection ──────────────────────────────────────────────────────
+    // Read the page direction once. The dialog container will carry this
+    // explicitly so all child elements (flex rows, text, badges) inherit it.
+    const dir = document.documentElement.dir || document.body.dir || 'ltr';
+
+    document.getElementById('session-start-confirmation')?.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'session-start-confirmation';
+    modal.className = 'delete-confirmation-overlay';
+    modal.innerHTML = `
+        <div class="delete-confirmation-content" style="max-width:400px;direction:${dir}">
+            <div class="delete-confirmation-icon-wrapper">
+                <div class="delete-confirmation-icon-circle"
+                     style="background:${isMulti ? '#f5f3ff' : '#eff6ff'};border-color:${isMulti ? '#c4b5fd' : '#bfdbfe'};box-shadow:none">
+                    <i class="fas ${iconCss}"
+                       style="color:${isMulti ? '#7c3aed' : '#1d4ed8'};font-size:1.5rem"></i>
+                </div>
+            </div>
+
+            <h3 class="delete-confirmation-title">${t('ConfirmSessionTitle') || 'Start session?'}</h3>
+
+            <div style="background:#f9fafb;border-radius:10px;padding:14px 16px;margin:12px 0 6px;font-size:14px;line-height:2">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="color:#6b7280">${t('Room') || 'Room'}</span>
+                    <strong style="color:#111827">${roomName}</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="color:#6b7280">${t('SessionTypeLabel') || 'Type'}</span>
+                    <span style="padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;${badgeCss}">
+                      ${typeLabel}<i class="fas ${iconCss}" style="font-size:11px;margin-inline-start:4px"></i>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="color:#6b7280">${t('RateLabel') || 'Rate'}</span>
+                    <strong style="color:${isMulti ? '#7c3aed' : '#1d4ed8'};unicode-bidi:isolate;direction:ltr;display:inline-block">${rateFormatted}/${t('HrLabel') || 'hr'}</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="color:#6b7280">${t('MaxGuestsLabel') || 'Max guests'}</span>
+                    <strong style="color:#111827">${maxGuests}</strong>
+                </div>
+            </div>
+
+            <p class="delete-confirmation-warning" style="margin-top:10px;border-inline-start:3px solid #ef4444;border-left:none;text-align:start">
+                <i class="fas fa-info-circle" style="margin-inline-end:4px"></i>
+                ${t('SessionConfirmHint') || "You'll fill in the client name on the next screen."}
+            </p>
+
+            <div class="delete-confirmation-actions">
+                <button onclick="closeSessionConfirmation()" class="delete-confirmation-btn-cancel">
+                    <i class="fas fa-times" style="margin-inline-end:6px"></i>${t('Cancel')}
+                </button>
+                <button id="session-confirm-btn"
+                        class="delete-confirmation-btn-delete"
+                        style="background:${isMulti ? '#7c3aed' : '#16a34a'};border-color:${isMulti ? '#6d28d9' : '#15803d'}">
+                    <i class="fas fa-play" style="margin-inline-end:6px"></i>${t('ProceedBtn') || 'Proceed'}
+                </button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('session-confirm-btn').addEventListener('click', () => {
+        closeSessionConfirmation();
+        _openQuickBookModal(_pendingSession);
+    });
+
+    modal.addEventListener('click', e => { if (e.target === modal) closeSessionConfirmation(); });
+    const esc = e => {
+        if (e.key === 'Escape') { closeSessionConfirmation(); document.removeEventListener('keydown', esc); }
+    };
+    document.addEventListener('keydown', esc);
+}
+
+function closeSessionConfirmation() {
+    const m = document.getElementById('session-start-confirmation');
+    if (m) {
+        m.classList.add('hide');
+        setTimeout(() => m.remove(), 200);
+    }
+}
+
+// Internal — opens the actual booking form after confirmation
+function _openQuickBookModal({ roomId, roomName, sessionType, hourlyRate, maxGuests }) {
     document.getElementById('qb-room-id').value = roomId;
     document.getElementById('qb-session-type').value = sessionType;
     document.getElementById('qb-hourly-rate').value = hourlyRate;
@@ -98,6 +206,10 @@ function openQuickBookModal(roomId, roomName, sessionType, hourlyRate, maxGuests
     openModal('quick-book-modal');
     setTimeout(() => document.getElementById('qb-client-name')?.focus(), 100);
 }
+
+// ============================================
+// SETUP QUICK BOOK FORM
+// ============================================
 
 function setupQuickBookForm() {
     const form = document.getElementById('quick-book-form');
@@ -207,8 +319,6 @@ function openEndSessionModal(roomId, sessionId, roomName, clientName) {
     document.getElementById('end-session-room-label').textContent = roomName;
     document.getElementById('end-client-name').textContent = clientName;
 
-    // ✅ Use querySelector with class selectors — the card uses
-    //    .timer-display-{id} and .cost-display-{id} (classes, not IDs).
     const timerEl = document.querySelector(`.timer-display-${sessionId}`);
     const costEl = document.querySelector(`.cost-display-${sessionId}`);
 
@@ -385,7 +495,6 @@ function setupEditRoomForm() {
 // DELETE ROOM
 // ============================================
 
-
 function deleteRoom(roomId, roomName) {
     showDeleteConfirmation(
         t('DeleteRoomAction').replace('{room}', roomName),
@@ -401,7 +510,7 @@ function deleteRoom(roomId, roomName) {
                     setTimeout(() => {
                         card.remove();
                         closeDeletingOverlay();
-                        checkIfGridEmpty();   // ← show empty state if last room deleted
+                        checkIfGridEmpty();
                     }, 200);
                 } else {
                     closeDeletingOverlay();
@@ -420,17 +529,13 @@ function deleteRoom(roomId, roomName) {
     );
 }
 
-// Shows the "No rooms yet" empty state when the grid has no room cards left.
-// Also wires up its "Add First Room" button.
 function checkIfGridEmpty() {
     const grid = document.getElementById('rooms-grid');
     if (!grid) return;
 
-    // Count actual room cards (ignore the no-results-message div)
     const roomCards = grid.querySelectorAll('.room-card');
     if (roomCards.length > 0) return;
 
-    // Don't add duplicate
     if (document.getElementById('empty-rooms-state')) return;
 
     const emptyState = document.createElement('div');
@@ -444,37 +549,18 @@ function checkIfGridEmpty() {
             <i class="fas fa-plus mr-2"></i>${t('AddFirstRoomButton') || 'Add First Room'}
         </button>`;
 
-    // Insert after #rooms-grid (as a sibling, same as Razor renders it)
     grid.insertAdjacentElement('afterend', emptyState);
 }
+
 // ============================================
 // ADD ROOM — HTMX swap listener
 // ============================================
 
-// ✅ ROOT CAUSE EXPLAINED:
-//
-// Attempt 1 — hx-on::after-request on the form:
-//   Fires on EVERY request completion, including HTTP errors.
-//   Result: modal closed + success toast showed even on failure.
-//
-// Attempt 2 — hx-on:htmx:after-swap on the form:
-//   htmx:afterSwap is a GLOBAL bubbling event. Attaching it to the form
-//   element means it fires whenever ANY htmx swap happens on the page
-//   (e.g. the 60-second stats/sessions poll), randomly calling
-//   handleRoomAdded() and closing the modal / resetting the form,
-//   which made newly added cards disappear when the page polled.
-//
-// ✅ CORRECT FIX — listen on the TARGET element (#rooms-grid) in JS:
-//   htmx:afterSwap on the target element fires only when that specific
-//   element receives new content. We also verify the triggering form ID
-//   to be 100% sure we're reacting to the add-room submission and not
-//   any other future swap that might target #rooms-grid.
 function setupAddRoomForm() {
     const grid = document.getElementById('rooms-grid');
     if (!grid) return;
 
     grid.addEventListener('htmx:afterSwap', (e) => {
-        // Verify the swap was triggered by the add-room form specifically
         const triggerEl = e.detail?.requestConfig?.elt ?? e.detail?.elt;
         if (triggerEl && triggerEl.id === 'add-room-form') {
             handleRoomAdded();
@@ -484,10 +570,7 @@ function setupAddRoomForm() {
 
 function handleRoomAdded() {
     closeModal('add-room-modal');
-
-    // Remove the "No rooms yet" empty state — targeted by id now
     document.getElementById('empty-rooms-state')?.remove();
-
     if (window.timerManager) setTimeout(() => window.timerManager.smartRestart(), 50);
     showToast('success', t('RoomAddedMsg'), t('RoomAddedTitle'));
 }
@@ -698,6 +781,7 @@ function setupKeyboardShortcuts() {
         if (e.key === 'Escape') {
             closeNotification();
             closeDeleteConfirmation();
+            closeSessionConfirmation();
             closeReceiptModal();
             document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m => closeModal(m.id));
         }
@@ -709,7 +793,7 @@ function setupKeyboardShortcuts() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupAddRoomForm();      // ← targeted htmx:afterSwap listener on #rooms-grid
+    setupAddRoomForm();
     setupQuickBookForm();
     setupEditRoomForm();
     setupReserveRoomForm();

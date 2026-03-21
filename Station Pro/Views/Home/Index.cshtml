@@ -62,6 +62,7 @@
             font-weight: 600;
             transition: all 0.2s ease;
             text-decoration: none;
+            gap: 0.5rem;
         }
 
         .btn-primary {
@@ -93,30 +94,41 @@
                 background: #4b5563;
             }
 
-        [dir="rtl"] .mr-2 {
-            margin-right: 0;
-            margin-left: 0.5rem;
+        /* RTL: reverse icon/text order in buttons */
+        [dir="rtl"] .btn {
+            flex-direction: row-reverse;
         }
 
-        [dir="rtl"] .mr-3 {
-            margin-right: 0;
-            margin-left: 0.75rem;
+        /* Hero & CTA buttons that use inline-flex but not .btn class */
+        .btn-hero {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        [dir="rtl"] .space-x-2 > * + * {
-            margin-right: 0.5rem;
-            margin-left: 0;
+        [dir="rtl"] .btn-hero {
+            flex-direction: row-reverse;
         }
 
-        [dir="rtl"] .space-x-3 > * + * {
-            margin-right: 0.75rem;
-            margin-left: 0;
+        .pricing-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        [dir="rtl"] .space-x-4 > * + * {
-            margin-right: 1rem;
-            margin-left: 0;
+        /* Ensure good RTL defaults */
+        [dir="rtl"] {
+            text-align: right;
         }
+
+            [dir="rtl"] .text-left {
+                text-align: right !important;
+            }
+
+            [dir="rtl"] .text-right {
+                text-align: left !important;
+            }
 
         .lang-dropdown {
             background: white;
@@ -143,7 +155,6 @@
                 color: #3b82f6;
             }
 
-        /* Logo responsive fixes */
         .logo-container {
             display: flex;
             align-items: center;
@@ -169,7 +180,7 @@
                     <span class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">Station Pro</span>
                 </div>
 
-                <!-- Right side buttons -->
+                <!-- Nav Buttons -->
                 <div class="flex items-center gap-1 sm:gap-2 md:gap-4">
 
                     <!-- Language Switcher -->
@@ -179,7 +190,6 @@
                             <span class="font-medium hidden sm:inline">@(currentCulture.StartsWith("ar") ? "عربي" : "EN")</span>
                             <i class="fas fa-chevron-down text-xs"></i>
                         </button>
-
                         <div class="absolute @(isRtl ? "left-0" : "right-0") mt-2 w-48 lang-dropdown hidden" id="langMenu">
                             <form method="post" action="/Language/SetLanguage">
                                 <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
@@ -205,33 +215,28 @@
                         </div>
                     </div>
 
-                    <!-- Conditional Nav Buttons based on session -->
                     @if (ViewBag.IsAdmin == true)
                     {
-                        <!-- Admin logged in -->
                         <a href="/Admin/Index" class="btn btn-secondary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm whitespace-nowrap">
-                            <i class="fas fa-shield-alt @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2")"></i>
+                            <i class="fas fa-shield-alt"></i>
                             <span>Admin Panel</span>
                         </a>
                     }
                     else if (ViewBag.IsTenant == true)
                     {
-                        <!-- Tenant logged in -->
                         <a href="/Dashboard/Index" class="btn btn-primary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm whitespace-nowrap">
-                            <i class="fas fa-gauge-high @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2")"></i>
+                            <i class="fas fa-gauge-high"></i>
                             <span>@Localizer["MyDashboard"]</span>
                         </a>
                     }
                     else
                     {
-                        <!-- Guest -->
                         <a href="/auth/login" class="btn btn-outline !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 text-xs sm:text-sm whitespace-nowrap">
-                            <i class="fas fa-sign-in-alt @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2")"></i>
+                            <i class="fas fa-sign-in-alt"></i>
                             <span class="hidden xs:inline sm:inline">@Localizer["Login"]</span>
-
                         </a>
                         <a href="/auth/register" class="btn btn-primary !px-2.5 !py-1.5 sm:!px-4 sm:!py-2 lg:!px-6 lg:!py-3 text-xs sm:text-sm lg:text-base whitespace-nowrap">
-                            <i class="fas fa-rocket @(isRtl ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") hidden sm:inline"></i>
+                            <i class="fas fa-rocket hidden sm:inline"></i>
                             <span>@Localizer["GetStarted"]</span>
                         </a>
                     }
@@ -254,28 +259,28 @@
                     <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         @if (ViewBag.IsTenant == true)
                         {
-                            <a href="/Dashboard/Index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
-                                <i class="fas fa-gauge-high @(isRtl ? "ml-2" : "mr-2")"></i>
-                                @Localizer["MyDashboard"]
+                            <a href="/Dashboard/Index" class="btn-hero bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all">
+                                <i class="fas fa-gauge-high"></i>
+                                <span>@Localizer["MyDashboard"]</span>
                             </a>
                         }
                         else if (ViewBag.IsAdmin == true)
                         {
-                            <a href="/Admin/Index" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
-                                <i class="fas fa-shield-alt @(isRtl ? "ml-2" : "mr-2")"></i>
-                                Admin Panel
+                            <a href="/Admin/Index" class="btn-hero bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Admin Panel</span>
                             </a>
                         }
                         else
                         {
-                            <a href="/auth/register" class="bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center justify-center">
-                                <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
-                                @Localizer["GetStarted"]
+                            <a href="/auth/register" class="btn-hero bg-white text-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all">
+                                <i class="fas fa-rocket"></i>
+                                <span>@Localizer["GetStarted"]</span>
                             </a>
                         }
-                        <a href="#features" class="bg-purple-700 bg-opacity-50 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-opacity-70 transition-all inline-flex items-center justify-center">
-                            <i class="fas fa-play @(isRtl ? "ml-2" : "mr-2")"></i>
-                            @Localizer["SeeHowItWorks"]
+                        <a href="#features" class="btn-hero bg-purple-700 bg-opacity-50 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-opacity-70 transition-all">
+                            <i class="fas fa-play"></i>
+                            <span>@Localizer["SeeHowItWorks"]</span>
                         </a>
                     </div>
                     <div class="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-8 mt-6 sm:mt-8">
@@ -349,7 +354,6 @@
                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">@Localizer["EverythingYouNeed"]</h2>
                 <p class="text-base sm:text-lg lg:text-xl text-gray-600">@Localizer["PowerfulFeatures"]</p>
             </div>
-
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
@@ -358,7 +362,6 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["RealTimeTracking"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["RealTimeTrackingDesc"]</p>
                 </div>
-
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-chart-line text-green-600 text-xl sm:text-2xl"></i>
@@ -366,7 +369,6 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["RevenueReports"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["RevenueReportsDesc"]</p>
                 </div>
-
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-gamepad text-purple-600 text-xl sm:text-2xl"></i>
@@ -374,7 +376,6 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["DeviceManagement"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["DeviceManagementDesc"]</p>
                 </div>
-
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-mobile-alt text-yellow-600 text-xl sm:text-2xl"></i>
@@ -382,7 +383,6 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["MobileFriendly"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["MobileFriendlyDesc"]</p>
                 </div>
-
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-shield-alt text-red-600 text-xl sm:text-2xl"></i>
@@ -390,7 +390,6 @@
                     <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">@Localizer["SecureReliable"]</h3>
                     <p class="text-sm sm:text-base text-gray-600">@Localizer["SecureReliableDesc"]</p>
                 </div>
-
                 <div class="feature-card bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                     <div class="w-12 h-12 sm:w-16 sm:h-16 bg-indigo-100 rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                         <i class="fas fa-headset text-indigo-600 text-xl sm:text-2xl"></i>
@@ -421,23 +420,26 @@
                         <span class="text-sm sm:text-base text-gray-600"> EGP/@(isRtl ? "شهر" : "month")</span>
                     </div>
                     <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check text-green-500 flex-shrink-0"></i>
                             <span>@Localizer["UpTo5Devices"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check text-green-500 flex-shrink-0"></i>
                             <span>@Localizer["BasicReports"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check text-green-500 flex-shrink-0"></i>
                             <span>@Localizer["EmailSupport"]</span>
                         </li>
                     </ul>
-                    <a href="/auth/register" class="btn btn-outline w-full">@Localizer["GetStarted"]</a>
+                    <a href="/auth/register" class="btn btn-outline w-full">
+                        <span>@Localizer["GetStarted"]</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
 
-                <!-- Pro Plan (highlighted) -->
+                <!-- Pro Plan (Most Popular) -->
                 <div class="bg-gradient-to-br from-blue-600 to-purple-600 p-6 sm:p-8 rounded-2xl shadow-2xl md:transform md:scale-105">
                     <div class="bg-yellow-400 text-gray-900 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold inline-block mb-3 sm:mb-4">
                         @Localizer["MostPopular"]
@@ -449,25 +451,26 @@
                         <span class="text-sm sm:text-base text-purple-100"> EGP/@(isRtl ? "شهر" : "month")</span>
                     </div>
                     <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-white text-sm sm:text-base">
-                        <li class="flex items-center">
-                            <i class="fas fa-check @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check flex-shrink-0"></i>
                             <span>@Localizer["UpTo50Devices"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check flex-shrink-0"></i>
                             <span>@Localizer["AdvancedAnalytics"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check flex-shrink-0"></i>
                             <span>@Localizer["PrioritySupport"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check flex-shrink-0"></i>
                             <span>@Localizer["CustomBranding"]</span>
                         </li>
                     </ul>
-                    <a href="/auth/register" class="bg-white text-purple-600 px-6 sm:px-8 py-3 rounded-lg font-bold w-full inline-block text-center hover:bg-gray-100 transition-all text-sm sm:text-base">
-                        @Localizer["GetStarted"]
+                    <a href="/auth/register" class="btn-hero bg-white text-purple-600 px-6 sm:px-8 py-3 rounded-lg font-bold w-full hover:bg-gray-100 transition-all">
+                        <span>@Localizer["GetStarted"]</span>
+                        <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
 
@@ -480,24 +483,27 @@
                         <span class="text-sm sm:text-base text-gray-600"> EGP/@(isRtl ? "شهر" : "month")</span>
                     </div>
                     <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check text-green-500 flex-shrink-0"></i>
                             <span>@Localizer["UnlimitedDevices"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check text-green-500 flex-shrink-0"></i>
                             <span>@Localizer["AllProFeatures"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check text-green-500 flex-shrink-0"></i>
                             <span>@Localizer["DedicatedSupport"]</span>
                         </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 @(isRtl ? "ml-3" : "mr-3")"></i>
+                        <li class="pricing-item">
+                            <i class="fas fa-check text-green-500 flex-shrink-0"></i>
                             <span>@Localizer["CustomIntegrations"]</span>
                         </li>
                     </ul>
-                    <a href="/contact" class="btn btn-secondary w-full">@Localizer["ContactUs"]</a>
+                    <a href="/contact" class="btn btn-secondary w-full">
+                        <span>@Localizer["ContactUs"]</span>
+                        <i class="fas fa-envelope"></i>
+                    </a>
                 </div>
 
             </div>
@@ -508,28 +514,26 @@
     <section class="gradient-bg py-12 sm:py-20 px-4">
         <div class="max-w-4xl mx-auto text-center text-white">
             <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">@Localizer["ReadyToGrow"]</h2>
-            <p class="text-sm sm:text-base lg:text-xl text-purple-100 mb-6 sm:mb-8">
-                @Localizer["Join500Stores"]
-            </p>
+            <p class="text-sm sm:text-base lg:text-xl text-purple-100 mb-6 sm:mb-8">@Localizer["Join500Stores"]</p>
             @if (ViewBag.IsTenant == true)
             {
-                <a href="/Dashboard/Index" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
-                    <i class="fas fa-gauge-high @(isRtl ? "ml-2" : "mr-2")"></i>
-                    @Localizer["MyDashboard"]
+                <a href="/Dashboard/Index" class="btn-hero bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all">
+                    <i class="fas fa-gauge-high"></i>
+                    <span>@Localizer["MyDashboard"]</span>
                 </a>
             }
             else if (ViewBag.IsAdmin == true)
             {
-                <a href="/Admin/Index" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
-                    <i class="fas fa-shield-alt @(isRtl ? "ml-2" : "mr-2")"></i>
-                    Admin Panel
+                <a href="/Admin/Index" class="btn-hero bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Admin Panel</span>
                 </a>
             }
             else
             {
-                <a href="/auth/register" class="bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all inline-flex items-center">
-                    <i class="fas fa-rocket @(isRtl ? "ml-2" : "mr-2")"></i>
-                    @Localizer["GetStarted"]
+                <a href="/auth/register" class="btn-hero bg-white text-purple-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-100 transition-all">
+                    <i class="fas fa-rocket"></i>
+                    <span>@Localizer["GetStarted"]</span>
                 </a>
                 <p class="text-xs sm:text-sm lg:text-base text-purple-100 mt-4">@Localizer["NoCreditCard"]</p>
             }
@@ -555,24 +559,18 @@
     </footer>
 
     <script>
-        // ── bfcache fix: force reload when navigating back ──
         window.addEventListener('pageshow', function (event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
+            if (event.persisted) { window.location.reload(); }
         });
 
-        // ── Language dropdown ──
         function toggleLangDropdown() {
-            const menu = document.getElementById('langMenu');
-            menu.classList.toggle('hidden');
+            document.getElementById('langMenu').classList.toggle('hidden');
         }
 
         document.addEventListener('click', function (event) {
             const dropdown = document.getElementById('langDropdown');
-            const menu = document.getElementById('langMenu');
             if (!dropdown.contains(event.target)) {
-                menu.classList.add('hidden');
+                document.getElementById('langMenu').classList.add('hidden');
             }
         });
     </script>

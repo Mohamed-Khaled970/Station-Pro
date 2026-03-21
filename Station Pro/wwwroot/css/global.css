@@ -254,6 +254,54 @@ nav .flex.items-center i.fa-gamepad {
 }
 
 /* ============================================ */
+/* RTL PRICING ITEMS FIX */
+/* ============================================ */
+
+/* Base pricing item - LTR: icon on left, text on right */
+.pricing-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+/* RTL pricing item - icon on right, text on left */
+.pricing-item-rtl {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+/* ============================================ */
+/* RTL BUTTON ICON ORDER FIX */
+/* ============================================ */
+
+/*
+ * ONLY reverse .btn and .btn-hero classes in RTL.
+ * DO NOT use [dir="rtl"] a.inline-flex or [dir="rtl"] button.inline-flex
+ * as those rules are too broad and break hero/layout elements.
+ */
+[dir="rtl"] .btn {
+    flex-direction: row-reverse;
+}
+
+/* .btn-hero is used for hero/CTA section buttons that use inline-flex
+   but are NOT part of structural layout flex containers */
+.btn-hero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+[dir="rtl"] .btn-hero {
+    flex-direction: row-reverse;
+}
+
+/* ============================================ */
 /* ANIMATIONS */
 /* ============================================ */
 
@@ -469,6 +517,7 @@ to {
     cursor: pointer;
     border: none;
     outline: none;
+    gap: 0.5rem;
 }
 
     .btn:disabled {

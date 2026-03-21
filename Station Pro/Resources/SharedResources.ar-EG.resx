@@ -1453,4 +1453,46 @@
 		<value>حاول تعديل البحث أو الفلاتر</value>
 	</data>
 
+	<data name="ManageRooms" xml:space="preserve">
+		<value>إدارة الغرف</value>
+	</data>
+
+	<data name="Multi-Session" xml:space="preserve">
+		<value>الأجهزة الزوجي</value>
+	</data>
+	
+		<data name="MyDashboard" xml:space="preserve">
+		<value>لوحة تحكمي</value>
+	</data>
+
+	<data name="ConfirmSessionTitle" xml:space="preserve">
+    <value>بدء الجلسة؟</value>
+</data>
+	<data name="Room" xml:space="preserve">
+    <value>الغرفة</value>
+</data>
+	<data name="SessionTypeLabel" xml:space="preserve">
+    <value>النوع</value>
+</data>
+	<data name="MaxGuestsLabel" xml:space="preserve">
+    <value>أقصى عدد الضيوف</value>
+</data>
+	<data name="SessionConfirmHint" xml:space="preserve">
+    <value>ستقوم بإدخال اسم العميل في الشاشة التالية.</value>
+</data>
+	<data name="ProceedBtn" xml:space="preserve">
+    <value>متابعة</value>
+</data>
+
+	<data name="RateLabel" xml:space="preserve">
+    <value>السعر</value>
+</data>
+
+	<data name="HrLabel" xml:space="preserve">
+    <value>ساعة</value>
+</data>
+
+	<data name="TotalDuration" xml:space="preserve">
+    <value>مدة الجلسة</value>
+</data>
 </root>

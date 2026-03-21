@@ -1,6 +1,7 @@
 ﻿@model SessionReceiptDto
 @using Microsoft.Extensions.Localization
 @using StationPro
+@using StationPro.Infrastructure.Helpers
 @inject IStringLocalizer<SharedResources> Localizer
 
 <div class="bg-white rounded-xl shadow-2xl max-w-lg mx-auto overflow-hidden">
@@ -35,11 +36,11 @@
                 <div class="grid grid-cols-2 gap-2 text-center text-xs">
                     <div class="bg-gray-50 p-2 rounded">
                         <p class="text-gray-500 mb-1">@Localizer["Start"]</p>
-                        <p class="font-semibold text-gray-800">@Model.StartTime.ToString("HH:mm")</p>
+                        <p class="font-semibold text-gray-800">@Model.StartTime.ToEgyptTime().ToString("h:mm tt", new System.Globalization.CultureInfo("ar-EG"))</p>
                     </div>
                     <div class="bg-gray-50 p-2 rounded">
                         <p class="text-gray-500 mb-1">@Localizer["End"]</p>
-                        <p class="font-semibold text-gray-800">@Model.EndTime.ToString("HH:mm")</p>
+                        <p class="font-semibold text-gray-800">@Model.EndTime.ToEgyptTime().ToString("h:mm tt", new System.Globalization.CultureInfo("ar-EG"))</p>
                     </div>
                 </div>
             </div>
@@ -70,7 +71,7 @@
 
         <!-- Session ID -->
         <div class="text-center text-xs text-gray-400 mb-3">
-            @Localizer["SessionNumber"] #@Model.SessionId • @Model.CompletedAt.ToString("MM/dd HH:mm")
+            @Localizer["SessionNumber"] #@Model.SessionId • @Model.CompletedAt.ToEgyptTime().ToString("MM/dd h:mm tt", new System.Globalization.CultureInfo("ar-EG"))
         </div>
 
         <!-- Action Buttons -->

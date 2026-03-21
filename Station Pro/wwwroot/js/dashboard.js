@@ -237,7 +237,7 @@ function showSessionStartedNotification(deviceName, sessionType, rate) {
                 </div>
             </div>
             <h2 class="success-notification-title">${messages.sessionStarted}</h2>
-            <p class="success-notification-message">${deviceName} - ${sessionTypeText} (${formatCurrency(rate)}/${messages.hour})</p>
+            <p class="success-notification-message">${deviceName} - ${sessionTypeText} (${rate}/${messages.hour})</p>
             <div class="success-notification-actions">
                 <button onclick="closeSessionNotification()" class="success-notification-btn-primary">
                     <i class="fas fa-check mr-2"></i>${messages.ok}
@@ -266,6 +266,73 @@ function formatCurrency(amount) {
 }
 
 // ============================================
+// START SESSION CONFIRMATION
+// ============================================
+
+let pendingStartUrl = null;
+let pendingStartMeta = {}; // stores { deviceName, sessionType, rate } for success notification
+
+function confirmStartSession(url, deviceName, sessionType, rate) {
+    pendingStartUrl = url;
+    pendingStartMeta = { deviceName, sessionType, rate };
+
+    const messages = getLocalizedMessages();
+    const typeLabel = sessionType === 'multi' ? messages.multiSession : messages.singleSession;
+    const typeColor = sessionType === 'multi' ? 'text-purple-600' : 'text-blue-600';
+    const typeIcon = sessionType === 'multi' ? 'fas fa-users' : 'fas fa-user';
+    const rateDisplay = rate ? `${rate}/${messages.hour}` : '';
+
+    document.getElementById('start-confirm-device-name').textContent = deviceName;
+    document.getElementById('start-confirm-session-type').innerHTML =
+        `<i class="${typeIcon} mr-1"></i><span class="${typeColor}">${typeLabel}</span>`;
+    document.getElementById('start-confirm-rate').textContent = rateDisplay;
+    document.getElementById('start-confirm-subtitle').textContent =
+        `${deviceName} — ${typeLabel}`;
+
+    openModal('start-session-confirm-modal');
+}
+
+async function proceedStartSession() {
+    if (!pendingStartUrl) return;
+
+    // Show loading state on confirm button
+    const confirmBtn = document.getElementById('start-session-proceed-btn');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Starting...';
+    }
+
+    try {
+        const response = await fetch(pendingStartUrl, { method: 'POST' });
+
+        if (response.ok) {
+            closeModal('start-session-confirm-modal');
+            // Show success notification — clicking OK will trigger the page reload
+            showSessionStartedNotification(
+                pendingStartMeta.deviceName,
+                pendingStartMeta.sessionType,
+                pendingStartMeta.rate
+            );
+        } else {
+            closeModal('start-session-confirm-modal');
+            showToast('Failed to start session', 'error');
+        }
+    } catch (error) {
+        console.error('Error starting session:', error);
+        closeModal('start-session-confirm-modal');
+        showToast('An error occurred while starting the session', 'error');
+    } finally {
+        // Reset button state in case modal is still open (error path)
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Start Session';
+        }
+        pendingStartUrl = null;
+        pendingStartMeta = {};
+    }
+}
+
+// ============================================
 // KEYBOARD SHORTCUTS
 // ============================================
 
@@ -277,6 +344,7 @@ document.addEventListener('keydown', (e) => {
         closeModal('end-session-confirm-modal');
         closeModal('receipt-modal');
         closeModal('start-session-modal');
+        closeModal('start-session-confirm-modal');
     }
 });
 

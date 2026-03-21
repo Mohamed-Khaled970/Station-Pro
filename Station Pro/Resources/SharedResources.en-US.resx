@@ -1454,4 +1454,38 @@
 	<data name="ManageRooms" xml:space="preserve">
     <value>Manage Rooms</value>
   </data>
+
+	<data name="MyDashboard" xml:space="preserve">
+		<value>My Dashboard</value>
+	</data>
+
+	<data name="ConfirmSessionTitle" xml:space="preserve">
+    <value>Start Session?</value>
+</data>
+	<data name="Room" xml:space="preserve">
+    <value>Room</value>
+</data>
+	<data name="SessionTypeLabel" xml:space="preserve">
+    <value>Type</value>
+</data>
+	<data name="MaxGuestsLabel" xml:space="preserve">
+    <value>Max Guests</value>
+</data>
+	<data name="SessionConfirmHint" xml:space="preserve">
+    <value>You'll fill in the client name on the next screen.</value>
+</data>
+	<data name="ProceedBtn" xml:space="preserve">
+    <value>Proceed</value>
+</data>
+
+	<data name="RateLabel" xml:space="preserve">
+    <value>Rate</value>
+</data>
+	<data name="HrLabel" xml:space="preserve">
+    <value>hr</value>
+</data>
+
+	<data name="TotalDuration" xml:space="preserve">
+    <value>Total Duration</value>
+</data>
 </root>

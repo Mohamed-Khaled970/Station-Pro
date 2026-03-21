@@ -100,15 +100,13 @@
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             <span class="customer-name-label block">@Localizer["Customer"]:</span>
-
                         </div>
-
                         <span class="customer-name-value">
                             @(string.IsNullOrEmpty(device.CurrentSession.CustomerName) ? Localizer["Guest"] : device.CurrentSession.CustomerName)
                         </span>
                     </div>
 
-                    <!-- After -->
+                    <!-- Hidden timer element -->
                     <span class="hidden"
                           id="device-timer-@device.CurrentSession.Id"
                           data-start-time="@device.CurrentSession.StartTime.ToString("o")"
@@ -126,26 +124,56 @@
                 {
                     <!-- Split button for single/multi session -->
                     <div class="flex-1 flex space-x-1">
-                        <button hx-post="@Html.TenantUrl("Dashboard", "QuickStart")?deviceId=@device.Id&isMultiSession=false"
-                                hx-target="#active-sessions-container"
+                        <button onclick="confirmStartSession(
+                                    '@Html.TenantUrl("Dashboard", "QuickStart")?deviceId=@device.Id&isMultiSession=false',
+                                    '@Html.Raw(Html.Encode(device.Name))',
+                                    'single',
+                                    '@device.SingleSessionRate.ToString("C")'
+                                )"
                                 class="btn btn-success flex-1"
                                 title="@Localizer["StartSingleSession"]">
                             <i class="fas fa-user mr-1"></i>
                             <span class="hidden sm:inline">@Localizer["Single"]</span>
                         </button>
-                        <button hx-post="@Html.TenantUrl("Dashboard", "QuickStart")?deviceId=@device.Id&isMultiSession=true"
-                                hx-target="#active-sessions-container"
-                                class="btn btn-success"
-                                style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);"
-                                title="@Localizer["StartMultiSession"]">
-                            <i class="fas fa-users"></i>
-                        </button>
+
+                        @if (device.MultiSessionRate.HasValue)
+                        {
+                            <button onclick="confirmStartSession(
+                                        '@Html.TenantUrl("Dashboard", "QuickStart")?deviceId=@device.Id&isMultiSession=true',
+                                        '@Html.Raw(Html.Encode(device.Name))',
+                                        'multi',
+                                        '@device.MultiSessionRate.Value.ToString("C")'
+                                    )"
+                                    class="btn btn-success"
+                                    style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);"
+                                    title="@Localizer["StartMultiSession"]">
+                                <i class="fas fa-users"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button onclick="confirmStartSession(
+                                        '@Html.TenantUrl("Dashboard", "QuickStart")?deviceId=@device.Id&isMultiSession=true',
+                                        '@Html.Raw(Html.Encode(device.Name))',
+                                        'multi',
+                                        ''
+                                    )"
+                                    class="btn btn-success"
+                                    style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);"
+                                    title="@Localizer["StartMultiSession"]">
+                                <i class="fas fa-users"></i>
+                            </button>
+                        }
                     </div>
                 }
                 else
                 {
-                    <button hx-post="@Html.TenantUrl("Dashboard", "QuickStart")?deviceId=@device.Id&isMultiSession=false"
-                            hx-target="#active-sessions-container"
+                    <button onclick="confirmStartSession(
+                                '@Html.TenantUrl("Dashboard", "QuickStart")?deviceId=@device.Id&isMultiSession=false',
+                                '@Html.Raw(Html.Encode(device.Name))',
+                                'single',
+                                '@device.SingleSessionRate.ToString("C")'
+                            )"
                             class="btn btn-success flex-1">
                         <i class="fas fa-play mr-2"></i>
                         @Localizer["Start"]
