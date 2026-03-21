@@ -160,25 +160,32 @@
     </div>
 </div>
 
-<!-- Start Session Modal -->
+<!-- ============================================================
+     Start Session Modal
+     - No hx-post/hx-on on the form (removed to prevent JSON flash)
+     - Submit button calls proceedStartSession() instead
+     - openStartSessionModal() in dashboard.js populates the select
+       AND sets pendingStartUrl when the user picks a device
+     ============================================================ -->
 <div id="start-session-modal" class="modal-overlay hidden">
     <div class="modal-content">
         <div class="modal-header">
             <h3 class="text-xl font-bold text-gray-900">@Localizer["StartNewSession"]</h3>
         </div>
-        <form hx-post="@Html.TenantUrl("Session", "Start")"
-              hx-target="#active-sessions-container"
-              hx-on::after-request="closeModal('start-session-modal')">
+        <form id="start-session-form">
             <div class="modal-body space-y-4">
                 <div>
                     <label class="form-label">@Localizer["SelectDevice"]</label>
-                    <select name="DeviceId" class="form-input" required>
+                    <!-- onchange builds the QuickStart URL and stores it in pendingStartUrl -->
+                    <select name="DeviceId" id="dashboard-device-select" class="form-input" required
+                            onchange="onDashboardDeviceChange(this)">
                         <option value="">@Localizer["ChooseDevice"]</option>
                     </select>
                 </div>
                 <div>
                     <label class="form-label">@Localizer["CustomerNameOptional"]</label>
-                    <input type="text" name="CustomerName" class="form-input" placeholder="@Localizer["EnterCustomerName"]">
+                    <input type="text" name="CustomerName" class="form-input"
+                           placeholder="@Localizer["EnterCustomerName"]">
                 </div>
                 <div>
                     <label class="form-label">@Localizer["CustomerPhoneOptional"]</label>
@@ -190,7 +197,8 @@
                         class="btn btn-secondary">
                     @Localizer["Cancel"]
                 </button>
-                <button type="submit" class="btn btn-success">
+                <!-- Calls proceedStartSession() — no HTMX, no JSON flash -->
+                <button type="button" onclick="proceedStartSession()" class="btn btn-success">
                     <i class="fas fa-play mr-2"></i>
                     @Localizer["StartSession"]
                 </button>
@@ -316,7 +324,6 @@
     </div>
 </div>
 
-
 <!-- Receipt Modal -->
 <div id="receipt-modal" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="w-full max-w-lg">
@@ -334,7 +341,8 @@
         singleSession = Localizer["Single"].Value,
         multiSession = Localizer["Multi"].Value,
         hour = Localizer["hr"].Value,
-        ok = Localizer["OK"].Value
+        ok = Localizer["OK"].Value,
+        chooseDevice = Localizer["ChooseDevice"].Value
     })'
      style="display: none;">
 </div>
@@ -342,6 +350,34 @@
 @section Scripts {
     <script src="@Url.Content("~/js/dashboard.js")"></script>
     <script src="@Url.Content("~/js/session-timer.js")"></script>
+    <script>
+        // ============================================================
+        // Dashboard-specific: wire the device select in the simple modal
+        // to pendingStartUrl so proceedStartSession() knows what to POST.
+        // This is separate from the device-card flow (confirmStartSession).
+        // ============================================================
+        function onDashboardDeviceChange(select) {
+            const deviceId = select.value;
+            if (!deviceId) {
+                pendingStartUrl = null;
+                pendingStartMeta = {};
+                return;
+            }
+
+            const deviceName = select.options[select.selectedIndex].text;
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.replace(/\/(dashboard|Dashboard).*/, '');
+
+            // Default to single session from this simple modal.
+            // Adjust isMultiSession=true if you add a toggle to this modal later.
+            pendingStartUrl = `${basePath}/Dashboard/QuickStart?deviceId=${deviceId}&isMultiSession=false`;
+            pendingStartMeta = {
+                deviceName: deviceName,
+                sessionType: 'single',
+                rate: ''   // rate will be filled by the server response
+            };
+        }
+    </script>
 }
 
 <style>

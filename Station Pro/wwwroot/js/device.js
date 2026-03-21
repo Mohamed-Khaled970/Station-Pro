@@ -352,6 +352,7 @@ function handleDeviceAdded() {
 
 // ============================================
 // EDIT DEVICE
+// DeviceStatus enum: Available=1, InUse=2, Maintenance=3, Offline=4
 // ============================================
 
 async function editDevice(deviceId) {
@@ -372,8 +373,27 @@ async function editDevice(deviceId) {
         document.getElementById('edit-single-rate').value = device.singleSessionRate;
         document.getElementById('edit-multi-rate').value = device.multiSessionRate || '';
         document.getElementById('edit-supports-multi').checked = device.supportsMultiSession;
-        document.getElementById('edit-device-status').value = device.status;
         document.getElementById('edit-device-active').checked = device.isActive;
+
+        // FIX: Map status string/int to the correct <select> value.
+        // DeviceStatus enum: Available=1, InUse=2, Maintenance=3, Offline=4
+        const statusSelect = document.getElementById('edit-device-status');
+        const statusStringToInt = {
+            'Available': 1,
+            'InUse': 2,
+            'In Use': 2,
+            'Maintenance': 3,
+            'Offline': 4,
+            'Disconnected': 4
+        };
+
+        // device.status may arrive as an integer (1–4) or a string ("Available" etc.)
+        let statusValue = device.status;
+        if (typeof statusValue === 'string' && isNaN(statusValue)) {
+            // It's a name like "Available" — convert to integer
+            statusValue = statusStringToInt[statusValue] ?? 1;
+        }
+        statusSelect.value = statusValue;
 
         toggleEditMultiRate();
         openModal('edit-device-modal');

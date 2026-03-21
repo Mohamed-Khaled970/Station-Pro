@@ -338,9 +338,6 @@
 	<data name="SelectDevice" xml:space="preserve">
 		<value>اختر الجهاز</value>
 	</data>
-	<data name="ChooseDevice" xml:space="preserve">
-		<value>اختر جهازاً...</value>
-	</data>
 	<data name="CustomerName" xml:space="preserve">
 		<value>اسم العميل (اختياري)</value>
 	</data>
@@ -1494,5 +1491,10 @@
 
 	<data name="TotalDuration" xml:space="preserve">
     <value>مدة الجلسة</value>
+</data>
+
+
+	<data name="ChooseDevice" xml:space="preserve">
+    <value>اختر جهاز</value>
 </data>
 </root>

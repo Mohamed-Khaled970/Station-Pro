@@ -121,7 +121,7 @@ namespace StationPro.Infrastructure.Services
         // MAPPING
         // ══════════════════════════════════════════════════════════════════════
 
-        /// <summary>Basic map — no session data.</summary>
+        /// <summary>Basic map — no session data, preserves the DB status as-is.</summary>
         private static DeviceDto Map(Device d) => new()
         {
             Id = d.Id,
@@ -130,7 +130,7 @@ namespace StationPro.Infrastructure.Services
             SingleSessionRate = d.SingleSessionRate,
             MultiSessionRate = d.MultiSessionRate,
             SupportsMultiSession = d.SupportsMultiSession,
-            DeviceStatus = d.Status,
+            DeviceStatus = d.Status,   // preserve real DB status
             IsActive = d.IsActive,
             ActiveSessionId = null,
             CurrentSession = null
@@ -139,6 +139,12 @@ namespace StationPro.Infrastructure.Services
         /// <summary>
         /// Full map — reads the already-loaded Sessions navigation collection
         /// to attach an active session snapshot to the DeviceDto.
+        ///
+        /// FIX: Only force DeviceStatus to InUse when a session is active.
+        /// When there is no active session, preserve the real DB status
+        /// (Available, Offline, Maintenance, etc.) instead of always
+        /// defaulting to Available — this was causing Offline devices to
+        /// appear as Available in the edit modal and on the dashboard.
         /// </summary>
         private static DeviceDto MapWithSession(Device d)
         {
@@ -147,13 +153,16 @@ namespace StationPro.Infrastructure.Services
 
             if (active != null)
             {
+                // Device has an active session → mark as InUse regardless of DB status
                 dto.DeviceStatus = DeviceStatus.InUse;
                 dto.ActiveSessionId = active.Id;
                 dto.CurrentSession = MapToSessionDto(active, d.Name);
             }
             else
             {
-                dto.DeviceStatus = DeviceStatus.Available;
+                // No active session → keep the real DB status (Available / Offline / Maintenance)
+                // Do NOT override with Available here — that was the bug.
+                dto.DeviceStatus = d.Status;
                 dto.ActiveSessionId = null;
                 dto.CurrentSession = null;
             }

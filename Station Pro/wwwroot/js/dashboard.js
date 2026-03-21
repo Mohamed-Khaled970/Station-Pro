@@ -44,20 +44,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 
 async function openStartSessionModal() {
+    const messages = getLocalizedMessages();
     const select = document.querySelector('#start-session-modal select[name="DeviceId"]');
-    if (select) { select.innerHTML = '<option value="">Loading devices...</option>'; select.disabled = true; }
+    if (select) {
+        select.innerHTML = `<option value="">${messages.chooseDevice}</option>`;
+        select.disabled = true;
+    }
     openModal('start-session-modal');
     try {
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/(dashboard|Dashboard).*/, '');
         const res = await fetch(`${basePath}/Dashboard/DeviceOptions`);
+
+        console.log('Fetching from:', `${basePath}/Dashboard/DeviceOptions`);
         if (res.ok) {
             const devices = await res.json();
             if (select) {
                 if (devices.length === 0) {
-                    select.innerHTML = '<option value="">No available devices</option>';
+                    // FIX: use localized text, not hardcoded English
+                    select.innerHTML = `<option value="">${messages.chooseDevice}</option>`;
                 } else {
-                    select.innerHTML = '<option value="">Choose a device...</option>';
+                    // FIX: use localized text, not hardcoded English
+                    select.innerHTML = `<option value="">${messages.chooseDevice}</option>`;
                     devices.forEach(d => {
                         const option = document.createElement('option');
                         option.value = d.id;
@@ -67,11 +75,11 @@ async function openStartSessionModal() {
                 }
             }
         } else if (select) {
-            select.innerHTML = '<option value="">Failed to load devices</option>';
+            select.innerHTML = `<option value="">${messages.chooseDevice}</option>`;
         }
     } catch (err) {
         console.error('Error loading devices for modal:', err);
-        if (select) select.innerHTML = '<option value="">Failed to load devices</option>';
+        if (select) select.innerHTML = `<option value="">${messages.chooseDevice}</option>`;
     } finally {
         if (select) select.disabled = false;
     }
@@ -258,7 +266,14 @@ function closeSessionNotification() {
 function getLocalizedMessages() {
     const el = document.getElementById('localized-messages');
     if (el) { try { return JSON.parse(el.dataset.messages); } catch (e) { /* fallback */ } }
-    return { sessionStarted: 'Session Started Successfully!', singleSession: 'Single Session', multiSession: 'Multi Session', hour: 'hr', ok: 'OK' };
+    return {
+        sessionStarted: 'Session Started Successfully!',
+        singleSession: 'Single Session',
+        multiSession: 'Multi Session',
+        hour: 'hr',
+        ok: 'OK',
+        chooseDevice: 'Choose a device...'  // fallback only, real value comes from server
+    };
 }
 
 function formatCurrency(amount) {
@@ -302,11 +317,19 @@ async function proceedStartSession() {
         confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Starting...';
     }
 
+    // Also disable the simple modal's start button if it's open
+    const simpleModalBtn = document.querySelector('#start-session-form button[onclick="proceedStartSession()"]');
+    if (simpleModalBtn) {
+        simpleModalBtn.disabled = true;
+        simpleModalBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Starting...';
+    }
+
     try {
         const response = await fetch(pendingStartUrl, { method: 'POST' });
 
         if (response.ok) {
             closeModal('start-session-confirm-modal');
+            closeModal('start-session-modal');
             // Show success notification — clicking OK will trigger the page reload
             showSessionStartedNotification(
                 pendingStartMeta.deviceName,
@@ -315,17 +338,23 @@ async function proceedStartSession() {
             );
         } else {
             closeModal('start-session-confirm-modal');
+            closeModal('start-session-modal');
             showToast('Failed to start session', 'error');
         }
     } catch (error) {
         console.error('Error starting session:', error);
         closeModal('start-session-confirm-modal');
+        closeModal('start-session-modal');
         showToast('An error occurred while starting the session', 'error');
     } finally {
-        // Reset button state in case modal is still open (error path)
+        // Reset button states
         if (confirmBtn) {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Start Session';
+        }
+        if (simpleModalBtn) {
+            simpleModalBtn.disabled = false;
+            simpleModalBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Start Session';
         }
         pendingStartUrl = null;
         pendingStartMeta = {};

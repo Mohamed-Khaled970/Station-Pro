@@ -43,22 +43,13 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
 
         /// <summary>
         /// FIX: Builds dashboard stats using Egypt-local "today" boundaries.
-        ///
-        /// WHY the old version showed $0.00 revenue:
-        /// GetDashboardStatsAsync() calculated "today" using DateTime.Now.Date
-        /// on the UTC server, so "today" started at UTC midnight = 2:00 AM Egypt.
-        /// All sessions completed before 2 AM Egypt were excluded from "today"
-        /// even though they happened on today's Egypt calendar date, making
-        /// TodayRevenue and TotalSessions always 0 or incorrect.
         /// </summary>
         private async Task<DashboardStatsDto> GetEgyptAwareStatsAsync()
         {
             var (todayStartUtc, todayEndUtc) = TimeZoneHelper.GetUtcDateRange("today");
 
-            // Fetch the base stats from the service
             var stats = await _sessions.GetDashboardStatsAsync();
 
-            // Re-compute today-specific figures using the Egypt-correct window
             var allSessions = await _sessions.GetPageAsync(new SessionFilterRequest
             {
                 DateFilter = "all",
@@ -86,10 +77,23 @@ namespace Station_Pro.Controllers.Station_Pro.Controllers
             return PartialView("_ActiveSessions", active);
         }
 
+        /// <summary>
+        /// FIX: Only return devices that are currently in-use (have an active session).
+        /// Available devices are shown in the devices page, not the dashboard.
+        /// </summary>
+        /// <summary>
+        /// Show only truly available devices on the dashboard:
+        /// - No active session (CurrentSession == null)
+        /// - DeviceStatus is explicitly Available (excludes Offline, Maintenance, Disconnected)
+        /// </summary>
         public async Task<IActionResult> DeviceCards()
         {
             var devices = await _devices.GetAllWithActiveSessionsAsync();
-            return PartialView("_DeviceCards", devices);
+            var availableDevices = devices
+                .Where(d => d.CurrentSession == null
+                         && d.DeviceStatus == DeviceStatus.Available)
+                .ToList();
+            return PartialView("_DeviceCards", availableDevices);
         }
 
         [HttpGet]

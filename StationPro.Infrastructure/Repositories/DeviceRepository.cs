@@ -46,7 +46,7 @@ namespace StationPro.Infrastructure.Repositories
         /// </summary>
         public async Task<IEnumerable<Device>> GetAllWithActiveSessionsAsync()
             => await _set
-                .Where(d => d.IsActive)
+                .Where(d => d.IsActive && d.Status == DeviceStatus.Available)
                 .Include(d => d.Sessions.Where(s => s.Status == SessionStatus.Active))
                 .OrderBy(d => d.Name)
                 .ToListAsync();
