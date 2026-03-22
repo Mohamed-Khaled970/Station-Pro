@@ -122,6 +122,8 @@
                         </select>
                     </div>
 
+                    @* FIX: Dedicated search-input-row classes — immune to mobile .btn overrides.
+                    No auto-submit on typing; user clicks the button or presses Enter. *@
                     <div>
                         <label class="form-label">@Localizer["Search"]</label>
                         <div class="search-input-row">
@@ -238,6 +240,7 @@
                                         }
                                     </td>
 
+                                    @* FIX: Display Egypt local time instead of UTC *@
                                     <td class="px-6 py-4 text-gray-700">
                                         <div>
                                             <p class="font-medium">@session.StartTime.ToEgyptDisplay("MMM dd, yyyy")</p>
@@ -348,6 +351,7 @@
                                     <div>
                                         <p class="font-semibold text-gray-900">@session.SourceName</p>
                                         <div class="flex items-center gap-2 text-xs text-gray-500">
+                                            @* FIX: Egypt local time *@
                                             <span>@session.StartTime.ToEgyptDisplay("MMM dd, h:mm tt")</span>
                                             @if (session.SessionType == SessionType.Multi)
                                             {
@@ -425,42 +429,68 @@
                     }
                 </div>
 
+                @* FIX: Pagination uses page-btn / pagination-row classes instead of
+            .btn .btn-outline .btn-sm which break on mobile (go full-width).
+            Also added disabled Previous/Next on first/last page. *@
                 @if (Model.TotalPages > 1)
                 {
-                    <div class="p-6 border-t border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm text-gray-600">
-                                @Localizer["Page"] @Model.CurrentPage @Localizer["Of"] @Model.TotalPages
-                            </p>
-                            <div class="flex gap-2">
-                                @if (Model.CurrentPage > 1)
+                    <div class="pagination-row">
+                        <p class="pagination-info">
+                            @Localizer["Page"] <strong>@Model.CurrentPage</strong>
+                            @Localizer["Of"] <strong>@Model.TotalPages</strong>
+                            &nbsp;·&nbsp;
+                            <strong>@Model.Sessions.Count</strong> @Localizer["Results"]
+                        </p>
+                        <div class="pagination-buttons">
+
+                            @* Previous *@
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <a href="@Html.TenantUrl("Session", "Index", new { page = Model.CurrentPage - 1, dateFilter = Model.DateFilter, status = Model.StatusFilter, deviceId = Model.DeviceFilter, search = Model.SearchQuery })"
+                                   class="page-btn">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="page-btn disabled">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                            }
+
+                            @* Page numbers *@
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                if (i == Model.CurrentPage)
                                 {
-                                    <a href="@Html.TenantUrl("Session", "Index", new { page = Model.CurrentPage - 1, dateFilter = Model.DateFilter, status = Model.StatusFilter, deviceId = Model.DeviceFilter, search = Model.SearchQuery })" class="btn btn-outline btn-sm">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
+                                    <span class="page-btn active">@i</span>
                                 }
-                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                else if (i == 1 || i == Model.TotalPages || (i >= Model.CurrentPage - 2 && i <= Model.CurrentPage + 2))
                                 {
-                                    if (i == Model.CurrentPage)
-                                    {
-                                        <span class="btn btn-primary btn-sm">@i</span>
-                                    }
-                                    else if (i == 1 || i == Model.TotalPages || (i >= Model.CurrentPage - 2 && i <= Model.CurrentPage + 2))
-                                    {
-                                        <a href="@Html.TenantUrl("Session", "Index", new { page = i, dateFilter = Model.DateFilter, status = Model.StatusFilter, deviceId = Model.DeviceFilter, search = Model.SearchQuery })" class="btn btn-outline btn-sm">@i</a>
-                                    }
-                                    else if (i == Model.CurrentPage - 3 || i == Model.CurrentPage + 3)
-                                    {
-                                        <span class="px-2 text-gray-500">...</span>
-                                    }
+                                    <a href="@Html.TenantUrl("Session", "Index", new { page = i, dateFilter = Model.DateFilter, status = Model.StatusFilter, deviceId = Model.DeviceFilter, search = Model.SearchQuery })"
+                                       class="page-btn">@i</a>
                                 }
-                                @if (Model.CurrentPage < Model.TotalPages)
+                                else if (i == Model.CurrentPage - 3 || i == Model.CurrentPage + 3)
                                 {
-                                    <a href="@Html.TenantUrl("Session", "Index", new { page = Model.CurrentPage + 1, dateFilter = Model.DateFilter, status = Model.StatusFilter, deviceId = Model.DeviceFilter, search = Model.SearchQuery })" class="btn btn-outline btn-sm">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
+                                    <span class="page-ellipsis">…</span>
                                 }
-                            </div>
+                            }
+
+                            @* Next *@
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <a href="@Html.TenantUrl("Session", "Index", new { page = Model.CurrentPage + 1, dateFilter = Model.DateFilter, status = Model.StatusFilter, deviceId = Model.DeviceFilter, search = Model.SearchQuery })"
+                                   class="page-btn">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="page-btn disabled">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            }
+
                         </div>
                     </div>
                 }

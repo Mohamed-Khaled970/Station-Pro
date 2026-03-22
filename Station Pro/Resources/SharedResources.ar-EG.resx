@@ -1505,4 +1505,8 @@
 	<data name="ChooseDevice" xml:space="preserve">
     <value>اختر جهاز</value>
 </data>
+
+	<data name="LoginButton" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+</data>
 </root>

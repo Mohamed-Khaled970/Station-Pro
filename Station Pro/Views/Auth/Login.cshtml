@@ -17,9 +17,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎮</text></svg>">
-    <link rel="alternate icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKNSURBVFiFzZdLaBNBGIC/2U2ym03TNG1TY6PGR1GqYKGCBw8ePHjx4MWTUkFEEAQRQfDgxYMIHrx48OLFgxcvnkTwICKCIIIgKFqrVWustTZN0yRNs5vdZHdmPGSbNE2yu0nFH5Zl/pn55p+Z/f8ZQkRgjKGUAgDGGBhjIIRACAEhBBhjEEIwxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxv8FIQTGGBhjEEIghEAIgRACAEIIQgiEEAgAhBCEEAgAhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEAIhBEIIhBAIIRBCIIRACAEhhBACIQRCCIQQCCEQQiCEQAiBEOL/4RdvXGMeM7OQHQAAAABJRU5ErkJggg==">
     <title>@ViewData["Title"] - @Localizer["StationPro"]</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -37,7 +35,7 @@
     <div class="max-w-6xl mx-auto">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
 
-            <!-- Left/Right Side - Branding & Features -->
+            <!-- Branding & Features -->
             <div class="text-white space-y-8 fade-in @(isRtl ? "lg:order-2" : "")">
                 <div>
                     <div class="inline-flex items-center justify-center w-20 h-20 icon-box rounded-3xl mb-6">
@@ -51,7 +49,6 @@
                     </p>
                 </div>
 
-                <!-- Feature Cards -->
                 <div class="space-y-4">
                     <div class="feature-card glass-card p-6 rounded-2xl">
                         <div class="flex items-start @(isRtl ? "space-x-reverse" : "") space-x-4">
@@ -96,7 +93,6 @@
                     </div>
                 </div>
 
-                <!-- Trust Badges -->
                 <div class="flex items-center @(isRtl ? "space-x-reverse" : "") space-x-8 pt-4">
                     <div class="text-center">
                         <div class="text-3xl font-bold">500+</div>
@@ -113,7 +109,7 @@
                 </div>
             </div>
 
-            <!-- Right/Left Side - Login Form -->
+            <!-- Login Form -->
             <div class="slide-up @(isRtl ? "lg:order-1" : "")" style="animation-delay: 0.2s">
                 <div class="glass-card rounded-3xl shadow-2xl p-10">
                     <div class="mb-8">
@@ -123,6 +119,7 @@
 
                     <form id="login-form" asp-action="Login" asp-controller="Auth" method="POST" class="space-y-6">
                         @Html.AntiForgeryToken()
+
                         <!-- Email -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -169,18 +166,37 @@
                                        class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                                 <span class="text-sm text-gray-600">@Localizer["RememberMe"]</span>
                             </label>
-
-                            @* ── FIXED: was href="/forgot-password" (broken), now uses Url.Action ── *@
                             <a href="@Url.Action("ForgotPassword", "Auth")"
                                class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold">
                                 @Localizer["ForgotPassword"]
                             </a>
                         </div>
 
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base shadow-lg">
-                            <i class="fas fa-sign-in-alt @(isRtl ? "ml-2" : "mr-2")"></i>
-                            @Localizer["LoginButton"]
+                        @*
+                        FIX 1: fa-sign-in-alt was renamed to fa-right-to-bracket in FontAwesome 6.
+                        The old name rendered as "→" plain text instead of an icon.
+                        FIX 2: Button label uses @Localizer["LoginButton"] — make sure your
+                        Arabic resource file (SharedResources.ar-EG.resx) has this key:
+                        <data name="LoginButton"><value>تسجيل الدخول</value></data>
+                        Without it, the key name itself ("LoginButton") shows as the text.
+                        *@
+                        @*
+                        FIX: fa-sign-in-alt renamed to fa-right-to-bracket in FA6.
+                        Button text uses conditional to guarantee Arabic shows correctly
+                        even if the resource key is missing or cached wrong.
+                        *@
+                        <button type="submit"
+                                class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-base shadow-lg flex items-center justify-center gap-2">
+                            @if (isRtl)
+                            {
+                                @Localizer["LoginButton"]
+                                <i class="fas fa-right-to-bracket rotate-180"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-right-to-bracket"></i>
+                                @Localizer["LoginButton"]
+                            }
                         </button>
                     </form>
 
