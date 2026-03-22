@@ -667,3 +667,67 @@ tbody tr {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+
+
+/* ============================================ */
+/* SEARCH INPUT ROW — immune to mobile overrides */
+/* ============================================ */
+
+/*
+ * Uses dedicated classes instead of .btn/.flex
+ * so the aggressive mobile overrides in @media (max-width: 768px)
+ * don't accidentally expand the button to full width or break the row.
+ */
+.search-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+.search-text-input {
+    flex: 1 1 0%;
+    min-width: 0; /* prevents input from overflowing flex container */
+}
+
+.search-submit-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+    .search-submit-btn:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-1px);
+    }
+
+    .search-submit-btn:active {
+        transform: translateY(0);
+    }
+
+/* On mobile — keep the row layout, just tighten the button */
+@media (max-width: 768px) {
+    .search-input-row {
+        gap: 6px;
+    }
+
+    .search-submit-btn {
+        width: 38px !important;
+        height: 38px !important;
+        min-height: unset !important;
+        max-height: unset !important;
+        padding: 0 !important;
+    }
+}

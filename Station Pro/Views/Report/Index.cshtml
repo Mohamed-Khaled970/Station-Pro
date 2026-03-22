@@ -7,6 +7,9 @@
 @{
     ViewData["Title"] = Localizer["Reports"];
     var selectedPeriod = ViewBag.SelectedPeriod ?? "today";
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var totalCount = (int)(ViewBag.TotalCount ?? 0);
 }
 
 @section Styles {
@@ -47,19 +50,19 @@
 
             <!-- Period Selection Tabs -->
             <div class="period-tabs">
-                <a href="@Url.Action("Index", new { period = "today" })"
+                <a href="@Url.Action("Index", new { period = "today", page = 1 })"
                    class="period-tab @(selectedPeriod == "today" ? "active" : "")">
                     @Localizer["Today"]
                 </a>
-                <a href="@Url.Action("Index", new { period = "yesterday" })"
+                <a href="@Url.Action("Index", new { period = "yesterday", page = 1 })"
                    class="period-tab @(selectedPeriod == "yesterday" ? "active" : "")">
                     @Localizer["Yesterday"]
                 </a>
-                <a href="@Url.Action("Index", new { period = "week" })"
+                <a href="@Url.Action("Index", new { period = "week", page = 1 })"
                    class="period-tab @(selectedPeriod == "week" ? "active" : "")">
                     @Localizer["Last7Days"]
                 </a>
-                <a href="@Url.Action("Index", new { period = "month" })"
+                <a href="@Url.Action("Index", new { period = "month", page = 1 })"
                    class="period-tab @(selectedPeriod == "month" ? "active" : "")">
                     @Localizer["Last30Days"]
                 </a>
@@ -192,7 +195,12 @@
                     @Localizer["SessionDetails"]
                 </h3>
                 <p class="text-sm text-gray-500">
-                    @Model.Sessions.Count @Localizer["SessionsInPeriod"]
+                    @totalCount @Localizer["SessionsInPeriod"]
+                    @if (totalPages > 1)
+                    {
+                        <span class="mx-1">·</span>
+                        <span>@Localizer["Page"] @currentPage @Localizer["Of"] @totalPages</span>
+                    }
                 </p>
             </div>
 
@@ -215,9 +223,6 @@
                         <tbody>
                             @foreach (var session in Model.Sessions)
                             {
-                                @* FIX: Convert UTC StartTime to Egypt local time (UTC+2) before display.
-                        TimeZoneHelper.ToEgyptTime() converts the UTC datetime to Egypt local.
-                        Without this, all times appeared 2 hours behind (e.g. 10:40 PM instead of 12:40 AM). *@
                                 var egyptTime = TimeZoneHelper.ToEgyptTime(session.StartTime);
                                 <tr>
                                     <td>
@@ -261,6 +266,55 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- ── Pagination ─────────────────────────────────────────── -->
+                @if (totalPages > 1)
+                {
+                    <div class="pagination-row">
+                        <p class="pagination-info">
+                            @Localizer["Page"] <strong>@currentPage</strong>
+                            @Localizer["Of"] <strong>@totalPages</strong>
+                            &nbsp;·&nbsp;
+                            <strong>@totalCount</strong> @Localizer["Results"]
+                        </p>
+                        <div class="pagination-buttons">
+                            @if (currentPage > 1)
+                            {
+                                <a href="@Url.Action("Index", new { period = selectedPeriod, page = currentPage - 1 })"
+                                   class="page-btn"><i class="fas fa-chevron-left"></i></a>
+                            }
+                            else
+                            {
+                                <span class="page-btn disabled"><i class="fas fa-chevron-left"></i></span>
+                            }
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                if (i == currentPage)
+                                {
+                                    <span class="page-btn active">@i</span>
+                                }
+                                else if (i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2))
+                                {
+                                    <a href="@Url.Action("Index", new { period = selectedPeriod, page = i })"
+                                       class="page-btn">@i</a>
+                                }
+                                else if (i == currentPage - 3 || i == currentPage + 3)
+                                {
+                                    <span class="page-ellipsis">…</span>
+                                }
+                            }
+                            @if (currentPage < totalPages)
+                            {
+                                <a href="@Url.Action("Index", new { period = selectedPeriod, page = currentPage + 1 })"
+                                   class="page-btn"><i class="fas fa-chevron-right"></i></a>
+                            }
+                            else
+                            {
+                                <span class="page-btn disabled"><i class="fas fa-chevron-right"></i></span>
+                            }
+                        </div>
+                    </div>
+                }
             }
             else
             {

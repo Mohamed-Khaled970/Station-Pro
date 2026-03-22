@@ -4,8 +4,49 @@
 @using StationPro.Infrastructure.Helpers
 @inject IStringLocalizer<SharedResources> Localizer
 
+@{
+    var startDisplay = Model.StartTime.ToEgyptTime().ToString("h:mm tt", new System.Globalization.CultureInfo("ar-EG"));
+    var endDisplay = Model.EndTime.ToEgyptTime().ToString("h:mm tt", new System.Globalization.CultureInfo("ar-EG"));
+    var sessionDate = Model.CompletedAt.ToEgyptTime().ToString("MM/dd", new System.Globalization.CultureInfo("ar-EG"));
+    var completedAt = Model.CompletedAt.ToEgyptTime().ToString("h:mm tt", new System.Globalization.CultureInfo("ar-EG"));
+    var paymentLabel = Model.PaymentMethod == "Cash" ? Localizer["Cash"].Value : Localizer["Card"].Value;
+    var customerDisplay = Model.CustomerName ?? Localizer["Guest"].Value;
+
+    var receiptJson = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        deviceName = Model.DeviceName,
+        customerName = customerDisplay,
+        duration = Model.DurationFormatted,
+        startTime = startDisplay,
+        endTime = endDisplay,
+        totalCost = Model.TotalCost.ToString("N2"),
+        hourlyRate = Model.HourlyRate.ToString("N2"),
+        paymentMethod = paymentLabel,
+        sessionId = Model.SessionId,
+        sessionDate = sessionDate,
+        completedAt = completedAt,
+        labelDuration = Localizer["TotalDuration"].Value,
+        labelStart = Localizer["Start"].Value,
+        labelEnd = Localizer["End"].Value,
+        labelTotal = Localizer["TotalAmount"].Value,
+        labelRate = Localizer["Rate"].Value,
+        labelPayment = Localizer["Payment"].Value,
+        labelSession = Localizer["SessionNumber"].Value,
+        labelCompleted = Localizer["SessionCompleted"].Value,
+        labelThanks = Localizer["ThankYouForUsing"].Value
+    });
+}
+
+@*
+    Hidden data element — stores all receipt values as JSON.
+    printReceiptContent() reads this to build a fully self-contained
+    print window with pure inline CSS (no Tailwind CDN dependency).
+*@
+<div id="receipt-data" data-receipt="@Html.Raw(receiptJson.Replace("\"", "&quot;"))"></div>
+
 <div class="bg-white rounded-xl shadow-2xl max-w-lg mx-auto overflow-hidden">
-    <!-- Compact Header -->
+
+    <!-- Header -->
     <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 text-center">
         <div class="inline-flex items-center justify-center w-12 h-12 bg-white bg-opacity-20 rounded-full mb-2">
             <i class="fas fa-check text-2xl"></i>
@@ -14,83 +55,90 @@
         <p class="text-green-100 text-xs mt-1">@Localizer["ThankYouForUsing"]</p>
     </div>
 
-    <!-- Wider Body Layout -->
+    <!-- Body -->
     <div class="p-5">
+
         <!-- Session Info -->
         <div class="text-center mb-3 pb-3 border-b border-dashed border-gray-200">
             <h3 class="text-xl font-bold text-gray-800">@Model.DeviceName</h3>
             <p class="text-sm text-gray-600 mt-1">
-                <i class="fas fa-user mr-1"></i>@Model.CustomerName
+                <i class="fas fa-user mr-1"></i>@customerDisplay
             </p>
         </div>
 
-        <!-- Main Content - Two Column Layout -->
+        <!-- Two Column Layout -->
         <div class="grid grid-cols-2 gap-4 mb-4">
-            <!-- Left Column - Time Info -->
+
+            <!-- Left: Time Info -->
             <div class="space-y-3">
                 <div class="bg-blue-50 p-3 rounded-lg text-center">
                     <p class="text-xs text-blue-600 mb-1">@Localizer["TotalDuration"]</p>
-                    <p class="text-2xl font-bold text-blue-700">@Model.DurationFormatted</p>
+                    <p class="text-2xl font-bold text-blue-700 font-mono" style="direction:ltr;unicode-bidi:embed;">
+                        @Model.DurationFormatted
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 text-center text-xs">
                     <div class="bg-gray-50 p-2 rounded">
                         <p class="text-gray-500 mb-1">@Localizer["Start"]</p>
-                        <p class="font-semibold text-gray-800">@Model.StartTime.ToEgyptTime().ToString("h:mm tt", new System.Globalization.CultureInfo("ar-EG"))</p>
+                        <p class="font-semibold text-gray-800" style="direction:ltr;unicode-bidi:embed;">@startDisplay</p>
                     </div>
                     <div class="bg-gray-50 p-2 rounded">
                         <p class="text-gray-500 mb-1">@Localizer["End"]</p>
-                        <p class="font-semibold text-gray-800">@Model.EndTime.ToEgyptTime().ToString("h:mm tt", new System.Globalization.CultureInfo("ar-EG"))</p>
+                        <p class="font-semibold text-gray-800" style="direction:ltr;unicode-bidi:embed;">@endDisplay</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column - Cost Info -->
+            <!-- Right: Cost Info -->
             <div class="space-y-3">
                 <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg">
                     <p class="text-xs text-gray-600 mb-1">@Localizer["TotalAmount"]</p>
-                    <p class="text-3xl font-bold text-green-600">@Model.TotalCost.ToString("C")</p>
+                    <p class="text-3xl font-bold text-green-600" style="direction:ltr;unicode-bidi:embed;">
+                        @Model.TotalCost.ToString("N2")
+                    </p>
                     <p class="text-xs text-green-700 mt-1">EGP</p>
                 </div>
 
                 <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-xs">
                     <div class="flex justify-between">
                         <span class="text-gray-600">@Localizer["Rate"]</span>
-                        <span class="font-semibold text-gray-800">@Model.HourlyRate.ToString("C")/@Localizer["hr"]</span>
+                        <span class="font-semibold text-gray-800" style="direction:ltr;unicode-bidi:embed;">
+                            @Model.HourlyRate.ToString("N2") ج.م/س
+                        </span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">@Localizer["Payment"]</span>
-                        <span class="font-semibold text-gray-800">
-                            <i class="fas fa-@(Model.PaymentMethod == "Cash" ? "money-bill-wave" : "credit-card") mr-1"></i>
-                            @(Model.PaymentMethod == "Cash" ? Localizer["Cash"] : Localizer["Card"])
-                        </span>
+                        <span class="font-semibold text-gray-800">@paymentLabel</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Session ID -->
-        <div class="text-center text-xs text-gray-400 mb-3">
-            @Localizer["SessionNumber"] #@Model.SessionId • @Model.CompletedAt.ToEgyptTime().ToString("MM/dd h:mm tt", new System.Globalization.CultureInfo("ar-EG"))
+        <div class="text-center text-xs text-gray-400 mb-4" style="direction:ltr;unicode-bidi:embed;">
+            @Localizer["SessionNumber"] #@Model.SessionId • @sessionDate @completedAt
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Buttons -->
         <div class="grid grid-cols-2 gap-3">
-            <button onclick="printReceipt(@Model.SessionId)"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center">
-                <i class="fas fa-print mr-2"></i>@Localizer["Print"]
+            <button onclick="printReceiptContent()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                <i class="fas fa-print"></i>
+                @Localizer["Print"]
             </button>
             <button onclick="closeReceiptModal()"
-                    class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center">
-                <i class="fas fa-check mr-2"></i>@Localizer["Done"]
+                    class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                <i class="fas fa-check"></i>
+                @Localizer["Done"]
             </button>
         </div>
     </div>
 
-    <!-- Minimal Footer -->
+    <!-- Footer -->
     <div class="bg-gray-50 py-2 text-center border-t border-gray-100">
         <p class="text-xs text-gray-400">
-            <i class="fas fa-heart text-red-400 text-xs"></i> Station Pro
+            Station Pro <i class="fas fa-heart text-red-400 text-xs"></i>
         </p>
     </div>
 </div>

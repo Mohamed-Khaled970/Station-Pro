@@ -17,12 +17,27 @@
         _ => Localizer["CustomPeriod"]
     };
 
-    // FIX: Show report generation time in Egypt local time too
+    // FIX: Show report generation time in Egypt local time
     var nowEgypt = TimeZoneHelper.NowInEgypt();
+
+    // Detect RTL for Arabic
+    var isRtl = System.Globalization.CultureInfo.CurrentCulture.TextInfo.IsRightToLeft;
+    var htmlDir = isRtl ? "rtl" : "ltr";
+    var htmlLang = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+
+    // Duration formatter — always outputs HH:MM:SS (pure LTR numeric, no Arabic labels)
+    // Avoids bidi scrambling of mixed Arabic + number strings like "س 31دقيقة0"
+    string FormatDuration(TimeSpan t)
+    {
+        var h = (int)t.TotalHours;
+        var m = t.Minutes;
+        var s = t.Seconds;
+        return $"{h:D2}:{m:D2}:{s:D2}";
+    }
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@htmlLang" dir="@htmlDir">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,6 +97,35 @@
             .device-row:last-child {
                 border-bottom: none;
             }
+
+        /*
+                 * ltr-value — forces numbers, times, dates, and currency to always
+                 * render left-to-right even inside an RTL (Arabic) document.
+                 * Without this, the browser's bidi algorithm scrambles mixed
+                 * Arabic + numeric strings, e.g. "05:00 ص" → "ص 05:00"
+                 * and "0س 30دقيقة" instead of "0س 30دقيقة".
+                 */
+        .ltr-value {
+            direction: ltr;
+            unicode-bidi: embed;
+            display: inline-block;
+        }
+
+        /* RTL table alignment */
+        [dir="rtl"] table th,
+        [dir="rtl"] table td {
+            text-align: right;
+        }
+
+        [dir="rtl"] .text-center th,
+        [dir="rtl"] .text-center td {
+            text-align: center;
+        }
+
+        /* Header right block flips to left in RTL */
+        [dir="rtl"] .header-meta {
+            text-align: left;
+        }
     </style>
 </head>
 <body class="bg-white p-8">
@@ -114,11 +158,18 @@
                     <h2 class="text-2xl font-bold text-gray-800">@Localizer["FinancialReport"]</h2>
                     <p class="text-gray-600">@Localizer["Period"]: @periodName</p>
                 </div>
-                <div class="text-right">
+
+                @* Header meta block — text-right in LTR, text-left in RTL *@
+                <div class="header-meta @(isRtl ? "text-left" : "text-right")">
                     <p class="text-sm text-gray-500">@Localizer["ReportGenerated"]:</p>
-                    @* FIX: Show Egypt local time for report generation timestamp *@
-                    <p class="font-semibold text-gray-900">@nowEgypt.ToString("MMMM dd, yyyy")</p>
-                    <p class="text-sm text-gray-500">@nowEgypt.ToString("hh:mm tt")</p>
+                    <p class="font-semibold text-gray-900">
+                        @* FIX: date wrapped in ltr-value to prevent MMM/dd flip *@
+                        <span class="ltr-value">@nowEgypt.ToString("MMMM dd, yyyy")</span>
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        @* FIX: time wrapped in ltr-value to prevent "ص 05:00" scramble *@
+                        <span class="ltr-value">@nowEgypt.ToString("hh:mm tt")</span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -133,22 +184,30 @@
             <div class="grid grid-cols-4 gap-4 mb-6">
                 <div class="stat-card text-center">
                     <i class="fas fa-dollar-sign text-3xl text-green-600 mb-2"></i>
-                    <div class="text-2xl font-bold text-gray-900">EGP @Model.Summary.TotalRevenue.ToString("N2")</div>
+                    <div class="text-2xl font-bold text-gray-900">
+                        <span class="ltr-value">EGP @Model.Summary.TotalRevenue.ToString("N2")</span>
+                    </div>
                     <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["TotalRevenue"].ToString().ToUpper()</div>
                 </div>
                 <div class="stat-card text-center">
                     <i class="fas fa-clock text-3xl text-blue-600 mb-2"></i>
-                    <div class="text-2xl font-bold text-gray-900">@Model.Summary.TotalSessions</div>
+                    <div class="text-2xl font-bold text-gray-900">
+                        <span class="ltr-value">@Model.Summary.TotalSessions</span>
+                    </div>
                     <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["TotalSessions"].ToString().ToUpper()</div>
                 </div>
                 <div class="stat-card text-center">
                     <i class="fas fa-chart-line text-3xl text-purple-600 mb-2"></i>
-                    <div class="text-2xl font-bold text-gray-900">EGP @Model.Summary.AverageSessionRevenue.ToString("N2")</div>
+                    <div class="text-2xl font-bold text-gray-900">
+                        <span class="ltr-value">EGP @Model.Summary.AverageSessionRevenue.ToString("N2")</span>
+                    </div>
                     <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["AvgSessionRevenue"].ToString().ToUpper()</div>
                 </div>
                 <div class="stat-card text-center">
                     <i class="fas fa-check-circle text-3xl text-orange-600 mb-2"></i>
-                    <div class="text-2xl font-bold text-gray-900">@Model.Summary.CompletedSessions</div>
+                    <div class="text-2xl font-bold text-gray-900">
+                        <span class="ltr-value">@Model.Summary.CompletedSessions</span>
+                    </div>
                     <div class="text-sm text-gray-600 font-semibold mt-1">@Localizer["CompletedSessions"].ToString().ToUpper()</div>
                 </div>
             </div>
@@ -160,10 +219,12 @@
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                     <span class="text-gray-600">@Localizer["ReportPeriod"]:</span>
-                    @* FIX: Convert period boundary times to Egypt local for display *@
+                    @* FIX: period date range in ltr-value *@
                     <span class="font-bold text-gray-900 ml-2">
-                        @TimeZoneHelper.ToEgyptTime(Model.Summary.StartDate).ToString("MMM dd") -
-                        @TimeZoneHelper.ToEgyptTime(Model.Summary.EndDate).ToString("MMM dd, yyyy")
+                        <span class="ltr-value">
+                            @TimeZoneHelper.ToEgyptTime(Model.Summary.StartDate).ToString("MMM dd") -
+                            @TimeZoneHelper.ToEgyptTime(Model.Summary.EndDate).ToString("MMM dd, yyyy")
+                        </span>
                     </span>
                 </div>
             </div>
@@ -181,12 +242,12 @@
                 <table class="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr class="bg-gray-100">
-                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">@Localizer["Device"]</th>
+                            <th class="border border-gray-300 px-4 py-3 text-start font-semibold text-gray-700">@Localizer["Device"]</th>
                             <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["Type"]</th>
                             <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["Sessions"]</th>
                             <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["UsageTime"]</th>
                             <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">@Localizer["Utilization"]</th>
-                            <th class="border border-gray-300 px-4 py-3 text-right font-semibold text-gray-700">@Localizer["Revenue"]</th>
+                            <th class="border border-gray-300 px-4 py-3 text-end font-semibold text-gray-700">@Localizer["Revenue"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -195,33 +256,40 @@
                             <tr class="device-row">
                                 <td class="border border-gray-300 px-4 py-3 font-semibold text-gray-900">@device.DeviceName</td>
                                 <td class="border border-gray-300 px-4 py-3 text-center text-gray-700">@device.DeviceType</td>
-                                <td class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-900">@device.SessionCount</td>
+                                <td class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-900">
+                                    <span class="ltr-value">@device.SessionCount</span>
+                                </td>
                                 <td class="border border-gray-300 px-4 py-3 text-center text-gray-700">
-                                    @((int)device.TotalUsageTime.TotalHours)@Localizer["hr"] @device.TotalUsageTime.Minutes@Localizer["Minute"]
+                                    @* FIX: FormatDuration outputs HH:MM:SS — pure numeric, no Arabic labels,
+                            zero bidi scrambling. "س 31دقيقة0" is now "00:31:00" *@
+                                    <span class="ltr-value font-mono">@FormatDuration(device.TotalUsageTime)</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-3 text-center font-semibold text-blue-600">
-                                    @device.UtilizationPercentage.ToString("N1")%
+                                    <span class="ltr-value">@device.UtilizationPercentage.ToString("N1")%</span>
                                 </td>
-                                <td class="border border-gray-300 px-4 py-3 text-right font-bold text-green-600">
-                                    EGP @device.TotalRevenue.ToString("N2")
+                                <td class="border border-gray-300 px-4 py-3 text-end font-bold text-green-600">
+                                    <span class="ltr-value">EGP @device.TotalRevenue.ToString("N2")</span>
                                 </td>
                             </tr>
                         }
                     </tbody>
                     <tfoot>
                         <tr class="bg-gray-100 font-bold">
-                            <td colspan="2" class="border border-gray-300 px-4 py-3 text-right">@Localizer["TOTAL"]:</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">@Model.DevicePerformance.Sum(d => d.SessionCount)</td>
+                            <td colspan="2" class="border border-gray-300 px-4 py-3 text-end">@Localizer["TOTAL"]:</td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                <span class="ltr-value">@Model.DevicePerformance.Sum(d => d.SessionCount)</span>
+                            </td>
                             <td class="border border-gray-300 px-4 py-3 text-center">
                                 @{
-                                    var totalHours = (int)Model.DevicePerformance.Sum(d => d.TotalUsageTime.TotalMinutes) / 60;
-                                    var totalMins = (int)Model.DevicePerformance.Sum(d => d.TotalUsageTime.TotalMinutes) % 60;
+                                    var totalSpan = TimeSpan.FromMinutes(
+                                    Model.DevicePerformance.Sum(d => d.TotalUsageTime.TotalMinutes));
                                 }
-                                @totalHours@Localizer["hr"] @totalMins@Localizer["Minute"]
+                                @* FIX: FormatDuration — clean HH:MM:SS, no Arabic mixed labels *@
+                                <span class="ltr-value font-mono">@FormatDuration(totalSpan)</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-3"></td>
-                            <td class="border border-gray-300 px-4 py-3 text-right text-green-600">
-                                EGP @Model.DevicePerformance.Sum(d => d.TotalRevenue).ToString("N2")
+                            <td class="border border-gray-300 px-4 py-3 text-end text-green-600">
+                                <span class="ltr-value">EGP @Model.DevicePerformance.Sum(d => d.TotalRevenue).ToString("N2")</span>
                             </td>
                         </tr>
                     </tfoot>
@@ -244,12 +312,12 @@
                 <table class="w-full border-collapse border border-gray-300 text-sm">
                     <thead>
                         <tr class="bg-gray-100">
-                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">@Localizer["DateTime"]</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">@Localizer["Device"]</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">@Localizer["Customer"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-start font-semibold text-gray-700">@Localizer["DateTime"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-start font-semibold text-gray-700">@Localizer["Device"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-start font-semibold text-gray-700">@Localizer["Customer"]</th>
                             <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Duration"]</th>
                             <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Rate"]</th>
-                            <th class="border border-gray-300 px-3 py-2 text-right font-semibold text-gray-700">@Localizer["Total"]</th>
+                            <th class="border border-gray-300 px-3 py-2 text-end font-semibold text-gray-700">@Localizer["Total"]</th>
                             <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Status"]</th>
                             <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">@Localizer["Payment"]</th>
                         </tr>
@@ -261,8 +329,13 @@
                             var egyptTime = TimeZoneHelper.ToEgyptTime(session.StartTime);
                             <tr>
                                 <td class="border border-gray-300 px-3 py-2">
-                                    <div class="font-semibold text-gray-900">@egyptTime.ToString("MMM dd, yyyy")</div>
-                                    <div class="text-xs text-gray-500">@egyptTime.ToString("hh:mm tt")</div>
+                                    @* FIX: date + time both wrapped in ltr-value *@
+                                    <div class="font-semibold text-gray-900">
+                                        <span class="ltr-value">@egyptTime.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <span class="ltr-value">@egyptTime.ToString("hh:mm tt")</span>
+                                    </div>
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2">
                                     <div class="font-semibold text-gray-900">@session.DeviceName</div>
@@ -272,13 +345,14 @@
                                     @(session.CustomerName ?? Localizer["Guest"])
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-center font-mono">
-                                    @session.DurationFormatted
+                                    @* FIX: HH:MM:SS must always be LTR *@
+                                    <span class="ltr-value">@session.DurationFormatted</span>
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-center text-gray-700">
-                                    EGP @session.HourlyRate.ToString("N2")
+                                    <span class="ltr-value">EGP @session.HourlyRate.ToString("N2")</span>
                                 </td>
-                                <td class="border border-gray-300 px-3 py-2 text-right font-bold text-green-600">
-                                    EGP @session.TotalCost.ToString("N2")
+                                <td class="border border-gray-300 px-3 py-2 text-end font-bold text-green-600">
+                                    <span class="ltr-value">EGP @session.TotalCost.ToString("N2")</span>
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-center">
                                     <span class="inline-block px-2 py-1 rounded text-xs font-semibold
@@ -299,7 +373,7 @@
         <!-- Footer -->
         <div class="mt-8 pt-4 border-t-2 border-gray-300 text-center text-sm text-gray-500">
             <p>@Localizer["ComputerGeneratedReport"]</p>
-            <p>© @nowEgypt.Year @Localizer["StationPro"] - @Localizer["CopyrightNotice"]</p>
+            <p>© <span class="ltr-value">@nowEgypt.Year</span> @Localizer["StationPro"] - @Localizer["CopyrightNotice"]</p>
         </div>
 
     </div>

@@ -453,6 +453,14 @@
 	<data name="PrintReport" xml:space="preserve">
 		<value>طباعة التقرير</value>
 	</data>
+
+	<data name="Print" xml:space="preserve">
+		<value>طباعة</value>
+	</data>
+
+	<data name="Done" xml:space="preserve">
+		<value>تم</value>
+	</data>
 	<data name="Today" xml:space="preserve">
 		<value>اليوم</value>
 	</data>

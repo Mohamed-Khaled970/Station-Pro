@@ -1,11 +1,9 @@
-// wwwroot/js/sessions.js
+﻿// wwwroot/js/sessions.js
 
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
 
-
-// toast containers in layout
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
@@ -51,15 +49,12 @@ let pendingSessionId = null;
 let selectedPaymentMethod = 1; // Default: Cash
 
 function endSessionFromList(sessionId, deviceName, duration, cost) {
-    // Store the session ID
     pendingSessionId = parseInt(sessionId);
 
-    // Update confirmation modal with session details
     document.getElementById('confirm-device-name').textContent = deviceName;
     document.getElementById('confirm-duration').textContent = duration;
     document.getElementById('confirm-cost').textContent = cost;
 
-    // Reset payment method to Cash
     selectedPaymentMethod = 1;
     const cashBtn = document.getElementById('payment-cash');
     const cardBtn = document.getElementById('payment-card');
@@ -69,14 +64,12 @@ function endSessionFromList(sessionId, deviceName, duration, cost) {
         cardBtn.classList.remove('active');
     }
 
-    // Show confirmation modal
     openModal('end-session-confirm-modal');
 }
 
 function selectPaymentMethod(method) {
     selectedPaymentMethod = method;
 
-    // Update button states
     const cashBtn = document.getElementById('payment-cash');
     const cardBtn = document.getElementById('payment-card');
 
@@ -102,8 +95,6 @@ async function confirmEndSession() {
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/[Ss]ession.*/, '');
 
-        //  FIX: call Session/End (handles both devices AND rooms)
-        // instead of Dashboard/End (devices only)
         const response = await fetch(
             `${basePath}/Session/End?sessionId=${parseInt(pendingSessionId)}&paymentMethod=${selectedPaymentMethod}`,
             { method: 'POST', headers: { 'Content-Type': 'application/json' } }
@@ -129,17 +120,16 @@ async function confirmEndSession() {
         showToast('An error occurred while ending the session', 'error');
     }
 }
+
 // ============================================
 // SESSION DETAILS
 // ============================================
 
 async function viewSessionDetails(sessionId) {
     try {
-        // Get current path (handle tenant URLs)
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/(session|Session).*/, '');
 
-        // Fetch session details
         const response = await fetch(`${basePath}/Session/Details?id=${sessionId}`);
 
         if (response.ok) {
@@ -165,11 +155,9 @@ async function viewSessionDetails(sessionId) {
 
 async function printReceipt(sessionId) {
     try {
-        // Get current path (handle tenant URLs)
         const currentPath = window.location.pathname;
         const basePath = currentPath.replace(/\/(session|Session).*/, '');
 
-        // Fetch receipt
         const response = await fetch(`${basePath}/Session/Receipt?id=${sessionId}`);
 
         if (response.ok) {
@@ -191,7 +179,107 @@ async function printReceipt(sessionId) {
     }
 }
 
-// Close receipt modal
+// ============================================
+// PRINT RECEIPT CONTENT — opens a print window
+// FIX: was missing entirely in sessions.js,
+//      only existed in dashboard.js, so the
+//      Print button inside the receipt modal
+//      had no handler and did nothing.
+// ============================================
+
+function printReceiptContent() {
+    const dataEl = document.getElementById('receipt-data');
+    if (!dataEl) { showToast('No receipt to print', 'error'); return; }
+
+    let d;
+    try {
+        d = JSON.parse(dataEl.getAttribute('data-receipt'));
+    } catch (e) {
+        showToast('Could not read receipt data', 'error');
+        return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) { showToast('Please allow popups to print receipt', 'error'); return; }
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Receipt</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#f3f4f6;display:flex;align-items:flex-start;justify-content:center;padding:20px;min-height:100vh}
+  .card{background:#fff;border-radius:14px;overflow:hidden;width:340px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+  .hdr{background:linear-gradient(135deg,#22c55e,#059669);color:#fff;padding:22px 16px 18px;text-align:center}
+  .hdr .circle{width:50px;height:50px;background:rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px}
+  .hdr h2{font-size:20px;font-weight:700;margin-bottom:4px}
+  .hdr p{font-size:12px;opacity:.85}
+  .body{padding:16px}
+  .dev{text-align:center;padding-bottom:12px;margin-bottom:14px;border-bottom:1px dashed #d1d5db}
+  .dev h3{font-size:18px;font-weight:700;color:#111827}
+  .dev p{font-size:13px;color:#6b7280;margin-top:3px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .bblue{background:#eff6ff;border-radius:10px;padding:10px;text-align:center}
+  .bblue .lbl{font-size:11px;color:#2563eb;margin-bottom:4px}
+  .bblue .val{font-size:22px;font-weight:700;color:#1d4ed8;font-family:monospace;direction:ltr;unicode-bidi:embed;display:block}
+  .trow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+  .tbox{background:#f9fafb;border-radius:8px;padding:7px 4px;text-align:center}
+  .tbox .lbl{font-size:10px;color:#9ca3af;margin-bottom:3px}
+  .tbox .val{font-size:12px;font-weight:600;color:#111827;direction:ltr;unicode-bidi:embed;display:block}
+  .bgreen{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border-radius:10px;padding:10px}
+  .bgreen .lbl{font-size:11px;color:#6b7280;margin-bottom:4px}
+  .bgreen .amt{font-size:28px;font-weight:800;color:#16a34a;direction:ltr;unicode-bidi:embed;display:block}
+  .bgreen .cur{font-size:11px;color:#15803d;margin-top:2px}
+  .ibox{background:#f9fafb;border-radius:8px;padding:10px;margin-top:8px;font-size:12px}
+  .irow{display:flex;justify-content:space-between;align-items:center;padding:3px 0}
+  .irow .k{color:#6b7280}
+  .irow .v{font-weight:600;color:#111827;direction:ltr;unicode-bidi:embed}
+  .sid{text-align:center;font-size:11px;color:#9ca3af;margin:12px 0 0;direction:ltr;unicode-bidi:embed}
+  .ftr{background:#f9fafb;border-top:1px solid #f3f4f6;text-align:center;padding:8px;font-size:12px;color:#9ca3af;margin-top:14px}
+  @media print{body{background:#fff;padding:0}.card{box-shadow:none;border-radius:0;width:100%}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="hdr">
+    <div class="circle">&#10003;</div>
+    <h2>${d.labelCompleted}</h2>
+    <p>${d.labelThanks}</p>
+  </div>
+  <div class="body">
+    <div class="dev"><h3>${d.deviceName}</h3><p>${d.customerName}</p></div>
+    <div class="two">
+      <div>
+        <div class="bblue"><div class="lbl">${d.labelDuration}</div><span class="val">${d.duration}</span></div>
+        <div class="trow">
+          <div class="tbox"><div class="lbl">${d.labelStart}</div><span class="val">${d.startTime}</span></div>
+          <div class="tbox"><div class="lbl">${d.labelEnd}</div><span class="val">${d.endTime}</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="bgreen"><div class="lbl">${d.labelTotal}</div><span class="amt">${d.totalCost}</span><div class="cur">EGP</div></div>
+        <div class="ibox">
+          <div class="irow"><span class="k">${d.labelRate}</span><span class="v">${d.hourlyRate} ج.م/س</span></div>
+          <div class="irow"><span class="k">${d.labelPayment}</span><span class="v">${d.paymentMethod}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sid">${d.labelSession} #${d.sessionId} &bull; ${d.sessionDate} ${d.completedAt}</div>
+  </div>
+  <div class="ftr">Station Pro &#9829;</div>
+</div>
+<script>setTimeout(()=>{window.print();window.close();},400);<\/script>
+</body></html>`);
+
+    printWindow.document.close();
+    showToast('Printing receipt...', 'info');
+}
+
+// ============================================
+// RECEIPT MODAL
+// ============================================
+
 function closeReceiptModal() {
     const modal = document.getElementById('receipt-modal');
     if (modal) {
@@ -209,11 +297,8 @@ function applyFilters() {
 }
 
 function clearFilters() {
-    // Get current path
     const currentPath = window.location.pathname;
     const basePath = currentPath.replace(/\/(session|Session).*/, '');
-
-    // Redirect to base sessions page without filters
     window.location.href = `${basePath}/Session/Index`;
 }
 
@@ -225,10 +310,9 @@ let searchTimeout;
 
 function handleSearchInput(input) {
     clearTimeout(searchTimeout);
-
     searchTimeout = setTimeout(() => {
         document.getElementById('filters-form').submit();
-    }, 500); // Debounce for 500ms
+    }, 500);
 }
 
 // ============================================
@@ -236,66 +320,40 @@ function handleSearchInput(input) {
 // ============================================
 
 document.addEventListener('keydown', (e) => {
-    // Escape: Close modals
     if (e.key === 'Escape') {
         closeModal('session-details-modal');
         closeModal('start-session-modal');
         closeModal('receipt-modal');
+        closeModal('end-session-confirm-modal');
     }
 
-    // Alt + N: Start new session
     if (e.altKey && e.key === 'n') {
         e.preventDefault();
         openModal('start-session-modal');
     }
 
-    // Alt + F: Focus on search
     if (e.altKey && e.key === 'f') {
         e.preventDefault();
         const searchInput = document.querySelector('input[name="search"]');
-        if (searchInput) {
-            searchInput.focus();
-        }
+        if (searchInput) searchInput.focus();
     }
 });
 
 // ============================================
-// TABLE SORTING (OPTIONAL ENHANCEMENT)
-// ============================================
-
-function sortTable(column) {
-    console.log(`Sorting by ${column}`);
-    // This can be implemented later if needed
-    showToast('Sorting feature coming soon!', 'info');
-}
-
-// ============================================
-// EXPORT TO CSV (OPTIONAL)
+// EXPORT TO CSV
 // ============================================
 
 function exportToCSV() {
     showToast('Exporting sessions...', 'info');
-
-    // Get current path
     const currentPath = window.location.pathname;
     const basePath = currentPath.replace(/\/(session|Session).*/, '');
-
-    // Build export URL with current filters
     const params = new URLSearchParams(window.location.search);
     window.location.href = `${basePath}/Session/ExportCSV?${params.toString()}`;
 }
 
-// ============================================
-// PRINT MULTIPLE RECEIPTS
-// ============================================
-
 function printMultipleReceipts() {
     showToast('Print multiple receipts feature coming soon!', 'info');
 }
-
-// ============================================
-// REFRESH DATA
-// ============================================
 
 function refreshSessions() {
     location.reload();
@@ -308,19 +366,16 @@ function refreshSessions() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Sessions page initialized');
 
-    // Add fade-in animation to cards
     const cards = document.querySelectorAll('.card');
     cards.forEach((card, index) => {
         card.style.animationDelay = `${index * 0.1}s`;
     });
 
-    // Initialize tooltips (if using a tooltip library)
     initializeTooltips();
 });
 
 function initializeTooltips() {
     // Placeholder for tooltip initialization
-    // Can be implemented with a library like Tippy.js if needed
 }
 
 // ============================================
@@ -328,28 +383,19 @@ function initializeTooltips() {
 // ============================================
 
 document.addEventListener('click', (e) => {
-    // Close session details modal when clicking outside
     const sessionDetailsModal = document.getElementById('session-details-modal');
     if (sessionDetailsModal && !sessionDetailsModal.classList.contains('hidden')) {
-        if (e.target === sessionDetailsModal) {
-            closeModal('session-details-modal');
-        }
+        if (e.target === sessionDetailsModal) closeModal('session-details-modal');
     }
 
-    // Close start session modal when clicking outside
     const startSessionModal = document.getElementById('start-session-modal');
     if (startSessionModal && !startSessionModal.classList.contains('hidden')) {
-        if (e.target === startSessionModal) {
-            closeModal('start-session-modal');
-        }
+        if (e.target === startSessionModal) closeModal('start-session-modal');
     }
 
-    // Close receipt modal when clicking outside
     const receiptModal = document.getElementById('receipt-modal');
     if (receiptModal && !receiptModal.classList.contains('hidden')) {
-        if (e.target === receiptModal) {
-            closeReceiptModal();
-        }
+        if (e.target === receiptModal) closeReceiptModal();
     }
 });
 
@@ -357,11 +403,8 @@ document.addEventListener('click', (e) => {
 // HTMX INTEGRATION
 // ============================================
 
-// Listen for HTMX events
 document.body.addEventListener('htmx:afterSwap', (event) => {
     console.log('HTMX swap completed');
-
-    // Re-initialize any components after HTMX swap
     if (event.detail.target.id === 'session-details-content') {
         console.log('Session details loaded');
     }
@@ -382,32 +425,22 @@ function animateValue(element, start, end, duration) {
     function update() {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-
         const currentValue = start + (end - start) * progress;
         element.textContent = Math.round(currentValue);
-
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
+        if (progress < 1) requestAnimationFrame(update);
     }
 
     update();
 }
 
-// ============================================
-// STATISTICS ANIMATIONS
-// ============================================
-
 function animateStatistics() {
     const statElements = document.querySelectorAll('[data-animate-stat]');
-
     statElements.forEach(element => {
         const targetValue = parseInt(element.dataset.animateStat);
         animateValue(element, 0, targetValue, 1000);
     });
 }
 
-// Call on page load
 window.addEventListener('load', () => {
     animateStatistics();
 });
@@ -431,43 +464,35 @@ function formatDuration(seconds) {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-// Add these functions to your sessions.js file
+// ============================================
+// SESSION TYPE SELECTION
+// ============================================
 
 let selectedSessionType = 'single';
 
-// Handle device selection to show/hide session type options
 function handleDeviceSelection(selectElement) {
     const selectedOption = selectElement.options[selectElement.selectedIndex];
     const supportsMulti = selectedOption.dataset.supportsMulti === 'true';
     const singleRate = selectedOption.dataset.singleRate;
     const multiRate = selectedOption.dataset.multiRate;
-
     const sessionTypeContainer = document.getElementById('session-type-container');
 
     if (supportsMulti) {
-        // Show session type selection
         sessionTypeContainer.classList.remove('hidden');
-
-        // Update rate displays
         document.getElementById('single-rate-display').textContent =
             formatCurrency(parseFloat(singleRate)) + '/hr';
         document.getElementById('multi-rate-display').textContent =
             formatCurrency(parseFloat(multiRate)) + '/hr';
-
-        // Reset to single session
         selectSessionType('single');
     } else {
-        // Hide session type selection for single-session-only devices
         sessionTypeContainer.classList.add('hidden');
         selectSessionType('single');
     }
 }
 
-// Select session type (single or multi)
 function selectSessionType(type) {
     selectedSessionType = type;
 
@@ -483,87 +508,71 @@ function selectSessionType(type) {
         singleBtn.classList.remove('active');
     }
 
-    if (input) {
-        input.value = type;
-    }
+    if (input) input.value = type;
 }
 
-// Handle response after starting session
 function handleSessionStartResponse(event) {
     const xhr = event.detail.xhr;
 
     if (xhr.status === 200) {
         try {
             const response = JSON.parse(xhr.responseText);
-
             if (response.success) {
                 showToast(response.message || 'Session started successfully!', 'success');
-
-                // Close modal
                 closeModal('start-session-modal');
-
-                // Reset form
                 document.getElementById('start-session-form').reset();
                 document.getElementById('session-type-container').classList.add('hidden');
-
-                // Reload page after short delay
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                setTimeout(() => window.location.reload(), 1500);
             } else {
                 showToast(response.message || 'Failed to start session', 'error');
             }
         } catch (e) {
             showToast('Session started! Refreshing...', 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+            setTimeout(() => window.location.reload(), 1500);
         }
     } else {
         showToast('Failed to start session. Please try again.', 'error');
     }
 }
 
-// Reset start session modal when opening
 function openStartSessionModal() {
-    // Reset form
     const form = document.getElementById('start-session-form');
-    if (form) {
-        form.reset();
-    }
+    if (form) form.reset();
 
-    // Hide session type selection
     const sessionTypeContainer = document.getElementById('session-type-container');
-    if (sessionTypeContainer) {
-        sessionTypeContainer.classList.add('hidden');
-    }
+    if (sessionTypeContainer) sessionTypeContainer.classList.add('hidden');
 
-    // Reset to single session type
     selectSessionType('single');
-
-    // Open modal
     openModal('start-session-modal');
 }
 
-// Export functions
+// ============================================
+// TABLE SORTING
+// ============================================
+
+function sortTable(column) {
+    showToast('Sorting feature coming soon!', 'info');
+}
+
+// ============================================
+// EXPORTS
+// ============================================
+
 window.handleDeviceSelection = handleDeviceSelection;
 window.selectSessionType = selectSessionType;
 window.handleSessionStartResponse = handleSessionStartResponse;
 window.openStartSessionModal = openStartSessionModal;
-
-// Export functions for use in other scripts
-if (typeof window !== 'undefined') {
-    window.viewSessionDetails = viewSessionDetails;
-    window.printReceipt = printReceipt;
-    window.closeReceiptModal = closeReceiptModal;
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.applyFilters = applyFilters;
-    window.clearFilters = clearFilters;
-    window.exportToCSV = exportToCSV;
-    window.refreshSessions = refreshSessions;
-    window.endSessionFromList = endSessionFromList;
-    window.selectPaymentMethod = selectPaymentMethod;
-    window.closeEndSessionModal = closeEndSessionModal;
-    window.confirmEndSession = confirmEndSession;
-}
+window.viewSessionDetails = viewSessionDetails;
+window.printReceipt = printReceipt;
+window.printReceiptContent = printReceiptContent;   // ← NEW: used by Print button inside receipt modal
+window.closeReceiptModal = closeReceiptModal;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.applyFilters = applyFilters;
+window.clearFilters = clearFilters;
+window.exportToCSV = exportToCSV;
+window.refreshSessions = refreshSessions;
+window.endSessionFromList = endSessionFromList;
+window.selectPaymentMethod = selectPaymentMethod;
+window.closeEndSessionModal = closeEndSessionModal;
+window.confirmEndSession = confirmEndSession;

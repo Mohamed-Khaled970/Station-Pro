@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<UnifiedSessionDto>
 @using Microsoft.Extensions.Localization
 @using StationPro
+@using StationPro.Infrastructure.Helpers
 @inject IStringLocalizer<SharedResources> Localizer
 
 @if (!Model.Any())
@@ -56,7 +57,7 @@ else
                                     <span class="flex items-center gap-1 whitespace-nowrap">
                                         <i class="fas fa-clock text-[10px] sm:text-xs"></i>
                                         @* Show local time to the user for display *@
-                                        <span class="text-[11px] sm:text-xs">@session.StartTime.ToLocalTime().ToString("h:mm tt")</span>
+                                        <span class="text-[11px] sm:text-xs">@session.StartTime.ToEgyptDisplay("h:mm tt")</span>
                                     </span>
                                     <span class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full @(session.SessionTypeString == "multi" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700")">
                                         @session.SessionTypeDisplay

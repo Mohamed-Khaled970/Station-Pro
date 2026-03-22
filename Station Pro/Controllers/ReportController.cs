@@ -17,23 +17,32 @@ public class ReportController : Controller
 {
     private readonly ISessionService _sessions;
 
+    // Number of session rows shown per page in the sessions table
+    private const int SessionsPageSize = 15;
+
     public ReportController(ISessionService sessions)
     {
         _sessions = sessions;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string period = "today")
+    public async Task<IActionResult> Index(string period = "today", int page = 1)
     {
-        var report = await GenerateReportAsync(period);
+        var (report, totalSessionCount) = await GenerateReportAsync(period, page, SessionsPageSize);
+
         ViewBag.SelectedPeriod = period;
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages = (int)Math.Ceiling(totalSessionCount / (double)SessionsPageSize);
+        ViewBag.TotalCount = totalSessionCount;
+
         return View(report);
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportCsv(string period = "today")
     {
-        var report = await GenerateReportAsync(period);
+        // Export always gets ALL sessions — no pagination
+        var (report, _) = await GenerateReportAsync(period, page: 1, pageSize: int.MaxValue);
 
         var csv = new StringBuilder();
         csv.AppendLine("Date,Device,Customer,Duration,Cost,Status,Payment");
@@ -57,45 +66,60 @@ public class ReportController : Controller
     [HttpGet]
     public async Task<IActionResult> Print(string period = "today")
     {
-        var report = await GenerateReportAsync(period);
+        // Print always gets ALL sessions — no pagination
+        var (report, _) = await GenerateReportAsync(period, page: 1, pageSize: int.MaxValue);
         ViewBag.SelectedPeriod = period;
         return View("PrintReport", report);
     }
 
     // ── Report generation ─────────────────────────────────────────────────
 
-    private async Task<CompleteReportDto> GenerateReportAsync(string period)
+    private async Task<(CompleteReportDto report, int totalCount)> GenerateReportAsync(
+        string period, int page, int pageSize)
     {
         // FIX: Use Egypt-local date boundaries instead of UTC.
-        // Old code: GetDateRange used DateTime.Now.Date (UTC on server),
-        // which meant "today" started at midnight UTC = 2:00 AM Egypt time.
-        // Sessions before 2 AM Egypt would fall into server's "yesterday".
         var (startUtc, endUtc) = TimeZoneHelper.GetUtcDateRange(period);
 
         var filter = new SessionFilterRequest
         {
-            DateFilter = "all",   // we filter by exact UTC range below
+            DateFilter = "all",
             Status = "completed",
             Page = 1,
-            PageSize = 10_000
+            PageSize = 10_000   // fetch all, paginate in memory after Egypt-local filter
         };
 
         var pageResult = await _sessions.GetPageAsync(filter);
 
-        var sessions = pageResult.Sessions
+        // All completed sessions in the Egypt-correct date window
+        var allSessions = pageResult.Sessions
             .Where(s => s.StartTime >= startUtc && s.StartTime <= endUtc)
             .OrderByDescending(s => s.StartTime)
             .Select(MapToReportDto)
             .ToList();
 
-        return new CompleteReportDto
+        int totalCount = allSessions.Count;
+
+        // Paginate only the sessions table — summary & device stats use all sessions
+        var pagedSessions = pageSize == int.MaxValue
+            ? allSessions
+            : allSessions
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+        var report = new CompleteReportDto
         {
-            Summary = GenerateSummary(sessions, startUtc, endUtc),
-            Sessions = sessions,
-            DailyRevenue = GenerateDailyRevenue(sessions),
-            DevicePerformance = GenerateDevicePerformance(sessions),
-            HourlyUsage = GenerateHourlyUsage(sessions)
+            // Summary and charts always reflect the FULL period (not just one page)
+            Summary = GenerateSummary(allSessions, startUtc, endUtc),
+            DevicePerformance = GenerateDevicePerformance(allSessions),
+            DailyRevenue = GenerateDailyRevenue(allSessions),
+            HourlyUsage = GenerateHourlyUsage(allSessions),
+
+            // Sessions list is paginated
+            Sessions = pagedSessions
         };
+
+        return (report, totalCount);
     }
 
     // ── Mapping ───────────────────────────────────────────────────────────

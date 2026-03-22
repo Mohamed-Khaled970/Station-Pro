@@ -124,13 +124,17 @@
 
                     <div>
                         <label class="form-label">@Localizer["Search"]</label>
-                        <div class="relative">
+                        <div class="search-input-row">
                             <input type="text"
                                    name="search"
+                                   id="search-input"
                                    value="@Model.SearchQuery"
-                                   class="form-input pr-10"
-                                   placeholder="@Localizer["SearchCustomer"]">
-                            <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">
+                                   class="form-input search-text-input"
+                                   placeholder="@Localizer["SearchCustomer"]"
+                                   onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('filters-form').submit();}">
+                            <button type="submit"
+                                    class="search-submit-btn"
+                                    title="@Localizer["Search"]">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
@@ -234,7 +238,6 @@
                                         }
                                     </td>
 
-                                    @* FIX: Display Egypt local time instead of UTC *@
                                     <td class="px-6 py-4 text-gray-700">
                                         <div>
                                             <p class="font-medium">@session.StartTime.ToEgyptDisplay("MMM dd, yyyy")</p>
@@ -345,7 +348,6 @@
                                     <div>
                                         <p class="font-semibold text-gray-900">@session.SourceName</p>
                                         <div class="flex items-center gap-2 text-xs text-gray-500">
-                                            @* FIX: Egypt local time *@
                                             <span>@session.StartTime.ToEgyptDisplay("MMM dd, h:mm tt")</span>
                                             @if (session.SessionType == SessionType.Multi)
                                             {
