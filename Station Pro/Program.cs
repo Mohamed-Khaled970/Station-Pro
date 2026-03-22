@@ -61,11 +61,10 @@ builder.Services.AddScoped<AdminAuthFilter>();
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
-    options.Providers.Add<BrotliCompressionProvider>();
+
     options.Providers.Add<GzipCompressionProvider>();
 });
-builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
-    options.Level = System.IO.Compression.CompressionLevel.Fastest);
+
 builder.Services.Configure<GzipCompressionProviderOptions>(options =>
     options.Level = System.IO.Compression.CompressionLevel.Fastest);
 
